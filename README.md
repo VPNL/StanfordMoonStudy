@@ -1,6 +1,7 @@
 # Perceptual-Magnification
 
 Moon
+-Experimental Setup
 -Data
   -FullMoonRawData
 -Results
@@ -10,6 +11,7 @@ Moon
   -matlab code
   -FullMoonRawData parsing code
 Quad
+-Experimental Setup
 -Data
   -Ground Truth Information
   -QuadDataLong
