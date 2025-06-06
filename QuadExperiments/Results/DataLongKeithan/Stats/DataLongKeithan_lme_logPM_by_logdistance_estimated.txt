@@ -1,0 +1,42 @@
+
+lme_logPM_by_logdistance = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             567
+    Fixed effects coefficients           2
+    Random effects coefficients         94
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2_ratio_visual_angle ~ 1 + log2_distance + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    623.42    640.78    -307.71          615.42  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                     Estimate    SE          tStat      DF 
+    {'(Intercept)'  }        -1.0806      0.13437    -8.0423    565
+    {'log2_distance'}        0.39437     0.023406     16.849    565
+
+
+    pValue        Lower      Upper   
+    5.1991e-15    -1.3446    -0.81671
+    6.5186e-52     0.3484     0.44035
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (94 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.49557 
+
+
+    Lower      Upper  
+    0.42414    0.57903
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.33567     0.31494    0.35777
+
