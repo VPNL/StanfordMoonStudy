@@ -1,0 +1,126 @@
+
+lme_logPM_by_logangle = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             564
+    Fixed effects coefficients           2
+    Random effects coefficients         94
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2_ratio_visual_angle ~ 1 + log2_real_visual_angle + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    247.27    264.61    -119.64          239.27  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                              Estimate    SE           tStat  
+    {'(Intercept)'           }          0.2046     0.031487     6.4981
+    {'log2_real_visual_angle'}        -0.13416    0.0096102    -13.961
+
+
+    DF     pValue        Lower       Upper   
+    562     1.795e-10     0.14276     0.26645
+    562    3.0623e-38    -0.15304    -0.11529
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (94 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.28522 
+
+
+    Lower     Upper  
+    0.2417    0.33657
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.25058     0.23503    0.26716
+
+
+lme_logPM_by_logangle = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             564
+    Fixed effects coefficients           2
+    Random effects coefficients         94
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2_ratio_visual_angle ~ 1 + log2_real_visual_angle + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    247.27    264.61    -119.64          239.27  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                              Estimate    SE           tStat  
+    {'(Intercept)'           }          0.2046     0.031487     6.4981
+    {'log2_real_visual_angle'}        -0.13416    0.0096102    -13.961
+
+
+    DF     pValue        Lower       Upper   
+    562     1.795e-10     0.14276     0.26645
+    562    3.0623e-38    -0.15304    -0.11529
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (94 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.28522 
+
+
+    Lower     Upper  
+    0.2417    0.33657
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.25058     0.23503    0.26716
+
+
+lme_logPM_by_logangle = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             564
+    Fixed effects coefficients           2
+    Random effects coefficients         94
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2_ratio_visual_angle ~ 1 + log2_real_visual_angle + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    247.27    264.61    -119.64          239.27  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                              Estimate    SE           tStat  
+    {'(Intercept)'           }          0.2046     0.031487     6.4981
+    {'log2_real_visual_angle'}        -0.13416    0.0096102    -13.961
+
+
+    DF     pValue        Lower       Upper   
+    562     1.795e-10     0.14276     0.26645
+    562    3.0623e-38    -0.15304    -0.11529
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (94 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.28522 
+
+
+    Lower     Upper  
+    0.2417    0.33657
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.25058     0.23503    0.26716
+
