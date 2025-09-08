@@ -1,24 +1,41 @@
 # Perceptual-Magnification
 
-Moon
--Experimental Setup
+MoonExperiments
+-Code
+  -processing file that processes FullMoonRawData into a csv file
+  -csv file: FullMoonDataLong
+  -matlab code
 -Data
   -FullMoonRawData
+-ExperimentalScripts
+  -script read to participants
+-Ground Truth
+  -ground truth information
+-PaperFig1
+  -***some generated figures, need to move to somewhere else
 -Results
   -Stats
   -Figure
+-STL Files_
+  -files used for 3D printer
+-Templates
+  -3D printed disk templates
+  
+QuadExperiments
 -Code
+  -processing file that processes AllQuadRawData into a csv file
+  -csv file: AllQuadDataLong
   -matlab code
-  -FullMoonRawData parsing code
-Quad
--Experimental Setup
 -Data
-  -Ground Truth Information
-  -QuadDataLong
-  -RawDataAdjusted
-  -RawDataPerceptual
+  -AllQuadRawData
+-ExperimentalScripts
+  -script read to participants
+-Ground Truth
+  -ground truth information
 -Results
   -Stats
   -Figure
--Code
-  -matlab code
+-STL Files_
+  -files used for 3D printer
+-Templates
+  -3D printed disk templates
