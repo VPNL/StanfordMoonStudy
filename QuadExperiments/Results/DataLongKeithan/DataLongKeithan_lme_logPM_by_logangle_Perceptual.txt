@@ -1,0 +1,42 @@
+
+lme_logPM_by_logangle = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             567
+    Fixed effects coefficients           2
+    Random effects coefficients         94
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2_ratio_visual_angle ~ 1 + log2_real_visual_angle + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    611.68    629.04    -301.84          603.68  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                              Estimate    SE          tStat 
+    {'(Intercept)'           }         0.95707    0.057227    16.724
+    {'log2_real_visual_angle'}        -0.22362    0.012648    -17.68
+
+
+    DF     pValue        Lower       Upper   
+    565    2.6623e-51     0.84467      1.0695
+    565    5.2704e-56    -0.24847    -0.19878
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (94 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.53621 
+
+
+    Lower      Upper  
+    0.45998    0.62508
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.32687     0.30667    0.34839
+

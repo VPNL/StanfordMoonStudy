@@ -1,0 +1,44 @@
+
+lme_by_angleNtask = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations            1131
+    Fixed effects coefficients           3
+    Random effects coefficients         94
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    Linear Mixed Formula with 3 predictors.
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    3650.4    3675.5    -1820.2          3640.4  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                                       Estimate    SE      
+    {'Task_Adjusted'                  }         0.11236    0.068935
+    {'Real_Visual_Angle'              }           1.768    0.042931
+    {'Task_Adjusted:Real_Visual_Angle'}        -0.71271    0.035974
+
+
+    tStat      DF      pValue         Lower        Upper   
+     1.6299    1128         0.1034    -0.022899     0.24761
+     41.183    1128    4.9911e-227       1.6838      1.8522
+    -19.812    1128      3.382e-75      -0.7833    -0.64213
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (94 Levels)
+    Name1                        Name2                        Type       
+    {'Real_Visual_Angle'}        {'Real_Visual_Angle'}        {'std'}    
+
+
+    Estimate    Lower      Upper  
+    0.25645     0.20404    0.32232
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.1637      1.1157    1.2138
+
