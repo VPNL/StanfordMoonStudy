@@ -1,0 +1,42 @@
+
+lme_angle_by_altitude_and_task = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             577
+    Fixed effects coefficients           4
+    Random effects coefficients        145
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    Reported_Visual_Angle ~ 1 + Task*Altitude + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    841.91    868.05    -414.95          829.91  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                              Estimate     SE           tStat      DF     pValue     
+    {'(Intercept)'           }           1.8864     0.066787     28.244    573    1.2975e-110
+    {'Task_Adjusted'         }         -0.62865     0.076023    -8.2692    573     9.4528e-16
+    {'Altitude'              }        -0.024146    0.0026305    -9.1792    573     7.8285e-19
+    {'Task_Adjusted:Altitude'}          0.02641    0.0033498     7.8841    573     1.6079e-14
+
+
+    Lower        Upper   
+       1.7552      2.0175
+     -0.77796    -0.47933
+    -0.029313    -0.01898
+     0.019831     0.03299
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (145 Levels)
+    Name1                  Name2                  Type           Estimate    Lower      Upper  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.39483     0.34019    0.45824
+
+Group: Error
+    Name               Estimate    Lower      Upper 
+    {'Res Std'}        0.40993     0.38349    0.4382
+

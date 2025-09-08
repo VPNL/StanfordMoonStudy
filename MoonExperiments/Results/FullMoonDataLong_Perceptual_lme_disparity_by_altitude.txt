@@ -1,0 +1,301 @@
+
+lme_disparity_by_altitude = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             103
+    Fixed effects coefficients           2
+    Random effects coefficients         58
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    Disparity_VA ~ 1 + Altitude + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    405.42    415.95    -198.71          397.42  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF 
+    {'(Intercept)'}         6.6726      0.37582    17.755    101
+    {'Altitude'   }        0.06327     0.015624    4.0496    101
+
+
+    pValue        Lower       Upper   
+    7.9336e-33      5.9271      7.4181
+    0.00010078    0.032276    0.094264
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (58 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        1.672   
+
+
+    Lower     Upper 
+    1.3061    2.1404
+
+Group: Error
+    Name               Estimate    Lower      Upper 
+    {'Res Std'}        1.0266      0.82241    1.2815
+
+
+lme_disparity_by_altitude_RS = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             103
+    Fixed effects coefficients           2
+    Random effects coefficients        116
+    Covariance parameters                4
+
+<strong>Formula:</strong>
+    Disparity_VA ~ 1 + Altitude + (1 + Altitude | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    401.51    417.32    -194.76          389.51  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF 
+    {'(Intercept)'}          6.8485     0.36316    18.858    101
+    {'Altitude'   }        0.060625    0.016783    3.6124    101
+
+
+    pValue        Lower       Upper   
+    7.2798e-35      6.1281       7.569
+     0.0004747    0.027333    0.093917
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (58 Levels)
+    Name1                  Name2                  Type            Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std' }          2.4883
+    {'Altitude'   }        {'(Intercept)'}        {'corr'}        -0.76247
+    {'Altitude'   }        {'Altitude'   }        {'std' }         0.11757
+
+
+    Lower       Upper   
+      2.0206      3.0641
+    -0.87144    -0.58179
+    0.093193     0.14833
+
+Group: Error
+    Name               Estimate    Lower         Upper     
+    {'Res Std'}        0.016837    1.9687e-20    1.4399e+16
+
+
+model_comp = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                           DF    AIC       BIC       LogLik 
+    lme_disparity_by_altitude       4     405.42    415.95    -198.71
+    lme_disparity_by_altitude_RS    6     401.51    417.32    -194.76
+
+
+    LRStat    deltaDF    pValue  
+                                 
+    7.9014    2          0.019241
+
+
+lme_disparity_by_altitude = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             103
+    Fixed effects coefficients           2
+    Random effects coefficients         58
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    Disparity_VA ~ 1 + Altitude + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    405.42    415.95    -198.71          397.42  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF     pValue        Lower   
+    {'(Intercept)'}         6.6726      0.37582    17.755    101    7.9336e-33      5.9271
+    {'Altitude'   }        0.06327     0.015624    4.0496    101    0.00010078    0.032276
+
+
+    Upper   
+      7.4181
+    0.094264
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (58 Levels)
+    Name1                  Name2                  Type           Estimate    Lower     Upper 
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        1.672       1.3061    2.1404
+
+Group: Error
+    Name               Estimate    Lower      Upper 
+    {'Res Std'}        1.0266      0.82241    1.2815
+
+
+lme_disparity_by_altitude_RS = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             103
+    Fixed effects coefficients           2
+    Random effects coefficients        116
+    Covariance parameters                4
+
+<strong>Formula:</strong>
+    Disparity_VA ~ 1 + Altitude + (1 + Altitude | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    401.51    417.32    -194.76          389.51  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF     pValue        Lower   
+    {'(Intercept)'}          6.8485     0.36316    18.858    101    7.2798e-35      6.1281
+    {'Altitude'   }        0.060625    0.016783    3.6124    101     0.0004747    0.027333
+
+
+    Upper   
+       7.569
+    0.093917
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (58 Levels)
+    Name1                  Name2                  Type            Estimate    Lower   
+    {'(Intercept)'}        {'(Intercept)'}        {'std' }          2.4883      2.0206
+    {'Altitude'   }        {'(Intercept)'}        {'corr'}        -0.76247    -0.87144
+    {'Altitude'   }        {'Altitude'   }        {'std' }         0.11757    0.093193
+
+
+    Upper   
+      3.0641
+    -0.58179
+     0.14833
+
+Group: Error
+    Name               Estimate    Lower         Upper     
+    {'Res Std'}        0.016837    1.9687e-20    1.4399e+16
+
+
+model_comp = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                           DF    AIC       BIC       LogLik     LRStat    deltaDF
+    lme_disparity_by_altitude       4     405.42    415.95    -198.71                     
+    lme_disparity_by_altitude_RS    6     401.51    417.32    -194.76    7.9014    2      
+
+
+    pValue  
+            
+    0.019241
+
+
+lme_disparity_by_altitude = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             103
+    Fixed effects coefficients           2
+    Random effects coefficients         58
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    Disparity_VA ~ 1 + Altitude + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    405.42    415.95    -198.71          397.42  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF     pValue        Lower   
+    {'(Intercept)'}         6.6726      0.37582    17.755    101    7.9336e-33      5.9271
+    {'Altitude'   }        0.06327     0.015624    4.0496    101    0.00010078    0.032276
+
+
+    Upper   
+      7.4181
+    0.094264
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (58 Levels)
+    Name1                  Name2                  Type           Estimate    Lower     Upper 
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        1.672       1.3061    2.1404
+
+Group: Error
+    Name               Estimate    Lower      Upper 
+    {'Res Std'}        1.0266      0.82241    1.2815
+
+
+lme_disparity_by_altitude_RS = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             103
+    Fixed effects coefficients           2
+    Random effects coefficients        116
+    Covariance parameters                4
+
+<strong>Formula:</strong>
+    Disparity_VA ~ 1 + Altitude + (1 + Altitude | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    401.51    417.32    -194.76          389.51  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF     pValue        Lower   
+    {'(Intercept)'}          6.8485     0.36316    18.858    101    7.2798e-35      6.1281
+    {'Altitude'   }        0.060625    0.016783    3.6124    101     0.0004747    0.027333
+
+
+    Upper   
+       7.569
+    0.093917
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (58 Levels)
+    Name1                  Name2                  Type            Estimate    Lower   
+    {'(Intercept)'}        {'(Intercept)'}        {'std' }          2.4883      2.0206
+    {'Altitude'   }        {'(Intercept)'}        {'corr'}        -0.76247    -0.87144
+    {'Altitude'   }        {'Altitude'   }        {'std' }         0.11757    0.093193
+
+
+    Upper   
+      3.0641
+    -0.58179
+     0.14833
+
+Group: Error
+    Name               Estimate    Lower         Upper     
+    {'Res Std'}        0.016837    1.9687e-20    1.4399e+16
+
+
+model_comp = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                           DF    AIC       BIC       LogLik     LRStat    deltaDF
+    lme_disparity_by_altitude       4     405.42    415.95    -198.71                     
+    lme_disparity_by_altitude_RS    6     401.51    417.32    -194.76    7.9014    2      
+
+
+    pValue  
+            
+    0.019241
+
