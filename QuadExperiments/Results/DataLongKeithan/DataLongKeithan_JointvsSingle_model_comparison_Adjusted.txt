@@ -1,0 +1,30 @@
+task: 
+ans = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                                    DF    AIC       BIC   
+    lme_logPM_by_logangle                    4     247.27    264.61
+    lme_logPM_by_logangle_and_logdistance    5     245.95    267.63
+
+
+    LogLik     LRStat    deltaDF    pValue  
+    -119.64                                 
+    -117.98    3.3204    1          0.068425
+
+
+ans = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                                    DF    AIC       BIC   
+    lme_logPM_by_logdistance                 4     342.54    359.88
+    lme_logPM_by_logangle_and_logdistance    5     245.95    267.63
+
+
+    LogLik     LRStat    deltaDF    pValue
+    -167.27                               
+    -117.98    98.589    1          0     
+
