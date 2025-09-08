@@ -2,7 +2,7 @@
 
 ## MoonExperiments
 - **Code**
-  - processing file that processes `FullMoonRawData` into a csv file
+  - processing file that processes `FullMoonRawData` into code friendly `FullMoonDataLong` file
   - csv file: `FullMoonDataLong`
   - matlab code
 - **Data**
@@ -23,7 +23,7 @@
 
 ## QuadExperiments
 - **Code**
-  - processing file that processes `AllQuadRawData` into a csv file
+  - processing file that processes `AllQuadRawData` into code friendly `AllQuadDataLong` file
   - csv file: `AllQuadDataLong`
   - matlab code
 - **Data**
