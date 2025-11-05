@@ -1,0 +1,166 @@
+function visualize_PM_VA_DS_EL(expDir,DataDir,QuadFile,task,saveLME,orientation,ResultsDir)
+% function visualize_PM_VA_DS_EL(expDir,DataDir,QuadFile,task,saveLME,orientation)visualize_PM_VA_DS_EL
+% This function visualizes the effect of perceptual magnification by
+% visual_angle (VA), distance (DS), and elevation (EL)
+% for the perceptual and adjusted tasks
+% PM is estimated for the binocular perceptual task using this function:
+% PM_perceptual = 0.42 .* (VA.^(-0.083)) .* (DS.^0.368) .* ((1 + EL).^0.12);
+% PM is estimated for the monocular adjusted task using this function:
+% PM_adjusted = 0.52 .* (VA.^(-0.07)) .* (DS.^0.14) .* ((1 + EL).^0.17);
+% see results of Quad_PM_Fig3_angle_distance_elevation for the constants on
+% which the functions are evaluated on.
+% 
+% KGS
+% Nov 2025
+
+% set vars if don't exist
+if ~exist('expDir')
+    expDir='/Users/kalanit/Projects/PerceptualMagnification/Paper/ExperimentalData/QuadExperiments/';
+end
+if ~exist('QuadFile')
+    QuadFile='AllQuadDataLong916.csv'
+end
+if ~exist('task')
+    task='Perceptual'; %perceptual or % adjusted
+end  
+if ~exist('saveLME')
+    saveLME=0; % 1 save files; 0 don't save 
+end
+if ~exist('orientation')
+    orientation='horizontal'; % or 'vertical'
+end
+if ~exist('ResultsDir')
+    ResultsDir=fullfile(expDir,'Results',QuadBasename);
+end
+
+
+DataDir=fullfile(expDir,'Data');
+cd(DataDir)
+all_quad_data=readtable(QuadFile);
+QuadBasename = [erase(QuadFile,'.csv')] ;
+
+
+% Define ranges
+minVA = 0.25; maxVA = 8;
+minEL = 1;    maxEL = 16;
+minDS = 8;    maxDS = 256;
+
+% Sample uniformly in log2 space
+VA = 2.^(linspace(log2(minVA), log2(maxVA), 200));   % Visual Angle
+EL = 2.^(linspace(log2(minEL), log2(maxEL), 200));   % Elevation
+DS = 2.^(linspace(log2(minDS), log2(maxDS), 200));   % Distance
+
+% Helper for power-of-2 ticks and labels
+pow2ticks = @(mn, mx) 2.^(ceil(log2(mn)) : floor(log2(mx)));
+fmt = @(v) arrayfun(@num2str, v, 'UniformOutput', false);
+
+% --- Subplot 1: PM across Distance (x) and Visual Angle (y); Elevation = 1 ---
+[DS1, VA1] = meshgrid(DS, VA);
+E1 = 2.5;
+if strcmp(task,'Perceptual')
+    PM1 = 0.42 .* (VA1.^(-0.083)) .* (DS1.^0.368) .* ((1 + E1).^0.12);
+else
+    PM1 = 0.52 .* (VA1.^(-0.07)) .* (DS1.^0.14) .* ((1 + E1).^0.17);
+end
+
+% --- Subplot 2: PM across Distance (x) and Elevation (y); Visual Angle = 0.5 ---
+[DS2, EL2] = meshgrid(DS, EL);
+V2 = 0.5;
+if strcmp(task,'Perceptual')
+    PM2 = 0.42 .* (V2.^(-0.083)) .* (DS2.^0.368) .* ((1 + EL2).^0.12);
+else
+    PM2 = 0.52 .* (V2.^(-0.07)) .* (DS2.^0.14) .* ((1 + EL2).^0.17);
+end
+
+% --- Subplot 3: PM across Visual Angle (x) and Elevation (y); Distance = 100 
+D3 = 100;
+[VA3, EL3] = meshgrid(VA, EL);
+if strcmp(task,'Perceptual')
+    PM3 = 0.42 .* (VA3.^(-0.083)) .* (D3.^0.368) .* ((1 + EL3).^0.12);
+else
+    PM3 = 0.52 .* (VA3.^(-0.07)) .* (D3.^0.14) .* ((1 + EL3).^0.17); 
+end
+
+
+
+% Consistent color scaling
+% pm_min = min([min(PM1(:)), min(PM2(:)), min(PM3(:))]);
+% pm_max = max([max(PM1(:)), max(PM2(:)), max(PM3(:))]);
+pm_min=0.5
+pm_max=4;
+
+%% plot vertical orientation
+if strcmp(orientation,'vertical')
+    figure('Color','w','Name',[QuadBasename ' ' task],'Units','normalized','Position',[0 0 .3 1]); 
+else
+    figure('Color','w','Name',[QuadBasename ' ' task],'Units','normalized','Position',[0 0 1 .3]); 
+end
+
+colormap(cool);
+
+% --- Panel 1: x=Distance, y=Visual Angle (Elevation=1) ---
+if strcmp(orientation,'vertical')
+    subplot(3,1,1);
+else
+    subplot(1,3,1);
+end
+
+surf(DS1, VA1, PM1, 'EdgeColor','none'); view(2);
+set(gca,'XScale','log','YScale','log');
+caxis([pm_min pm_max]); axis tight; axis tight; box off;axis square;
+xlabel('Distance [m]'); ylabel('Visual Angle (°)');
+titlestr=sprintf('E = %.2f',E1);
+title(titlestr); colorbar; shading interp;
+
+xt = pow2ticks(minDS, maxDS);
+yt = pow2ticks(minVA, maxVA);
+set(gca,'XTick',xt,'XTickLabel',fmt(xt),...
+        'YTick',yt,'YTickLabel',fmt(yt),'FontName','Avenir');
+
+% --- Panel 2: x=Distance, y=Elevation (Visual Angle = 0.5) ---
+if strcmp(orientation,'vertical')
+    subplot(3,1,2);
+else
+    subplot(1,3,2);
+end
+
+
+surf(DS2, EL2, PM2, 'EdgeColor','none'); view(2);
+set(gca,'XScale','log','YScale','log');
+caxis([pm_min pm_max]); axis tight; axis tight; box off;axis square;
+xlabel('Distance [m]'); ylabel('Elevation (°)');
+titlestr=sprintf('VA = %.2f',V2); 
+title(titlestr)
+colorbar; shading interp;
+xt = pow2ticks(minDS, maxDS);
+yt = pow2ticks(minEL, maxEL);
+set(gca,'XTick',xt,'XTickLabel',fmt(xt),...
+        'YTick',yt,'YTickLabel',fmt(yt),'FontName','Avenir');
+
+
+%--- Panel 3: x=Visual Angle, y=Elevation (Distance = 100) ---
+if strcmp(orientation,'vertical')
+    subplot(3,1,3);
+else
+    subplot(1,3,3);
+end
+surf(VA3, EL3, PM3, 'EdgeColor','none'); view(2);
+set(gca,'XScale','log','YScale','log');
+caxis([pm_min pm_max]); axis tight; box off;axis square;
+xlabel('Visual Angle (°)'); ylabel('Elevation (°)');
+titlestr=sprintf('D = %d',D3);
+title(titlestr)
+colorbar; shading interp;
+
+xt = pow2ticks(minVA, maxVA);
+yt = pow2ticks(minEL, maxEL);
+set(gca,'XTick',xt,'XTickLabel',fmt(xt),...
+        'YTick',yt,'YTickLabel',fmt(yt));
+
+set(findall(gcf,'Type','axes'),'FontSize',16,'FontName','Avenir');
+
+
+%% save figure
+figName=sprintf('%s_visualize_PMbyVA_DS_EL_%s_%s_%1f.png',QuadBasename, task, orientation, E1);
+filenamePNG=fullfile(ResultsDir, figName);
+exportgraphics(gcf,filenamePNG,'Resolution',600);
