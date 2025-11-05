@@ -1,0 +1,296 @@
+
+lme_logPM_by_logAngle = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             927
+    Fixed effects coefficients           2
+    Random effects coefficients        140
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2ratio_visual_angle ~ 1 + log2real_visual_angle + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1337.1    1356.5    -664.57          1329.1  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                             Estimate    SE          tStat      DF     pValue        Lower       Upper   
+    {'(Intercept)'          }         0.97343    0.043487     22.384    925    4.9692e-89     0.88808      1.0588
+    {'log2real_visual_angle'}        -0.17477    0.012274    -14.239    925    9.6122e-42    -0.19886    -0.15068
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (140 Levels)
+    Name1                  Name2                  Type           Estimate    Lower      Upper  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.48558     0.42532    0.55438
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.4179      0.39773    0.43908
+
+
+lme_logPM_by_logDistance = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             927
+    Fixed effects coefficients           2
+    Random effects coefficients        140
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2ratio_visual_angle ~ 1 + log2distance + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1109.2    1128.5    -550.6           1101.2  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                    Estimate    SE          tStat      DF     pValue        Lower       Upper   
+    {'(Intercept)' }        -0.73657    0.085218    -8.6434    925    2.3738e-17    -0.90382    -0.56933
+    {'log2distance'}         0.32044    0.013874     23.096    925    1.5165e-93     0.29322     0.34767
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (140 Levels)
+    Name1                  Name2                  Type           Estimate    Lower      Upper  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.48157     0.42338    0.54776
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.36293     0.34542    0.38132
+
+
+lme_logPM_by_logElevation = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             927
+    Fixed effects coefficients           2
+    Random effects coefficients        140
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2ratio_visual_angle ~ 1 + log2elevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC     BIC       LogLikelihood    Deviance
+    1472    1491.3    -732             1464    
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                     Estimate    SE          tStat      DF     pValue        Lower       Upper    
+    {'(Intercept)'  }          1.2353     0.05885     20.991    925    2.5893e-80      1.1198       1.3508
+    {'log2elevation'}        -0.12042    0.017762    -6.7797    925    2.1445e-11    -0.15528    -0.085561
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (140 Levels)
+    Name1                  Name2                  Type           Estimate    Lower      Upper  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.48466     0.42289    0.55546
+
+Group: Error
+    Name               Estimate    Lower      Upper 
+    {'Res Std'}        0.45462     0.43265    0.4777
+
+
+lme_logPM_by_logAngleNDistance = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             927
+    Fixed effects coefficients           3
+    Random effects coefficients        140
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2ratio_visual_angle ~ 1 + log2real_visual_angle + log2distance + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC     LogLikelihood    Deviance
+    1010.9    1035    -500.44          1000.9  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                             Estimate    SE          tStat      DF     pValue        Lower       Upper    
+    {'(Intercept)'          }        -0.49684    0.084672    -5.8678    924    6.1497e-09    -0.66301     -0.33067
+    {'log2real_visual_angle'}        -0.10947    0.010562    -10.364    924    6.9021e-24     -0.1302    -0.088745
+    {'log2distance'         }         0.27578    0.013692     20.142    924    4.4151e-75      0.2489      0.30265
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (140 Levels)
+    Name1                  Name2                  Type           Estimate    Lower      Upper  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.49004     0.43157    0.55643
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.33987     0.32347    0.35709
+
+
+lme_logPM_by_logAngleNElevation = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             927
+    Fixed effects coefficients           3
+    Random effects coefficients        140
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2ratio_visual_angle ~ 1 + log2real_visual_angle + log2elevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC     LogLikelihood    Deviance
+    1269.8    1294    -629.9           1259.8  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                             Estimate    SE          tStat      DF     pValue        Lower       Upper   
+    {'(Intercept)'          }          1.2694    0.056858     22.325    924    1.2267e-88      1.1578      1.3809
+    {'log2real_visual_angle'}        -0.17961    0.011699    -15.353    924    1.4972e-47    -0.20257    -0.15665
+    {'log2elevation'        }        -0.13416    0.015607    -8.5963    924    3.4786e-17    -0.16479    -0.10353
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (140 Levels)
+    Name1                  Name2                  Type           Estimate    Lower      Upper  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.50945     0.44714    0.58045
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.39719     0.37801    0.41735
+
+
+lme_logPM_by_logDistanceNElevation = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             927
+    Fixed effects coefficients           3
+    Random effects coefficients        140
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2ratio_visual_angle ~ 1 + log2distance + log2elevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1023.5    1047.7    -506.76          1013.5  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                     Estimate    SE          tStat      DF     pValue         Lower      Upper  
+    {'(Intercept)'  }        -1.7405      0.13259    -13.128    924     3.2033e-36    -2.0007    -1.4803
+    {'log2distance' }         0.4359     0.017861     24.406    924    6.2624e-102    0.40085    0.47096
+    {'log2elevation'}        0.17618     0.018364     9.5934    924     7.6699e-21    0.14014    0.21222
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (140 Levels)
+    Name1                  Name2                  Type           Estimate    Lower      Upper  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.46706     0.41088    0.53091
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.34524     0.32859    0.36273
+
+
+lme_logPM_by_logAngleNDistanceNElevation = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             927
+    Fixed effects coefficients           4
+    Random effects coefficients        140
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    log2ratio_visual_angle ~ 1 + log2real_visual_angle + log2distance + log2elevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC     LogLikelihood    Deviance
+    971.03    1000    -479.52          959.03  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                             Estimate     SE          tStat      DF     pValue        Lower       Upper    
+    {'(Intercept)'          }          -1.2622     0.14326    -8.8106    923    6.0791e-18     -1.5434     -0.98106
+    {'log2real_visual_angle'}        -0.083448    0.011072    -7.5369    923    1.1479e-13    -0.10518    -0.061719
+    {'log2distance'         }          0.36786     0.01943     18.933    923    8.4907e-68     0.32973        0.406
+    {'log2elevation'        }           0.1243    0.018995     6.5438    923    9.9317e-11    0.087021      0.16158
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (140 Levels)
+    Name1                  Name2                  Type           Estimate    Lower      Upper  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.47643     0.41952    0.54107
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.33258     0.31654    0.34944
+
+
+ans = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                             DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue
+    lme_logPM_by_logAngle             4     1337.1    1356.5    -664.57                               
+    lme_logPM_by_logAngleNDistance    5     1010.9      1035    -500.44    328.25    1          0     
+
+
+ans = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                              DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue    
+    lme_logPM_by_logAngle              4     1337.1    1356.5    -664.57                                   
+    lme_logPM_by_logAngleNElevation    5     1269.8      1294     -629.9    69.321    1          1.1102e-16
+
+
+ans = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                              DF    AIC       BIC       LogLik    LRStat    deltaDF    pValue
+    lme_logPM_by_logElevation          4       1472    1491.3      -732                               
+    lme_logPM_by_logAngleNElevation    5     1269.8      1294    -629.9    204.2     1          0     
+
+
+ans = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                                 DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue
+    lme_logPM_by_logDistance              4     1109.2    1128.5     -550.6                               
+    lme_logPM_by_logDistanceNElevation    5     1023.5    1047.7    -506.76    87.673    1          0     
+
+
+ans = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                                 DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue
+    lme_logPM_by_logElevation             4       1472    1491.3       -732                               
+    lme_logPM_by_logDistanceNElevation    5     1023.5    1047.7    -506.76    450.48    1          0     
+
+
+ans = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                                       DF    AIC       BIC     LogLik     LRStat    deltaDF    pValue    
+    lme_logPM_by_logAngleNDistance              5     1010.9    1035    -500.44                                   
+    lme_logPM_by_logAngleNDistanceNElevation    6     971.03    1000    -479.52    41.853    1          9.8403e-11
+

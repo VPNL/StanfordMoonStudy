@@ -1,0 +1,39 @@
+
+lme_by_angleNtask = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations            1850
+    Fixed effects coefficients           3
+    Random effects coefficients        420
+    Covariance parameters                7
+
+<strong>Formula:</strong>
+    Reported_Visual_Angle ~ Real_Visual_Angle*Task + (Real_Visual_Angle*Task | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    5504.2    5559.4    -2742.1          5484.2  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                                       Estimate    SE          tStat      DF      pValue         Lower       Upper   
+    {'Real_Visual_Angle'              }          1.7204    0.045749     37.605    1847    2.7013e-230      1.6307      1.8101
+    {'Task_Adjusted'                  }          0.1008    0.044641     2.2581    1847       0.024056    0.013252     0.18836
+    {'Real_Visual_Angle:Task_Adjusted'}        -0.67761    0.047798    -14.176    1847     2.2124e-43    -0.77136    -0.58387
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (140 Levels)
+    Name1                                      Name2                                      Type            Estimate    Lower       Upper  
+    {'Real_Visual_Angle'              }        {'Real_Visual_Angle'              }        {'std' }         0.44596     0.38183    0.52085
+    {'Task_Adjusted'                  }        {'Real_Visual_Angle'              }        {'corr'}         0.98937     0.98564    0.99213
+    {'Real_Visual_Angle:Task_Adjusted'}        {'Real_Visual_Angle'              }        {'corr'}        -0.99492         NaN        NaN
+    {'Task_Adjusted'                  }        {'Task_Adjusted'                  }        {'std' }        0.062114    0.014091    0.27381
+    {'Real_Visual_Angle:Task_Adjusted'}        {'Task_Adjusted'                  }        {'corr'}        -0.99898         NaN        NaN
+    {'Real_Visual_Angle:Task_Adjusted'}        {'Real_Visual_Angle:Task_Adjusted'}        {'std' }         0.43403     0.36377    0.51786
+
+Group: Error
+    Name               Estimate    Lower      Upper 
+    {'Res Std'}        0.9964      0.96369    1.0302
+
