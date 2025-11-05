@@ -1,0 +1,33 @@
+Quad Experiment Adjusted task, n=140, percentage participants with slope>1: 74.29
+
+lme_by_angle = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             923
+    Fixed effects coefficients           1
+    Random effects coefficients        140
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    Reported_Visual_Angle ~ Real_Visual_Angle + (Real_Visual_Angle | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    818.17    832.66    -406.09          812.17  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                         Estimate    SE          tStat     DF     pValue    Lower    Upper 
+    {'Real_Visual_Angle'}        1.0698      0.014685    72.855    922    0         1.041    1.0987
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (140 Levels)
+    Name1                        Name2                        Type           Estimate    Lower      Upper  
+    {'Real_Visual_Angle'}        {'Real_Visual_Angle'}        {'std'}        0.1415      0.11444    0.17496
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.33212     0.31555    0.34956
+
