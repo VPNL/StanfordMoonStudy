@@ -1,0 +1,35 @@
+
+lme_PM_by_Elevation_and_task = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             631
+    Fixed effects coefficients           4
+    Random effects coefficients        157
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    Ratio_Visual_Angle ~ 1 + Task*Elevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1709.1    1735.8    -848.54          1697.1  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                               Estimate     SE           tStat      DF     pValue         Lower        Upper    
+    {'(Intercept)'            }           3.5605      0.11712       30.4    627    1.9336e-125       3.3305       3.7905
+    {'Task_Adjusted'          }          -1.3011      0.13248    -9.8211    627     2.8464e-21      -1.5613       -1.041
+    {'Elevation'              }        -0.047614    0.0047291    -10.068    627      3.329e-22    -0.056901    -0.038328
+    {'Task_Adjusted:Elevation'}         0.053407    0.0059954     8.9079    627     5.5987e-18     0.041633      0.06518
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (157 Levels)
+    Name1                  Name2                  Type           Estimate    Lower      Upper  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.72381     0.62688    0.83572
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.77083     0.72336    0.82141
+

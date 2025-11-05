@@ -1,0 +1,103 @@
+
+lme_disparity_by_Elevation = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             117
+    Fixed effects coefficients           2
+    Random effects coefficients         58
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    Disparity_VA ~ 1 + Elevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    466.75    477.79    -229.37          458.75  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF     pValue        Lower 
+    {'(Intercept)'}          6.7158     0.34539    19.444    115    3.7592e-38    6.0316
+    {'Elevation'  }        0.050989    0.017563    2.9032    115      0.004429    0.0162
+
+
+    Upper   
+      7.3999
+    0.085778
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (58 Levels)
+    Name1                  Name2                  Type           Estimate    Lower  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        1.2314      0.90563
+
+
+    Upper 
+    1.6743
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.3449      1.1235    1.6099
+
+
+lme_disparity_by_Elevation_RS = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             117
+    Fixed effects coefficients           2
+    Random effects coefficients        116
+    Covariance parameters                4
+
+<strong>Formula:</strong>
+    Disparity_VA ~ 1 + Elevation + (1 + Elevation | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC      LogLikelihood    Deviance
+    470.63    487.2    -229.31          458.63  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF     pValue       Lower   
+    {'(Intercept)'}          6.7203     0.33748    19.913    115    4.515e-39      6.0519
+    {'Elevation'  }        0.050474    0.017537    2.8782    115    0.0047693    0.015738
+
+
+    Upper   
+      7.3888
+    0.085211
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (58 Levels)
+    Name1                  Name2                  Type            Estimate     Lower    
+    {'(Intercept)'}        {'(Intercept)'}        {'std' }           1.1272       0.8024
+    {'Elevation'  }        {'(Intercept)'}        {'corr'}                1          NaN
+    {'Elevation'  }        {'Elevation'  }        {'std' }        0.0071145    0.0059533
+
+
+    Upper    
+       1.5836
+          NaN
+    0.0085021
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.3392      1.1193    1.6023
+
+
+model_comp = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                            DF    AIC       BIC       LogLik     LRStat     deltaDF
+    lme_disparity_by_Elevation       4     466.75    477.79    -229.37                      
+    lme_disparity_by_Elevation_RS    6     470.63     487.2    -229.31    0.11691    2      
+
+
+    pValue 
+           
+    0.94322
+

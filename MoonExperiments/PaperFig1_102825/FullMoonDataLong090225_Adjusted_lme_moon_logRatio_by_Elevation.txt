@@ -1,0 +1,80 @@
+task Adjusted median matched size  1.12; mean matched size  1.28 stdev  1.04 
+
+lme_by_logRatio_by_Elevation = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             314
+    Fixed effects coefficients           2
+    Random effects coefficients        157
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    logRatio ~ 1 + logElevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    328.01    343.01    -160             320.01  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                    Estimate    SE          tStat     DF     pValue       Lower       Upper  
+    {'(Intercept)' }         0.85802     0.10024      8.56    312    5.216e-16      0.6608     1.0552
+    {'logElevation'}        0.070816    0.022517    3.1451    312    0.0018205    0.026512    0.11512
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (157 Levels)
+    Name1                  Name2                  Type           Estimate    Lower      Upper  
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        0.41012     0.35833    0.46939
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.25837     0.23143    0.28845
+
+
+lme_by_logRatio_by_Elevation_RS = 
+
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             314
+    Fixed effects coefficients           2
+    Random effects coefficients        314
+    Covariance parameters                4
+
+<strong>Formula:</strong>
+    logRatio ~ 1 + logElevation + (1 + Elevation | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    327.57    350.06    -157.78          315.57  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                    Estimate    SE          tStat     DF     pValue        Lower       Upper  
+    {'(Intercept)' }         0.87191     0.10632    8.2005    312    6.3114e-15      0.6627     1.0811
+    {'logElevation'}        0.067592    0.022531         3    312     0.0029174    0.023261    0.11192
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (157 Levels)
+    Name1                  Name2                  Type            Estimate     Lower        Upper   
+    {'(Intercept)'}        {'(Intercept)'}        {'std' }          0.49417       0.4043     0.60401
+    {'Elevation'  }        {'(Intercept)'}        {'corr'}               -1          NaN         NaN
+    {'Elevation'  }        {'Elevation'  }        {'std' }        0.0041365    0.0016591    0.010313
+
+Group: Error
+    Name               Estimate    Lower      Upper  
+    {'Res Std'}        0.25356     0.22708    0.28313
+
+RandomSlopes vs RandomIntercepts model comparison 
+
+model_comp = 
+
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model                              DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue 
+    lme_by_logRatio_by_Elevation       4     328.01    343.01       -160                                
+    lme_by_logRatio_by_Elevation_RS    6     327.57    350.06    -157.78    4.4434    2          0.10842
+
