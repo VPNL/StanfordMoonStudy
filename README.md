@@ -5,6 +5,7 @@
   - processing file that processes `FullMoonRawData` into code friendly `FullMoonDataLong` file
   - csv file: `FullMoonDataLong`
   - matlab code
+  - includes utility functions (The same ones used for QuadExperiments)
 - **Data**
   - `FullMoonRawData`
 - **ExperimentalScripts**
@@ -26,6 +27,7 @@
   - processing file that processes `AllQuadRawData` into code friendly `AllQuadDataLong` file
   - csv file: `AllQuadDataLong`
   - matlab code
+  - includes utility functions (The same ones used for MoonExperiments)
 - **Data**
   - `AllQuadRawData`
 - **ExperimentalScripts**
