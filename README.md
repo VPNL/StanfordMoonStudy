@@ -6,6 +6,7 @@
   - csv file: `FullMoonDataLong`
   - matlab code
   - includes utility functions (The same ones used for QuadExperiments)
+  - includes NewColormaps that define some colormaps used in the graphs (The same ones used for QuadExperiments)
 - **Data**
   - `FullMoonRawData`
 - **ExperimentalScripts**
@@ -28,6 +29,7 @@
   - csv file: `AllQuadDataLong`
   - matlab code
   - includes utility functions (The same ones used for MoonExperiments)
+  - includes NewColormaps that define some colormaps used in the graphs (The same ones used for QuadExperiments)
 - **Data**
   - `AllQuadRawData`
 - **ExperimentalScripts**
