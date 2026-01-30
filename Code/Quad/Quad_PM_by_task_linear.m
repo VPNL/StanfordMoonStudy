@@ -1,0 +1,299 @@
+function [lme_PM_by_Angle,lme_PM_by_Distance,lme_PM_by_Elevation,...
+    lme_PM_by_AngleNDistance, lme_PM_by_AngleNElevation, lme_PM_by_DistanceNElevation,...
+    lme_PM_by_AngleNDistanceNElevation]=Quad_PM_by_task_linear(tbl,tblName,ResultsDir,saveLME,colormap, sorted_idx)
+% [lme_PM_by_Angle,lme_PM_by_Distance,lme_PM_by_Elevation,...
+% lme_PM_by_AngleNDistance, lme_PM_by_AngleNElevation, lme_PM_by_DistanceNElevation,...
+% lme_PM_by_AngleNDistanceNElevation]=Quad_PM_by_task(tbl,tblName,ResultsDir,saveLME,colormap, sorted_idx)
+% 
+% This function gets the task relevant data of the Stanford Quad Experiment
+% and plots the relation 
+% between (PM) and each of (VA), (D), (E)
+% then uses fitlme to determine if all factors are signficant 
+% and estimates the coeffients of the function:
+% PM=C*VA^n1*D^n2*(1+E)^n3
+% PM: Perceptual magnification
+% VA: visual angle (degrees)
+% D: Distance (meters)
+% E: Elevation in degrees (as Elevation is relative to the ground and can
+% start at zero we add a regularization term (1)
+% 
+% tbl:        data table
+% tblname:    table name that indicates the original file and the task
+% ResultsDir: directory where the results are saved
+% saveLME:    save flag 1: saves the fitlme results; 0: doesn't save
+% colormap:   which colormap to use for scatter plot  
+% sorted_idx: index of sorted colormap 
+% 
+% It returns all of the lme it estimates on the way
+% single factor lmes
+% lme_PM_by_Angle,lme_PM_by_Distance,lme_PM_by_Elevation,...
+% dual factor lmes
+% lme_PM_by_AngleNDistance, lme_PM_by_AngleNElevation, lme_PM_by_DistanceNElevation,...
+% tripple factor lme
+% lme_PM_by_AngleNDistanceNElevation
+% KGS Nov 2025
+%
+% defaults
+% if ~exist('dataDir')
+%     dataDir='/Users/kalanit/Projects/PerceptualMagnification/QuadExperiments/';
+% end
+% 
+% 
+
+
+%% find max angle and maxRatio for graphs
+
+uniqueID=unique(tbl.ID);
+nsubjects=length(uniqueID);
+maxRealAngle=max(tbl.Real_Visual_Angle);
+minRealAngle=min(tbl.Real_Visual_Angle);
+maxAngle=max(tbl.Reported_Visual_Angle);
+minAngle=min(tbl.Reported_Visual_Angle);
+maxRatio=max(tbl.Ratio_Visual_Angle);
+minRatio=min(tbl.Ratio_Visual_Angle);
+maxDistance=max(tbl.Distance);
+minDistance=min(tbl.Distance);
+maxPMLim=16;
+minPMLim=.25;
+if maxRatio>maxPMLim
+    fprintf(1,'Warning: max Ratio %.2f exceeds Ylim max %.2f\n', maxRatio, maxPMLim)
+end
+if minRatio<minPMLim
+    fprintf(1,'Warning: max Ratio %.2f less than Ylim ,om %.2f\n', minRatio, monPMLim)
+end
+
+
+lme_PM_by_Angle= fitlme(tbl,'Ratio_Visual_Angle ~ Real_Visual_Angle +  (1| ID)');
+lme_PM_by_Distance= fitlme(tbl,'Ratio_Visual_Angle ~ Distance +  (1| ID)');
+lme_PM_by_Elevation= fitlme(tbl,'Ratio_Visual_Angle ~ Elevation +  (1| ID)');
+
+lme_PM_by_AngleNDistance= fitlme(tbl,'Ratio_Visual_Angle ~ Real_Visual_Angle * Distance + (1| ID)');
+lme_PM_by_AngleNElevation= fitlme(tbl,'Ratio_Visual_Angle ~ Real_Visual_Angle * Elevation + (1| ID)');
+lme_PM_by_DistanceNElevation= fitlme(tbl,'Ratio_Visual_Angle ~ Distance * Elevation + (1| ID)');
+
+lme_PM_by_AngleNDistanceNElevation= fitlme(tbl,'Ratio_Visual_Angle ~ Real_Visual_Angle * Distance * Elevation+ (1| ID)');
+if saveLME
+    savelmefile=fullfile(ResultsDir, [tblName '.txt']);
+    diary(savelmefile)
+    lme_PM_by_Angle
+    fprintf(' PM by  angle:                          Rsq=%.3f RsqAdjusted=%.3f\n',lme_PM_by_Angle.Rsquared.Ordinary,lme_PM_by_Angle.Rsquared.Adjusted);
+    lme_PM_by_Distance
+    fprintf(' PM by  Distance                        Rsq=%.3f RsqAdjusted=%.3f\n',lme_PM_by_Distance.Rsquared.Ordinary,lme_PM_by_Distance.Rsquared.Adjusted);
+    lme_PM_by_Elevation
+    fprintf(' PM by  Elevation                       Rsq=%.3f RsqAdjusted=%.3f\n',lme_PM_by_Elevation.Rsquared.Ordinary,lme_PM_by_Elevation.Rsquared.Adjusted);
+    lme_PM_by_AngleNDistance
+    lme_PM_by_AngleNElevation
+    lme_PM_by_DistanceNElevation
+    lme_PM_by_AngleNDistanceNElevation
+    fprintf(' PM by  visualangle, Distance,Elevation Rsq=%.3f RsqAdjusted=%.3f\n',...
+        lme_PM_by_AngleNDistanceNElevation.Rsquared.Ordinary,lme_PM_by_AngleNDistanceNElevation.Rsquared.Adjusted);
+  
+    % testing if models with 2 parameters better explain the data
+    compare(lme_PM_by_Angle,lme_PM_by_AngleNDistance) 
+    compare(lme_PM_by_Angle,lme_PM_by_AngleNElevation) 
+    compare(lme_PM_by_Distance,lme_PM_by_AngleNDistance)
+    compare(lme_PM_by_Distance,lme_PM_by_DistanceNElevation)
+    compare(lme_PM_by_Elevation,lme_PM_by_AngleNElevation) 
+    compare(lme_PM_by_Elevation,lme_PM_by_DistanceNElevation)
+    
+    % test if model with 3 parameters is better than models with 2
+    % parameters
+    compare(lme_PM_by_AngleNDistance,lme_PM_by_AngleNDistanceNElevation) 
+    compare(lme_PM_by_AngleNElevation,lme_PM_by_AngleNDistanceNElevation) 
+    compare(lme_PM_by_DistanceNElevation,lme_PM_by_AngleNDistanceNElevation) 
+    
+    % compare model with all 3 parameters compared to single parameter
+    % modes
+    compare(lme_PM_by_Angle,lme_PM_by_AngleNDistanceNElevation) 
+    compare(lme_PM_by_Distance,lme_PM_by_AngleNDistanceNElevation) 
+    compare(lme_PM_by_Elevation,lme_PM_by_AngleNDistanceNElevation)  
+    fprintf(' PM by Angle Distance and Elevation: Rsq=%.3f RsqAdjusted=%.3f\n',lme_PM_by_AngleNDistanceNElevation.Rsquared.Ordinary,lme_PM_by_AngleNDistanceNElevation.Rsquared.Adjusted);
+    diary off
+end
+
+
+%%
+% set sorted colormap
+ID=tbl.ID;
+clear subjectcolor
+for c=1:length(ID)
+    cindex=find(uniqueID==ID(c));
+    sorted_cindex=find(sorted_idx==cindex);
+    subjectcolor(c,:)=colormap(sorted_cindex,:);
+end
+
+
+% plot results
+figh=figure('Color',[1 1 1],'Units','normalized','Position',[0 0 1 .7],'Name',tblName)
+markerSize=50;
+
+mean_intercept_angle=lme_PM_by_Angle.Coefficients.Estimate(1);
+mean_slope_angle=lme_PM_by_Angle.Coefficients.Estimate(2);
+pval_angle=lme_PM_by_Angle.Coefficients.pValue(2);
+
+% get upper and lower coeffiecents
+mean_intercept_angleL=lme_PM_by_Angle.Coefficients.Lower(1)
+mean_slope_angleL=lme_PM_by_Angle.Coefficients.Lower(2)
+mean_intercept_angleU=lme_PM_by_Angle.Coefficients.Upper(1)
+mean_slope_angleU=lme_PM_by_Angle.Coefficients.Upper(2)
+% 
+% set plotting range
+xlinerange=(minRealAngle):.01:(maxRealAngle);
+ylinerange=zeros(size(xlinerange));
+xvectoru=xlinerange;
+xvectord = sort(xvectoru, 'descend');
+
+% fixed effects estimate
+y_fit =mean_intercept_angle+mean_slope_angle*xlinerange;
+
+
+% fixed effects confidence interval
+yvector1=mean_slope_angleL*xvectoru+mean_intercept_angleL;
+yvector2=mean_slope_angleU*xvectord+mean_intercept_angleU;
+xvector=[xvectoru xvectord];
+yvector=[yvector1 yvector2];
+
+subplot(1,3,1); 
+hold on 
+scatter(tbl.Real_Visual_Angle, tbl.Ratio_Visual_Angle, markerSize, subjectcolor, 'filled');    % individual data scatter; colroed by subject color
+plot (xlinerange, ylinerange,'k:','LineWidth',1);% plot no magnification line
+plot (xlinerange, mean_intercept_angle+mean_slope_angle*xlinerange,'k-','LineWidth',3); % fixed effect
+fill(xvector, yvector, 1,'facecolor', 'k', 'edgecolor', 'none', 'facealpha', 0.4); % confidence interval
+
+tickdelta=[(maxRealAngle)-(minRealAngle)]/3;
+%set(gca,'XTick',(minRealAngle):tickdelta:(maxRealAngle),'XTickLabel',round(2.^[(minRealAngle):tickdelta:(maxRealAngle)],1),'XTickLabelRotation',90);
+
+% set(gca,'XTick',(minRealAngle):tickdelta:(maxRealAngle),'XTickLabel',round([(minRealAngle):tickdelta:(maxRealAngle)],1));
+% set(gca,'YTick',(minPMLim):1:(maxPMLim) ,'YTickLabel',([(minPMLim):1: ceil((maxPMLim))]));
+xlim([(minRealAngle*.95) (maxRealAngle*1.05)]);
+ylim([(minPMLim) ceil((maxPMLim))]);
+set(gca,'FontName','Avenir','FontSize', 20)
+xlabel ({'Real Visual Angle [degree]',' scale'},'FontSize', 24)
+ylabel ({'Perceptual Magnification', ' scale'},'FontSize', 24)
+
+titlestr=sprintf('PM=%.2f+(%.3f)VA\n p=%.2e \n n=%d',mean_intercept_angle,mean_slope_angle,pval_angle, nsubjects);
+title(titlestr,'FontSize',18,'FontWeight','normal')
+
+% plot PM by Distance different colors per subject sorted by PM in perceptual task
+%
+mean_slope_Distance=lme_PM_by_Distance.Coefficients.Estimate(2);
+mean_intercept_Distance=lme_PM_by_Distance.Coefficients.Estimate(1);
+pval_Distance=lme_PM_by_Distance.Coefficients.pValue(2);
+
+% get upper and lower coeffiecents
+mean_intercept_DistanceL=lme_PM_by_Distance.Coefficients.Lower(1)
+mean_slope_DistanceL=lme_PM_by_Distance.Coefficients.Lower(2)
+mean_intercept_DistanceU=lme_PM_by_Distance.Coefficients.Upper(1)
+mean_slope_DistanceU=lme_PM_by_Distance.Coefficients.Upper(2)
+% 
+% set plotting range
+xlinerange=(minDistance-1):.05:(maxDistance+1); 
+ylinerange=zeros(size(xlinerange));
+xvectoru=xlinerange;
+xvectord = sort(xvectoru, 'descend');
+
+% fixed effects confidence interval
+yvector1=mean_slope_DistanceL*xvectoru+mean_intercept_DistanceL;
+yvector2=mean_slope_DistanceU*xvectord+mean_intercept_DistanceU;
+xvector=[xvectoru xvectord];
+yvector=[yvector1 yvector2];
+
+subplot(1,3,2); 
+hold on 
+scatter(tbl.Distance, tbl.Ratio_Visual_Angle, markerSize, subjectcolor, 'filled'); % individual subject data
+plot (xlinerange, ylinerange,'k:','LineWidth',1);% plot no magnification line
+plot (xlinerange, mean_intercept_Distance+mean_slope_Distance*xlinerange,'k-','LineWidth',3); % fixed effects linear estimate
+fill(xvector, yvector, 1,'facecolor', 'k', 'edgecolor', 'none', 'facealpha', 0.4); % confidence interval on fixed effect
+
+%set(gca,'XTick',(minDistance):.05:(maxDistance),'XTickLabel',2.^[(minDistance):1:(maxDistance)],'XTickLabelRotation',90);
+tickdelta=[(maxDistance)-(minDistance)]/3;
+%set(gca,'XTick',(minDistance):tickdelta:(maxDistance),'XTickLabel', round(2.^[(minDistance):tickdelta:(maxDistance)],1),'XTickLabelRotation',90);
+% set(gca,'XTick',(minDistance):tickdelta:(maxDistance),'XTickLabel', round(2.^[(minDistance):tickdelta:(maxDistance)],0));
+% set(gca,'YTick',(minPMLim):1:(maxPMLim) ,'YTickLabel',2.^([(minPMLim) :1: ceil((maxPMLim))]));
+xlim([(minDistance*.95) (maxDistance*1.05)]);
+ylim([(minPMLim) ceil((maxPMLim))])
+set(gca,'FontName','Avenir','FontSize', 20)
+xlabel ({'Distance [m]', ' scale'},'FontSize', 24)
+ylabel ({'Perceptual Magnification', ' scale'},'FontSize', 24)
+
+ax = gca;
+ax.YColor = 'w';
+mean_slope=lme_PM_by_Distance.Coefficients.Estimate(2);
+pval=lme_PM_by_Distance.Coefficients.pValue(2);
+titlestr=sprintf('PM=%.2f+(%.3f)D\n p=%.2e \n n=%d',mean_intercept_Distance,mean_slope_Distance,pval_Distance, nsubjects);
+title(titlestr,'FontSize',18,'FontWeight','normal')
+
+%% plot by Elevation
+mean_slope_Elevation=lme_PM_by_Elevation.Coefficients.Estimate(2);
+mean_intercept_Elevation=lme_PM_by_Elevation.Coefficients.Estimate(1);
+pval_Elevation=lme_PM_by_Elevation.Coefficients.pValue(2);
+
+
+% get upper and lower coeffiecents
+mean_intercept_ElevationL=lme_PM_by_Elevation.Coefficients.Lower(1)
+mean_slope_ElevationL=lme_PM_by_Elevation.Coefficients.Lower(2)
+mean_intercept_ElevationU=lme_PM_by_Elevation.Coefficients.Upper(1)
+mean_slope_ElevationU=lme_PM_by_Elevation.Coefficients.Upper(2)
+% 
+% set plotting range
+minElevation=min(tbl.Elevation);
+maxElevation=max(tbl.Elevation);
+fprintf('Elevation [%.2f, %.f]\n',minElevation,maxElevation)'
+xlinerange=minElevation:.05:maxElevation; 
+ylinerange=zeros(size(xlinerange));
+
+xvectoru=xlinerange;
+xvectord = sort(xvectoru, 'descend');
+
+% fixed effects confidence interval
+yvector1=mean_slope_ElevationL*xvectoru+mean_intercept_ElevationL;
+yvector2=mean_slope_ElevationU*xvectord+mean_intercept_ElevationU;
+xvector=[xvectoru xvectord];
+yvector=[yvector1 yvector2];
+
+subplot(1,3,3); 
+hold on 
+scatter(tbl.Elevation, tbl.Ratio_Visual_Angle, markerSize, subjectcolor, 'filled');
+
+plot (xlinerange, ylinerange,'k:','LineWidth',1);% plot no magnification line
+plot (xlinerange, mean_intercept_Elevation+mean_slope_Elevation*xlinerange,'k-','LineWidth',3); % fixed effects linear estimate
+fill(xvector, yvector, 1,'facecolor', 'k', 'edgecolor', 'none', 'facealpha', 0.4); % confidence interval on fixed effect
+
+%set(gca,'XTick',0:.11:maxElevation,'XTickLabel',2.^[(minDistance):1:(maxDistance)],'XTickLabelRotation',0);
+% set(gca,'YTick',(minPMLim):1:(maxPMLim) ,'YTickLabel',2.^([(minPMLim) :1: ceil((maxPMLim))]));
+% %set(gca,'XTick',minElevation:1:maxElevation,'XTickLabel',2.^[minElevation:1:maxElevation],'XTickLabelRotation',0);
+% set(gca,'XTick',minElevation:1:maxElevation,'XTickLabel',round(2.^[(minElevation):1:(maxElevation)]-1,1),'XTickLabelRotation',0);
+set(gca,'FontName','Avenir','FontSize', 20)
+ylim([(minPMLim) ceil((maxPMLim))])
+xlabel ({'Elevation [degree]','scale'},'FontSize', 24)
+ylabel ({'Perceptual Magnification' ,' scale'},'FontSize', 24)
+
+ax = gca;
+ax.YColor = 'w';
+%titlestr=sprintf('slope=%-.2f, p=%-.2e \n n=%d',mean_slope_Elevation,pval_Elevation, nsubjects);
+titlestr=sprintf('PM=%.2f+(%.3f)E\n p=%.2e \n n=%d',mean_intercept_Elevation,mean_slope_Elevation,pval_Elevation, nsubjects);
+title(titlestr,'FontSize',18,'FontWeight','normal')
+
+%% save figure
+filenamePNG=fullfile(ResultsDir, [tblName '_linearfit.png']);
+exportgraphics(figh,filenamePNG,'Resolution',600);
+
+%% full model
+
+intercept_fe=lme_PM_by_AngleNDistanceNElevation.Coefficients.Estimate(1);
+VA_fe=lme_PM_by_AngleNDistanceNElevation.Coefficients.Estimate(2);
+pval_VA=lme_PM_by_AngleNDistanceNElevation.Coefficients.pValue(2);
+Distance_fe=lme_PM_by_AngleNDistanceNElevation.Coefficients.Estimate(3);
+pval_Distance=lme_PM_by_AngleNDistanceNElevation.Coefficients.pValue(3);
+Elevation_fe=lme_PM_by_AngleNDistanceNElevation.Coefficients.Estimate(4);
+pval_Elevation=lme_PM_by_AngleNDistanceNElevation.Coefficients.pValue(4);
+% full formula
+fprintf(1,'PM=%.2f+(%.2f)visual_angle)+(%.2f)Distance+(%.3f)Elevation\n p_VA=%-.2e, p_Distance=%-.2e, p_Elevation=%-.2e n=%d\n',...
+    intercept_fe,VA_fe,Distance_fe,Elevation_fe,pval_VA,pval_Distance,pval_Elevation, nsubjects);
+
+
+
+
+
+
+% 
