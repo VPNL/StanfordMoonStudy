@@ -1,20 +1,6 @@
 # Perceptual-Magnification
 
 ## Code
-- **DateProcessing**
-  - processing files that processes StanfordMoonStudy and StanfordQuadStudy into format usable for later codes.
-- **Moon**
-  - Code related to StanfordMoonStudy
-- **Quad**
-  - Code related to StanfordQuadStudy
-- **Quad_Test**
-  - Code that combine and fit data across both experiments
-- **Combined**
-  - Code related to combined data from StanfordMoonStudy and StanfordQuadStudy
-- **NewColormaps**
-  - Custom Colormaps created for visualization.
-- **Utils**
-  - Utility functions used for the rest of the code base.
 
 ## Data
 - To Be uploaded
