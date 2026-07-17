@@ -1,0 +1,48 @@
+﻿Object,Variable name in data csv,Diameter/height [m],Distance [m],Visual angle [degrees]
+Lamp bulb 1 ,Lamp1 ,0.406,62.80,0.37
+Lamp bulb 2,Lamp2,0.406,20.20,1.15
+Lamp bulb 3,Lamp3,0.406,50.27,0.46
+Lamp bulb 4,Lamp4 ,0.406,34.21,0.68
+Lamp bulb 5,Lamp5,0.406,16.90,1.38
+Lamp bulb 6,Lamp6,0.406,29.80,0.78
+Lamp bulb 7,Lamp7,0.406,61.10,0.38
+,,,,
+Lamp bulb 1a,Lamp1a,0.406,66.70,0.35
+Lamp bulb 2a,Lamp2a,0.406,22.50,1.03
+Lamp bulb 3a,Lamp3a,0.406,48.90,0.48
+Lamp bulb 4a,Lamp4a,0.406,32.30,0.72
+,,,,
+Lamp post 1 ,Stick1 ,2.591,62.80,2.36
+Lamp post 2,Stick2,2.591,20.20,7.34
+Lamp post 3,Stick3,2.591,50.27,2.95
+Lamp post 4,Stick4 ,2.591,34.21,4.34
+Lamp post 1a,Stick1a,2.591,66.70,2.23
+Lamp post 2a,Stick2a,2.591,22.50,6.59
+Lamp post 3a,Stick3a,2.591,48.90,3.03
+Lamp post 4a,Stick4a,2.591,32.30,4.59
+Lamp post 5b,Stick5b,2.896,23.18,7.15
+Lamp post 7,Stick7,2.896,61.10,2.71
+Lamp post 8,Stick8,2.896,107.00,1.55
+Lamp post 9,Stick9,2.896,151.00,1.10
+Lamp post 9a,Stick9,2.896,151.89,1.09
+,,,,
+Inflatable moon ball 1,Moon1,0.550,60.60,0.52
+Inflatable moon ball 2,Moon2,0.550,20.80,1.51
+Inflatable moon ball 3,Moon3,0.550,47.20,0.67
+Inflatable moon ball 4,Moon4,0.550,32.70,0.96
+Inflatable spike ball,Spikeball,0.226,15.20,1.01
+,,,,
+Moon info based on https://www.timeanddate.com/moon/@5398563 ,,,,
+"Full moon May 22, 2024",moon ,3476000,395235574,0.5039
+"Full moon July 20, 2024",moon ,3476000,374537801,0.5317
+"Full moon July 21, 2024",moon ,3476000,370232806,0.5379
+"Full moon August 19, 2024",moon ,3476000,363196754,0.5483
+"Full moon August 20, 2024",moon ,3476000,360805269,0.552
+"Full moon October 16, 2024",moon ,3476000,357487606,0.5571
+"Full moon October 17, 2024",moon ,3476000,357251837,0.5575
+"Full moon November 15, 2024",moon ,3476000,361929396,0.5503
+"Full moon January 12, 2025",moon ,3476000,379143744,0.5253
+"Full moon January 13, 2025",moon ,3476000,381133697,0.5225
+"Full moon May 13, 2025",moon ,3476000,404420100,0.4925
+"Full moon August 7, 2025",moon ,3476000,386624779,0.5151
+"Full moon August 9, 2025",moon ,3476000,379991868,0.5241

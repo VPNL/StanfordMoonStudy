@@ -1,0 +1,5 @@
+Pass,ID,Version,Measurement,Object,Real_Visual_Angle,Elevation,Distance,SingletonParameters,SingletonN_ID
+1,32,,Stick1_Perceptual_VA,,2.22523607733862,2.2343469966129,66.750748952802,Real_Visual_Angle; Distance; Elevation,Real_Visual_Angle=1; Distance=1; Elevation=1
+1,32,,Stick2_Perceptual_VA,,6.59014302579263,6.59764087877339,22.6499996856512,Real_Visual_Angle; Distance; Elevation,Real_Visual_Angle=1; Distance=1; Elevation=1
+1,32,,Stick3_Perceptual_VA,,3.03491199445318,3.04633960593711,48.9691993579638,Real_Visual_Angle; Distance; Elevation,Real_Visual_Angle=1; Distance=1; Elevation=1
+1,32,,Stick4_Perceptual_VA,,4.59326303517683,4.60635130800869,32.4046676539044,Real_Visual_Angle; Distance; Elevation,Real_Visual_Angle=1; Distance=1; Elevation=1

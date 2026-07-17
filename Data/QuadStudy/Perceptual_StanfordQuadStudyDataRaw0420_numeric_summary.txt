@@ -1,0 +1,196 @@
+Table Summary Report
+====================
+
+Source: /Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/Perceptual_StanfordQuadStudyDataRaw0420.csv
+Generated: 2026-07-16 16:20:17
+Rows: 162
+Unique IDs: 162
+Date format: MM/dd/yyyy
+Time format: HH:mm:ss
+Time day starts at: 12:00:00
+Columns summarized: 181
+
+Parameter                                 Min           Max                  Median        Mean          Std            Notes                 
+--------------------------------------    ----------    -----------------    ----------    ----------    -----------    ----------------------
+Age                                       17            82                   22            25.9114       11.2394                              
+Date                                      02/16/0024    12/15/0025           04/04/0025    01/27/0025    4904:18:22                           
+Time                                      12:09:00      11:48:00 (+1 day)    14:50:30      18:31:54      08:05:48       2 invalid excluded: NA
+Version                                   1             3                    3             2.29565       0.86829                              
+Lamp1 Estimate Template Number            4             15                   10            9.70968       2.78321                              
+Lamp1 Estimate Template Size (cm)         0.52          2.44                 1.22          1.25742       0.509594                             
+Lamp1 Estimate Distance (cm)              35            76                   59            58.0323       9.97241                              
+Lamp1 Width (cm)                          40.64         40.64                40.64         40.64         1.42615e-14                          
+Lamp1 Distance (cm)                       6280          6280                 6280          6280          0                                    
+Lamp2 Estimate Template Number            10            18                   14            14.4839       2.26379                              
+Lamp2 Estimate Template Size (cm)         1.22          3.8                  2.15          2.4071        0.758917                             
+Lamp2 Estimate Distance (cm)              35            76                   59            58.0323       9.97241                              
+Lamp2 Width (cm)                          40.64         40.64                40.64         40.64         1.42615e-14                          
+Lamp2 Distance (cm)                       2020          2020                 2020          2020          0                                    
+Lamp3 Estimate Template Number            3             17                   12            11.0645       3.20349                              
+Lamp3 Estimate Template Size (cm)         0.49          3.3                  1.63          1.55548       0.641082                             
+Lamp3 Estimate Distance (cm)              35            76                   59            58.0323       9.97241                              
+Lamp3 Width (cm)                          40.64         40.64                40.64         40.64         1.42615e-14                          
+Lamp3 Distance (cm)                       5027          5027                 5027          5027          0                                    
+Lamp4 Estimate Template Number            7             18                   13            12.871        2.69248                              
+Lamp4 Estimate Template Size (cm)         0.78          3.8                  1.9           1.94387       0.700251                             
+Lamp4 Estimate Distance (cm)              35            76                   59            58.0323       9.97241                              
+Lamp4 Width (cm)                          40.64         40.64                40.64         40.64         1.42615e-14                          
+Lamp4 Distance (cm)                       3421          3421                 3421          3421          0                                    
+Lamp1a Estimate Template Number           3             17                   10            9.53846       3.25071                              
+Lamp1a Estimate Template Size (cm)        0.49          3.3                  1.22          1.27115       0.578825                             
+Lamp1a Estimate Distance (cm)             50.5          91                   72.35         71.3677       8.43432                              
+Lamp1a Width (cm)                         40.64         40.64                40.64         40.64         1.42615e-14                          
+Lamp1a Distance (cm)                      6670          6670                 6670          6670          0                                    
+Lamp1a 1st Caliper Aperture (cm)          4.318         7.077                6.1285        5.993         0.712321                             
+Lamp1a 1st Caliper Distance (cm)          31.2          67.3                 46.2          46.3688       6.80784                              
+Lamp2a Estimate Template Number           7             20                   14            14.1176       2.51115                              
+Lamp2a Estimate Template Size (cm)        0.78          4.7                  2.15          2.29706       0.790659                             
+Lamp2a Estimate Distance (cm)             50.5          85                   71            69.8167       7.57247                              
+Lamp2a Width (cm)                         40.64         40.64                40.64         40.64         1.42615e-14                          
+Lamp2a Distance (cm)                      2250          2250                 2250          2250          0                                    
+Lamp2a 1st Caliper Aperture (cm)          2.881         7.471                6.5735        6.41203       0.919544                             
+Lamp2a 1st Caliper Distance (cm)          35.4          63.2                 46            46.1531       5.70416                              
+Lamp3a Estimate Template Number           4             17                   10.5          10.5385       2.84544                              
+Lamp3a Estimate Template Size (cm)        0.52          3.3                  1.33          1.42788       0.569438                             
+Lamp3a Estimate Distance (cm)             50.5          88.5                 72.05         70.6298       8.15032                              
+Lamp3a Width (cm)                         40.64         40.64                40.64         40.64         1.42615e-14                          
+Lamp3a Distance (cm)                      4890          4890                 4890          4890          0                                    
+Lamp3a 1st Caliper Aperture (cm)          3.731         7.499                6.305         6.25756       0.728314                             
+Lamp3a 1st Caliper Distance (cm)          31.7          59.1                 48.75         48.3116       6.24526                              
+Lamp4a Estimate Template Number           7             18                   12.5          12.7115       2.58454                              
+Lamp4a Estimate Template Size (cm)        0.78          3.8                  1.765         1.91462       0.714166                             
+Lamp4a Estimate Distance (cm)             50.5          85.5                 72.25         70.6375       8.0767                               
+Lamp4a Width (cm)                         40.64         40.64                40.64         40.64         1.42615e-14                          
+Lamp4a Distance (cm)                      3230          3230                 3230          3230          0                                    
+Lamp4a 1st Caliper Aperture (cm)          2.743         7.68                 6.406         6.36253       0.895272                             
+Lamp4a 1st Caliper Distance (cm)          32.9          66.8                 48.95         48.5375       7.94192                              
+Lamp5 Estimate Template Number            8             20                   15            14.8154       2.75507                              
+Lamp5 Estimate Template Size (cm)         0.96          4.7                  2.44          2.54          0.940065                             
+Lamp5 Estimate Distance (cm)              49.6          84                   66.9          67.8831       7.72774                              
+Lamp5 Width (cm)                          40.64         40.64                40.64         40.64         2.85098e-14                          
+Lamp5 Distance (cm)                       1690          1690                 1690          1690          0                                    
+Lamp5 1st Caliper Aperture (cm)           6.011         9.03                 6.98          6.90789       0.603998                             
+Lamp5 1st Caliper Distance (cm)           14.8          56.7                 44.5          43.0844       8.69916                              
+Lamp5 2nd Caliper Aperture (cm)           4.99          9.08                 6.812         6.83471       0.711039                             
+Lamp5 2nd Caliper Distance (cm)           13.4          55.2                 44.5          43.0067       8.80365                              
+Lamp6 Estimate Template Number            5             20                   12            12.2923       2.9247                               
+Lamp6 Estimate Template Size (cm)         0.65          4.7                  1.63          1.82754       0.819434                             
+Lamp6 Estimate Distance (cm)              50.1          85                   67            68.2954       7.92783                              
+Lamp6 Width (cm)                          40.64         40.64                40.64         40.64         2.85098e-14                          
+Lamp6 Distance (cm)                       2980          2980                 2980          2980          0                                    
+Lamp6 1st Caliper Aperture (cm)           5.41          7.565                6.429         6.49147       0.486815                             
+Lamp6 1st Caliper Distance (cm)           18.3          62.8                 46            44.7422       10.4592                              
+Lamp6 2nd Caliper Aperture (cm)           4.682         11.45                6.525         6.58269       0.936113                             
+Lamp6 2nd Caliper Distance (cm)           13            61                   48            45.9467       10.3024                              
+Lamp7 Estimate Template Number            2             19                   10            9.66154       3.24652                              
+Lamp7 Estimate Template Size (cm)         0.39          3.3                  0.98          1.17477       0.529201                             
+Lamp7 Estimate Distance (cm)              52.3          86                   69.4          69.2231       8.07045                              
+Lamp7 Width (cm)                          40.64         40.64                40.64         40.64         2.85098e-14                          
+Lamp7 Distance (cm)                       6110          6110                 6110          6110          0                                    
+Lamp7 1st Caliper Aperture (cm)           4.48          9.05                 6.291         6.32849       0.744643                             
+Lamp7 1st Caliper Distance (cm)           19.4          57.5                 47.5          45.8289       8.45917                              
+Lamp7 2nd Caliper Aperture (cm)           4.3           10.45                6.336         6.31298       0.887861                             
+Lamp7 2nd Caliper Distance (cm)           13            60.4                 47.6          45.5978       9.89799                              
+Stick1 Estimate Template Number           3             17                   11            10.5625       3.33058                              
+Stick1 Estimate Template Size (cm)        2.08          13                   6.1           6.11344       2.72078                              
+Stick1 Estimate Distance (cm)             35            76                   58.5          57.9062       9.83611                              
+Stick1 Width (cm)                         14            14                   14            14            0                                    
+Stick1 Height (cm)                        259.08        259.08               259.08        259.08        0                                    
+Stick1 Distance (cm)                      6280          6670                 6280          6282.77       32.8439                              
+Stick2 Estimate Template Number           10            18                   16            15.2812       1.93831                              
+Stick2 Estimate Template Size (cm)        5.17          15                   11            10.7097       2.46654                              
+Stick2 Estimate Distance (cm)             35            76                   58.5          57.9062       9.83611                              
+Stick2 Width (cm)                         14            14                   14            14            0                                    
+Stick2 Height (cm)                        259.08        259.08               259.08        259.08        0                                    
+Stick2 Distance (cm)                      2020          2250                 2020          2021.63       19.3695                              
+Stick3 Estimate Template Number           5             17                   12.5          12.3125       2.81055                              
+Stick3 Estimate Template Size (cm)        2.77          13                   7.295         7.5625        2.71616                              
+Stick3 Estimate Distance (cm)             35            76                   58.5          57.9062       9.83611                              
+Stick3 Width (cm)                         14            14                   14            14            0                                    
+Stick3 Height (cm)                        259.08        259.08               259.08        259.08        0                                    
+Stick3 Distance (cm)                      4890          5027                 5027          5026.03       11.5375                              
+Stick4 Estimate Template Number           7             18                   14            13.7188       2.49172                              
+Stick4 Estimate Template Size (cm)        3.32          15                   9             9.00687       2.78627                              
+Stick4 Estimate Distance (cm)             35            76                   58.5          57.9062       9.83611                              
+Stick4 Width (cm)                         14            14                   14            14            0                                    
+Stick4 Height (cm)                        259.08        259.08               259.08        259.08        0                                    
+Stick4 Distance (cm)                      3230          3421                 3421          3419.65       16.0851                              
+Stick7 Estimate Template Number           0             0                    0             0             0                                    
+Stick7 Estimate Template Size (cm)        1.66          15                   6.89          6.79508       2.6563                               
+Stick7 Estimate Distance (cm)             44.4          77.6                 62.2          61.9746       7.62872                              
+Stick7 Width (cm)                         14            14                   14            14            0                                    
+Stick7 Height (cm)                        289.56        289.56               289.56        289.56        0                                    
+Stick7 Distance (cm)                      6110          6110                 6110          6110          0                                    
+Stick7 1st Caliper Aperture (cm)          3.27          8.65                 6.078         6.1042        0.746464                             
+Stick7 1st Caliper Distance (cm)          14.5          62                   47.1          46.0354       9.06824                              
+Stick7 2nd Caliper Aperture (cm)          4.35          13                   5.939         6.24846       1.20675                              
+Stick7 2nd Caliper Distance (cm)          12.1          58                   47.8          45.1024       10.3672                              
+Stick8 Estimate Template Number           0             0                    0             0             0                                    
+Stick8 Estimate Template Size (cm)        1.4           11                   4.07          4.26846       2.14145                              
+Stick8 Estimate Distance (cm)             44.5          83                   61.7          61.8123       7.64414                              
+Stick8 Width (cm)                         14            14                   14            14            0                                    
+Stick8 Height (cm)                        289.56        289.56               289.56        289.56        0                                    
+Stick8 Distance (cm)                      10700         10700                10700         10700         0                                    
+Stick8 1st Caliper Aperture (cm)          1.231         10.72                6.196         6.09253       1.22898                              
+Stick8 1st Caliper Distance (cm)          14.4          58                   47.7          46.0833       8.74025                              
+Stick8 2nd Caliper Aperture (cm)          4.36          10.9                 6.111         6.26731       0.888787                             
+Stick8 2nd Caliper Distance (cm)          12.8          59                   47.7          45.2378       9.73577                              
+Stick9 Estimate Template Number           0             0                    0             0             0                                    
+Stick9 Estimate Template Size (cm)        0.82          7.7                  2.77          3.26528       1.64318                              
+Stick9 Estimate Distance (cm)             48.5          76.5                 62.9          62.8444       6.20665                              
+Stick9 Width (cm)                         14            14                   14            14            0                                    
+Stick9 Height (cm)                        289.56        289.56               289.56        289.56        1.1412e-13                           
+Stick9 Distance (cm)                      15100         15100                15100         15100         0                                    
+Stick9 1st Caliper Aperture (cm)          1.81          12.41                6.14          6.14325       1.39331                              
+Stick9 1st Caliper Distance (cm)          13.5          58.3                 46.1          44.6472       9.19094                              
+Stick9 2nd Caliper Aperture (cm)          4.3           11.72                6.028         6.18856       1.04355                              
+Stick9 2nd Caliper Distance (cm)          12.9          59                   46.9          44.6472       10.4356                              
+Stick9a Estimate Template Number          0             0                    0             0             0                                    
+Stick9a Estimate Template Size (cm)       0.82          6.89                 3.05          3.53593       1.68821                              
+Stick9a Estimate Distance (cm)            45.6          80.9                 61            62.7889       9.62642                              
+Stick9a Width (cm)                        14            14                   14            14            0                                    
+Stick9a Height (cm)                       289.56        289.56               289.56        289.56        0                                    
+Stick9a Distance (cm)                     15188.5       15188.5              15188.5       15188.5       0                                    
+Stick9a 1st Caliper Aperture (cm)         4.842         7.162                6.129         6.03533       0.681744                             
+Stick9a 1st Caliper Distance (cm)         36.9          56.8                 46.4          47.7667       6.62891                              
+Stick9a 2nd Caliper Aperture (cm)         5.733         6.839                6.182         6.15611       0.381742                             
+Stick9a 2nd Caliper Distance (cm)         41.4          57                   48.9          49.2333       5.46146                              
+Stick10 Estimate Template Size (cm)       4.7           19                   11            11.3978       3.0603                               
+Stick10 Estimate Distance (cm)            46.4          77.7                 63.5          63.2331       7.88277                              
+Stick10 Width (cm)                        14            14                   14            14            0                                    
+Stick10 Height (cm)                       289.56        289.56               289.56        289.56        0                                    
+Stick10 Distance (cm)                     2318          2318                 2318          2318          0                                    
+Stick10 1st Caliper Aperture (cm)         2.73          11.02                6.05          6.07034       1.06417                              
+Stick10 1st Caliper Distance (cm)         13.4          55.2                 41.4          40.5122       8.97803                              
+Stick10 2nd Caliper Aperture (cm)         5.144         11.51                6.05          6.16837       0.949536                             
+Stick10 2nd Caliper Distance (cm)         13.6          54.1                 43.9          40.1585       9.92368                              
+MoonBallBall1 Estimate Template Number    4             15                   9.5           9.23333       2.94412                              
+MoonBall1 Estimate Template Size (cm)     0.52          2.44                 1.1           1.19167       0.491971                             
+MoonBall1 Estimate Distance (cm)          50.5          85                   72            68.4234       9.2984                               
+MoonBall1 Width (cm)                      55            55                   55            55            0                                    
+MoonBall1 Distance (cm)                   6060          6060                 6060          6060          0                                    
+MoonBall2 Estimate Template Number        8             20                   15            14.5667       2.58221                              
+MoonBall2 Estimate Template Size (cm)     0.96          4.7                  2.44          2.43567       0.823624                             
+MoonBall2 Estimate Distance (cm)          50.5          85                   72            68.4234       9.2984                               
+MoonBall2 Width (cm)                      55            55                   55            55            0                                    
+MoonBall2 Distance (cm)                   2080          2080                 2080          2080          0                                    
+MoonBall3 Estimate Template Number        5             16                   11            10.5333       2.70036                              
+MoonBall3 Estimate Template Size (cm)     0.65          2.7                  1.44          1.41467       0.516091                             
+MoonBall3 Estimate Distance (cm)          50.5          85                   72            68.4234       9.2984                               
+MoonBall3 Width (cm)                      55            55                   55            55            0                                    
+MoonBall3 Distance (cm)                   4720          4720                 4720          4720          0                                    
+MoonBall4 Estimate Template Number        7             17                   13            12.6667       2.55064                              
+MoonBall4 Estimate Template Size (cm)     0.78          3.3                  1.9           1.90067       0.649477                             
+MoonBall4 Estimate Distance (cm)          50.5          85                   72            68.4234       9.2984                               
+MoonBall4 Width (cm)                      55            55                   55            55            0                                    
+MoonBall4 Distance (cm)                   3270          3270                 3270          3270          0                                    
+BlueBall Estimate Template Number         5             20                   12            12.125        3.10402                              
+BlueBall Estimate Template Size (cm)      0.65          4.7                  1.63          1.76187       0.733508                             
+BlueBall Estimate Distance (cm)           50.2          85.8                 68.4          68.7438       8.10351                              
+BlueBall Width (cm)                       22.605        22.605               22.605        22.605        1.06912e-14                          
+BlueBall Distance (cm)                    1520          1520                 1520          1520          0                                    
+BlueBall 1st Caliper Aperture (cm)        5.4           8.3                  6.481         6.43502       0.56352                              
+BlueBall 1st Caliper Distance (cm)        15.7          60.5                 46.9          43.9578       9.60905                              
+BlueBall 2nd Caliper Aperture (cm)        4.42          11.35                6.45          6.46682       0.921366                             
+BlueBall 2nd Caliper Distance (cm)        14.8          57.1                 47.2          43.6422       9.58916                              
+
