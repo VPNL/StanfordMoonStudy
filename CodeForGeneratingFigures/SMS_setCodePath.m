@@ -3,7 +3,16 @@
 FigCodeDir = fileparts(mfilename('fullpath'));
 repoDir = fileparts(FigCodeDir);
 
-codeDir = fullfile(repoDir, 'code');
+repoCodeDir = fullfile(repoDir, 'code');
+devCodeDir = '/Users/kalanit/Projects/PerceptualMagnification/Paper/ExperimentalData/code';
+
+if exist(repoCodeDir, 'dir')
+    codeDir = repoCodeDir;
+elseif exist(devCodeDir, 'dir')
+    codeDir = devCodeDir;
+else
+    error('Could not find StanfordMoonStudy code directory.');
+end
 
 addpath(genpath(codeDir))
 addpath(genpath(FigCodeDir))
