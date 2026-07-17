@@ -1,8 +1,9 @@
 % SMS_setCodePath;
-% set the path for the main code directory
-codeDir='/Users/kalanit/Projects/PerceptualMagnification/Paper/ExperimentalData/code/'; 
-addpath(genpath(codeDir))
+% Set paths relative to this public StanfordMoonStudy repository.
+FigCodeDir = fileparts(mfilename('fullpath'));
+repoDir = fileparts(FigCodeDir);
 
-%set the path to the directory that has the figure-generating code
-FigCodeDir='/Users/kalanit/Projects/StanfordMoonStudy/CodeForGeneratingFigures/';
+codeDir = fullfile(repoDir, 'code');
+
 addpath(genpath(codeDir))
+addpath(genpath(FigCodeDir))

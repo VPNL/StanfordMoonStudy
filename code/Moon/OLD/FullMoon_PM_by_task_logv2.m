@@ -1,0 +1,467 @@
+
+function [lme_by_logRatio_by_Elevation]=FullMoon_PM_by_task_logv2(dataDir,datafile,ResultsDir,task, recomputeSort,saveLME)
+%
+% FullMoon_PM_by_task_log(dataDir,datafile,ResultsDir,task, recomputeSort,saveLME)
+% Plots the perceived size and perceived perceptual magnification by
+% Elevation of the moon usinf the data in dataDir/datafile
+% for each task
+% results are stored in ResultsDir
+% saveLME will output the stats into a text file
+% recomputeSort - will sort the subjects by their slopes
+% % defaults
+% if ~exist('datDir')
+%     dataDir='/Users/kalanit/Projects/PerceptualMagnification/MoonExperiments/';
+% end
+% cd(dataDir)
+% 
+% if ~exist('datafile')
+%    datafile='FullMoonDataLong.csv'; % all data
+% 
+% end
+% basename = [erase( datafile,'.csv')] ; % for saving
+% 
+% if ~exist('ResultsDir')
+%   ResultsDir='PaperFigures'; % all data
+% end
+% 
+% if ~exist(ResultsDir,'dir')
+%     mkdir(ResultsDir)
+% end
+% 
+% if ~exist('saveLME')
+%         saveLME=1;
+% end
+% 
+% if ~exist('task')
+%        task='Perceptual'
+%        recomputeSort=1;
+% end
+
+%set defaults
+% data loading and setting up some basic information
+if ~exist('dataDir')
+    dataDir='/Users/kalanit/Projects/PerceptualMagnification/MoonExperiments/';
+end
+cd(dataDir)
+
+if ~exist('datafile')
+   datafile='FullMoonDataLong.csv'; % all data
+
+end
+basename = [erase( datafile,'.csv')] ; % for saving
+
+if ~exist('ResultsDir')
+  ResultsDir='PaperFigures'; % all data
+end
+
+if ~exist(ResultsDir,'dir')
+    mkdir(ResultsDir)
+end
+
+if ~exist('saveLME')
+        saveLME=1;
+end
+
+if ~exist('task')
+       task='Perceptual'
+       recomputeSort=1;
+end
+
+%
+all_data=readtable(datafile);
+nameVars=all_data.Properties.VariableNames;
+disp(nameVars)
+nVars=length(all_data.Properties.VariableNames);
+allTasks =unique(all_data.Task);disp(allTasks)
+nTasks=length(allTasks);
+uniqueID=unique(all_data.ID);
+nsubjects=length(uniqueID);
+
+%remove missing measurements (NaN)
+jj=~isnan(all_data.Reported_Visual_Angle);
+NotNaN=find(jj);
+length(NotNaN);
+all_data=all_data(NotNaN,:);
+
+% find max angle and maxRatio for graphs
+maxAngle=max(all_data.Reported_Visual_Angle);
+maxRatio=max(all_data.Ratio_Visual_Angle);
+maxDistance=max(all_data.Distance);
+maxElevation=max(all_data.Elevation);
+maxDisparity=max(all_data.Disparity_VA);
+meanMoonSize=mean(all_data.Real_Visual_Angle);
+
+
+% get the relevant data by task
+task_i=find(strcmp(all_data.Task,task));
+all_data=all_data(task_i,:);
+Elevation=all_data.Elevation;
+all_data.logRatio=log2(all_data.Ratio_Visual_Angle);
+all_data.logElevation=log2(all_data.Elevation+1);
+all_data.logElevationD90=log2((all_data.Elevation)/90+1); % add regularization term to elevation as log(0) is not defined and elevation can be zero
+%% set colormap
+cmap=jet(nsubjects);
+markerScale=36;
+%%
+% linear mixed model relating reported visual angle vs real visual
+% angle with zero intersept with subjects as a random effect,
+
+%random intercepts model
+lme_by_logRatio_by_Elevation = fitlme(all_data,'logRatio~logElevation+ (1|ID)'); % as log function doesn't deal with 0 and elevation can be 0 add 1 as a regularization factor
+
+%random intercepts model
+lme_by_logRatio_by_ElevationD90 = fitlme(all_data,'logRatio~logElevationD90+ (1|ID)'); % as log function doesn't deal with 0 and elevation can be 0 add 1 as a regularization factor
+
+%random intercepts and random slopes model
+lme_by_logRatio_by_Elevation_RS=fitlme(all_data, 'logRatio~logElevation + (Elevation|ID)');  % as log function doesn't deal with 0 and elevation can be 0 add 1 as a regularization factor
+
+model_comp=compare(lme_by_logRatio_by_Elevation,lme_by_logRatio_by_Elevation_RS);
+model_complog=compare(lme_by_logRatio_by_Elevation,lme_by_logRatio_by_ElevationD90);
+
+if saveLME
+   savelmefile=fullfile(''.',ResultsDir, [basename '_' task '_lme_moon_logRatio_by_Elevation.txt']);
+   diary(savelmefile)
+   fprintf(1,'task %s median matched size %5.2f; mean matched size %5.2f stdev %5.2f \n',task,median(all_data.Reported_Visual_Angle),mean(all_data.Reported_Visual_Angle),std(all_data.Ratio_Visual_Angle))
+   lme_by_logRatio_by_Elevation
+   lme_by_logRatio_by_ElevationD90
+   lme_by_logRatio_by_Elevation_RS
+   fprintf(1,'RandomSlopes vs RandomIntercepts model comparison \n') 
+   model_comp
+   fprintf(1,'log(1+E) vs log (1+E/90) model comparison \n') 
+   model_complog
+   diary off
+end
+
+% use random slopes model to plot invidual subject slopes; in the log vs log fit the random
+% slopes model does not signigicantly explain more variance in the data for
+% either perceptual or adjusted cases
+% AIC comparison also suggests that the log-log model is a better fit than
+% linear model
+[reEfx_log,reNames_log,reStats_log] = randomEffects(lme_by_logRatio_by_Elevation_RS);
+[feEfx_log,feNames_log,festats_log] =fixedEffects(lme_by_logRatio_by_Elevation_RS);
+
+ID=all_data.ID;
+uniqueID=unique(ID);
+nsubjects=length(uniqueID);
+individualIntercepts = zeros(nsubjects,1);
+individualSlopes = zeros(nsubjects,1);
+for i = 1:nsubjects
+    % Indices for this subject's random effects
+    subjectRows = find(strcmp(reNames_log.Level, num2str(uniqueID(i)))); 
+    individualIntercepts_log(i) = feEfx_log(1) + reEfx_log(subjectRows(1));
+    individualSlopes_log(i)    = feEfx_log(2) + reEfx_log(subjectRows(2));
+end
+
+% set colormap
+if recomputeSort
+    % sort by intercepts
+   [sorted_individualIntercepts_log, sorted_idx_log] = sort(individualIntercepts_log);
+    clear subjectcolor;
+    cmap=jet(nsubjects);
+    for c=1:length(ID)
+        cindex=find(uniqueID==ID(c));
+        sorted_cindex=find(sorted_idx_log==cindex);
+        subjectcolor(c,:)=cmap(sorted_cindex,:);
+    end
+    savefile=fullfile('.', ResultsDir, [basename  '_sortedidx']);
+    save(savefile ,'sorted_idx_log');
+else
+    loadfile=fullfile('.', ResultsDir, [basename '_sortedidx']);
+    load(loadfile);
+    clear subjectcolor;
+    cmap=jet(nsubjects);
+    for c=1:length(ID)
+        cindex=find(uniqueID==ID(c));
+        sorted_cindex=find(sorted_idx_log==cindex);
+        subjectcolor(c,:)=cmap(sorted_cindex,:);
+    end
+end
+%
+figh=figure('Color',[1 1 1],'Units','normalized','Position',[0 0 1 1],'Name',[basename 'Perceptual Magnification vs Elevation'])
+subplot(1,3,1); hold on 
+% plot fixed effect
+
+interceptL=feEfx_log(1);
+slopeL=feEfx_log(2);
+pvalL=festats_log.pValue(2);
+lower_slopeL=festats_log.Lower(2);
+upper_slopeL=festats_log.Upper(2);
+xvectoru=linspace(min(all_data.logElevation),max(all_data.logElevation));
+xvectord = sort(xvectoru, 'descend');
+% fixed effects estimate
+y_fit =interceptL+slopeL*xvectoru;
+
+
+% fixed effects confidence interval
+yvectoru=slopeL*xvectoru+interceptL;
+yvector1=lower_slopeL*xvectoru+interceptL;
+yvector2=upper_slopeL*xvectord+interceptL;
+xvector=[xvectoru xvectord];
+yvector=[yvector1 yvector2];
+
+% plot line fits only if significant 
+if pvalL < 0.05
+       % plot individual subjects slopes
+    for s=1:nsubjects
+        sortedID=sorted_idx_log(s);
+        sindex=find(uniqueID==ID(sortedID));
+        jj=find(all_data.ID==uniqueID(sindex));
+        if length(jj>1)
+            sdata=all_data(jj,:);
+            lower=find(strcmp(sdata.Session,'Lower'));
+            higher=find(strcmp(sdata.Session,'Higher'));
+            xvectorS=[sdata.logElevation(lower) sdata.logElevation(higher)];
+           % rand effex: each subject has different intercept
+             yvectorS=  individualSlopes_log(sortedID)*xvectorS+individualIntercepts_log(sortedID);
+            plot (xvectorS,yvectorS,':','Color', cmap(s,:),'LineWidth',1);
+        end
+    end
+    fill(xvector, yvector, 1,'facecolor', 'k', 'edgecolor', 'none', 'facealpha', 0.1);
+    plot(xvectoru, y_fit, 'k-','LineWidth',5);
+    if pvalL < 0.001
+        titlestr=sprintf('%s Matching\n intercept=%3.2f slope=%5.3f \n p=%5.2e\n n=%d',task, interceptL,slopeL,festats_log.pValue(2), nsubjects);
+    else
+        titlestr=sprintf('%s Matching\n intercept=%3.2f slope=%5.3f \n p=%.2f\n n=%d',task, interceptL,slopeL,festats_log.pValue(2), nsubjects);
+    end 
+else
+    titlestr=sprintf('%s Matching\n intercept=%3.2f slope=%5.3f \n p=%.2f\n n=%d',task, interceptL,slopeL,festats_log.pValue(2), nsubjects);
+end
+
+% plot scatter plot of individual data
+scatter(all_data.logElevation, all_data.logRatio, markerScale,subjectcolor,'o','filled');
+plot([1 max(all_data.logElevation)], [0  0],'Color',[.8 .8 .8],'LineWidth',3)
+% ylim([0 maxAngle])
+title(titlestr)
+xlabel ('Moon Elevation (degree), log scale')
+ylabel ('Perceptual Magnification, log scale')
+set(gca,'FontSize',20, 'FontName','Avenir')
+% put tick labels numbers rather than log numbers
+xticks=get(gca,'Xtick');set(gca,'XTickLabel', round(2.^xticks,1));
+yticks=get(gca,'Ytick');set(gca,'YTickLabel', round(2.^yticks,1));
+
+% estimate function PM= 2^interceptL*elevation^slopeL
+interceptL=feEfx_log(1);
+slopeL=feEfx_log(2);
+xvector=linspace(1,max(all_data.Elevation))%linspace(min(all_data.Elevation),max(all_data.Elevation));  %estimate from 1 degree and up
+yvector=2^interceptL*(xvector.^slopeL);
+
+
+% plot ratio vs Elevation and power law fit
+subplot(1,3,2); hold on 
+scatter(all_data.Elevation,all_data.Ratio_Visual_Angle,markerScale,subjectcolor,'o','filled');
+plot(xvector,yvector,'k-','LineWidth',3); % plot fixed effects
+% fixed effects confidence interval
+
+% confidence interval
+yvector1=2^interceptL*(xvector.^lower_slopeL);
+xvectord = sort(xvector, 'descend');
+yvector2=2^interceptL*(xvectord.^upper_slopeL);
+xvectorCI=[xvector xvectord];
+yvectorCI=[yvector1 yvector2];
+
+fill(xvectorCI, yvectorCI, 1,'facecolor', 'k', 'edgecolor', 'none', 'facealpha', 0.1);
+  
+plot([0 maxElevation], [1 1],'Color',[.8 .8 .8 ],'LineWidth',3)
+xlabel ('Moon Elevation (degrees)')
+ylabel ('Perceptual Magnification') 
+ylim([0 maxRatio])
+set(gca,'YTick', [0:1:maxRatio],'YtickLabel', [0:1:maxRatio], 'FontSize',20,'FontName','Avenir')
+if pvalL < 0.001
+        titlestr=sprintf('%s Matching\n PM=%.1f * (1+Elevation)^{%.2f}  \n p=%5.2e\n n=%d',task, round(2^interceptL,1),slopeL,festats_log.pValue(2), nsubjects);
+    else
+        titlestr=sprintf('%s Matching\n PM=%.1f * (1+Elevation)^{%.2f}\n p=%.4f\n n=%d',task, round(2^interceptL,1),slopeL,festats_log.pValue(2), nsubjects);
+end 
+title(titlestr)
+
+
+
+%%
+% Estimate relation between perceptual magnification (ratio) and 
+% Elevation (elevation in old papers)
+%
+% subject is a random effect, on intercept only
+lme_ratio_by_Elevation = fitlme(all_data,'Ratio_Visual_Angle~Elevation + (1|ID)')
+% subject is a random effect, on intercept & slope
+lme_ratio_by_Elevation_RS = fitlme(all_data,'Ratio_Visual_Angle~Elevation + (Elevation|ID)')
+% compare models
+model_comp=compare(lme_ratio_by_Elevation,lme_ratio_by_Elevation_RS); % model with random slopes is more significant
+
+
+%
+[reEfx,reNames,reStats] = randomEffects(lme_ratio_by_Elevation_RS);
+[feEfx,feNames,festats] =fixedEffects(lme_ratio_by_Elevation_RS);
+
+interceptR=feEfx(1);
+slopeR=feEfx(2);
+pvalR=festats.pValue(2);
+lower_slopeR=festats.Lower(2);
+upper_slopeR=festats.Upper(2);
+xvectoru=linspace(0,maxElevation);
+xvectord = sort(xvectoru, 'descend');
+yvectoru=slopeR*xvectoru+interceptR;
+yvector1=lower_slopeR*xvectoru+interceptR;
+yvector2=upper_slopeR*xvectord+interceptR;
+xvector=[xvectoru xvectord];
+yvector=[yvector1 yvector2];
+
+
+
+% plot ratio vs Elevation
+subplot(1,3,3); hold on 
+scatter(all_data.Elevation,all_data.Ratio_Visual_Angle,markerScale,subjectcolor,'o','filled');
+plot([0 maxElevation], [1 1],'Color',[.8 .8 .8 ],'LineWidth',3)
+xlabel ('Moon Elevation (degrees)')
+ylabel ('Perceptual Magnification') 
+ylim([0 maxRatio])
+set(gca,'YTick', [0:1:maxRatio],'YtickLabel', [0:1:maxRatio], 'FontSize',20,'FontName','Avenir')
+title(titlestr)
+
+% plot line fit only if significant
+
+if pvalR<0.05
+    % plot individual subjects slopes
+    individualIntercepts = zeros(nsubjects,1);
+    individualSlopes = zeros(nsubjects,1);
+    for i = 1:nsubjects
+        % Indices for this subject's random effects
+        subjectRows = find(strcmp(reNames.Level, num2str(uniqueID(i)))); 
+        individualIntercepts(i) = feEfx(1) + reEfx(subjectRows(1));
+        individualSlopes(i)    = feEfx(2) + reEfx(subjectRows(2));        
+    end
+   
+    for s=1:nsubjects
+        sortedID=sorted_idx_log(s);
+        sindex=find(uniqueID==ID(sortedID));
+        jj=find(all_data.ID==uniqueID(sindex));
+        if length(jj>1)
+            sdata=all_data(jj,:);
+            lower=find(strcmp(sdata.Session,'Lower'));
+            higher=find(strcmp(sdata.Session,'Higher'));
+            xvectorS=[sdata.Elevation(lower) sdata.Elevation(higher)];
+           % rand effex: each subject has differnet intercept
+             yvectorS=  individualSlopes(sortedID)*xvectorS+individualIntercepts(sortedID);
+            plot (xvectorS,yvectorS,':','Color', cmap(s,:),'LineWidth',1);
+        end
+    end
+    plot (xvectoru, yvectoru,'k-','LineWidth',3);
+    fill(xvector, yvector, 1,'facecolor', 'k', 'edgecolor', 'none', 'facealpha', 0.1);
+    titlestr=sprintf('%s Matching\n PM=%3.2f + (%3.3f)*Elevation \n p=%5.2e \n n=%d',task,interceptR,slopeR,pvalR,nsubjects);
+
+else
+   titlestr=sprintf('%s Matching \n \n p=%.2f \n n=%d',task,pvalR,nsubjects);
+end
+scatter(all_data.Elevation,all_data.Ratio_Visual_Angle,markerScale,subjectcolor,'o','filled');
+plot([0 maxElevation], [1 1],'Color',[.8 .8 .8 ],'LineWidth',3)
+xlabel ('Moon Elevation (degrees)')
+ylabel ('Perceptual Magnification') 
+ylim([0 maxRatio])
+set(gca,'YTick', [0:1:maxRatio],'YtickLabel', [0:1:maxRatio], 'FontSize',20,'FontName','Avenir')
+title(titlestr)
+
+% save figure 
+filenamePNG=fullfile('.', ResultsDir,['SuppFigModelComps_' basename,'_' task ,'_', num2str(nsubjects),'.png']);
+exportgraphics(figh,filenamePNG,'Resolution',600);
+
+ncount=length(find(individualSlopes<0));
+if saveLME
+   savelmefile=fullfile(''.',ResultsDir, [basename '_' task '_lme_moon_ratio_by_Elevation.txt']);
+   diary(savelmefile)
+   fprintf(1,'task %s median PM %5.2f mean PM %5.2f stdev %5.2f \n',task,median(all_data.Ratio_Visual_Angle), mean(all_data.Ratio_Visual_Angle),std(all_data.Ratio_Visual_Angle));
+   fprintf(1,'percentage participants with negative slopes %5.2f  \n',100*ncount/nsubjects);
+   lme_ratio_by_Elevation
+   lme_ratio_by_Elevation_RS
+   fprintf(1,'RandomSlopes vs RandomIntercepts model comparison \n') 
+   model_comp
+    diary off
+end
+
+
+
+
+
+
+
+%% 
+
+% plot ratio vs Elevation and power law fit
+fig1h=figure('Color',[1 1 1],'Units','normalized','Position',[0 0 .5 1],'Name',['Fig1_' basename,'_' task ,'_', num2str(nsubjects),'.png'])
+
+% estimate function PM= 2^interceptL*elevation^slopeL
+interceptL=feEfx_log(1);
+slopeL=feEfx_log(2);
+lower_slopeL=festats_log.Lower(2);
+upper_slopeL=festats_log.Upper(2);
+% xvectoru=linspace(min(all_data.logElevation),max(all_data.logElevation));
+% xvectord = sort(xvectoru, 'descend');
+
+%xvector=linspace(min(all_data.Elevation),max(all_data.Elevation));
+xvector=linspace(1,max(all_data.Elevation)); % estimate from 1 degree and up
+yvector=2^interceptL*(xvector.^slopeL);
+
+hold on 
+scatter(all_data.Elevation,all_data.Ratio_Visual_Angle,markerScale,subjectcolor,'o','filled');
+plot(xvector,yvector,'k-','LineWidth',3); % plot fixed effects
+% fixed effects confidence interval
+
+% confidence interval
+yvector1=2^interceptL*(xvector.^lower_slopeL);
+xvectord = sort(xvector, 'descend');
+yvector2=2^interceptL*(xvectord.^upper_slopeL);
+xvectorCI=[xvector xvectord];
+yvectorCI=[yvector1 yvector2];
+
+fill(xvectorCI, yvectorCI, 1,'facecolor', 'k', 'edgecolor', 'none', 'facealpha', 0.1);
+  
+plot([0 maxElevation], [1 1],'Color',[.8 .8 .8 ],'LineWidth',3)
+xlabel ('Moon Elevation (degrees)')
+ylabel ('Perceptual Magnification') 
+ylim([0 maxRatio])
+set(gca,'YTick', [0:1:maxRatio],'YtickLabel', [0:1:maxRatio], 'FontSize',28,'FontName','Avenir')
+if pvalL < 0.001
+        titlestr=sprintf('%s Matching\n PM=%.1f * (1+Elevation)^{%.2f}  \n n=%d',task, round(2^interceptL,1),slopeL, nsubjects);
+    else
+        titlestr=sprintf('%s Matching\n PM=%.1f * (1+Elevation)^{%.2f} \n n=%d',task, round(2^interceptL,1),slopeL, nsubjects);
+end 
+title(titlestr, 'FontSize',20,'FontName','Avenir')
+
+filenamePNG=fullfile('.', ResultsDir,['Fig1_' basename,'_' task ,'_', num2str(nsubjects),'.png']);
+exportgraphics(fig1h,filenamePNG,'Resolution',600);
+
+%%
+
+savefile=fullfile('.', ResultsDir, [basename '_' task '_analysed']);
+save(savefile)
+
+%% visualize illusion
+realVA=mean(all_data.Real_Visual_Angle);
+
+
+distance_mm=500; % simulate illusion at handlength distance of ~50cm=500mm;
+
+% PM=interscept*(1+elevation)^(slope)
+% so we will estimate the perceived visual angle at an elevation of 0.25 degrees (half the size of the moon) to
+% estimate perceived visual angle at horizon
+
+elevation=0.25; % moon just passed the horizon 
+perceivedVAH=(2^interceptL)*((1+elevation)^slopeL)*realVA;
+filenamePNG=fullfile('.', ResultsDir,[basename,'_' task ,'_', num2str(nsubjects),'visualize_horizon.png']);
+[realheight_mm,perceivedheight_mm] = visualizePM(realVA,perceivedVAH,distance_mm,saveLME,filenamePNG);
+
+
+elevation=2.5; % lowest elevation we measured
+perceivedVA=(2^interceptL)*((1+elevation)^slopeL)*realVA;
+filenamePNG=fullfile('.', ResultsDir,[basename,'_' task ,'_', num2str(nsubjects),'visualize_2p5deg.png']);
+[realheight_mm,perceivedheight_mm] = visualizePM(realVA,perceivedVA,distance_mm,saveLME,filenamePNG);
+
+elevation=40; % highest elevation we measured
+perceivedVA40=(2^interceptL)*((1+elevation)^slopeL)*realVA;
+filenamePNG=fullfile('.', ResultsDir,[basename,'_' task ,'_', num2str(nsubjects),'visualiz_40deg.png']);
+[realheight_mm,perceivedheight40_mm] = visualizePM(realVA,perceivedVA40,distance_mm,saveLME,filenamePNG);
+
+fprintf(1,'%s task, moon visual angle:%.2f, perceived size at horizon: %.2f, perceived size at 2.5 degrees: %.2f, perceived size at 40 degrees: %.2f\n',task, realVA,perceivedVA, perceivedVA40)
+
+
+
+
+
+

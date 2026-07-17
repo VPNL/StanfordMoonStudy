@@ -1,0 +1,766 @@
+function [lme_PM_by_Elevation, lme_PM_by_AbsElevation, lme_logPM_by_logabsElevation, lme_logPM_by_logElevationD90, lme_logPM_by_logabsElevationD90, lme_logPM_by_logabsElevationRAD, lme_logPM_by_logElevationRADPiHalf, leaderboardTbl] = ...
+    Quad_PM_by_task_elevationModelTest(tbl, tblName, ResultsDir, saveLME, cmap, sorted_idx)
+% Quad_PM_by_task_elevationModelTest
+%
+% Fits 7 LME models:
+% Shared transform coding in the PM codebase:
+%   1 = Elevation
+%   2 = absElevation
+%   3 = ElevationRAD
+%   4 = absElevationRAD
+%   5 = ElevationD90
+%   6 = absElevationD90
+%
+%   1) Ratio_Visual_Angle ~ Elevation + (1|ID)
+%   2) Ratio_Visual_Angle ~ AbsElevation + (1|ID)
+%   3) Log2_Ratio_Visual_Angle ~ Log2_1plusAbsElevation + (1|ID)
+%   4) Log2_Ratio_Visual_Angle ~ Log2_1plusElevationD90 + (1|ID)
+%   5) Log2_Ratio_Visual_Angle ~ Log2_1plusabsElevationD90 + (1|ID)
+%   6) Log2_Ratio_Visual_Angle ~ Log2_1plusabsElevationRAD + (1|ID)
+%   7) Log2_Ratio_Visual_Angle ~ Log2_1plusElevationRADPiHalf + (1|ID)
+%
+% Writes model summaries to text and plots one figure with 7 panels.
+%
+% INPUTS
+%   tbl        : data table, must contain:
+%                Ratio_Visual_Angle, Elevation, ID
+%   tblName    : string used for file naming
+%   ResultsDir : output directory
+%   saveLME    : 1 save text/figure, 0 don't save
+%   cmap       : colormap for subjects
+%   sorted_idx : sort order for subject colors
+%
+% OUTPUTS
+%   lme_PM_by_Elevation
+%   lme_PM_by_AbsElevation
+%   lme_logPM_by_logabsElevation
+%   lme_logPM_by_logElevationD90
+%   lme_logPM_by_logabsElevationD90
+%   lme_logPM_by_logabsElevationRAD
+%   lme_logPM_by_logElevationRADPiHalf
+%   leaderboardTbl
+% KGS Nov 2025, rewritten
+
+%% checks
+requiredVars = {'Ratio_Visual_Angle','Elevation','ID'};
+for i = 1:numel(requiredVars)
+    if ~ismember(requiredVars{i}, tbl.Properties.VariableNames)
+        error('Missing required variable: %s', requiredVars{i});
+    end
+end
+
+if ~exist(ResultsDir, 'dir')
+    mkdir(ResultsDir);
+end
+
+% keep valid rows only
+good = ~isnan(tbl.Ratio_Visual_Angle) & ~isnan(tbl.Elevation);
+tbl = tbl(good,:);
+
+% ID as categorical
+if ~iscategorical(tbl.ID)
+    tbl.ID = categorical(tbl.ID);
+end
+
+% derived variables
+tbl.AbsElevation = abs(tbl.Elevation);
+if any(tbl.Ratio_Visual_Angle <= 0)
+    error('Ratio_Visual_Angle must be positive for the log2 model.');
+end
+tbl.Log2_Ratio_Visual_Angle = log2(tbl.Ratio_Visual_Angle);
+tbl.Log2_1plusAbsElevation = log2(1 + abs(tbl.Elevation));
+tbl.Log2_1plusElevationD90 = log2(1 + (tbl.Elevation)/90);
+tbl.Log2_1plusabsElevationD90 = log2(1 + abs(tbl.Elevation)/90);
+tbl.ElevationRAD = tbl.Elevation*pi/180;
+tbl.Log2_1plusabsElevationRAD = log2(1 + abs(tbl.ElevationRAD));
+tbl.Log2_1plusElevationRADPiHalf = log2(1 + tbl.ElevationRAD/(pi/2));
+minElevGlobal = min(tbl.Elevation);
+maxElevGlobal = max(tbl.Elevation);
+minPM=min(tbl.Ratio_Visual_Angle);
+maxPM=max(tbl.Ratio_Visual_Angle);
+ymin_log = (log2(minPM));
+ymax_log = (log2(maxPM));
+
+%% summary values
+uniqueID = unique(tbl.ID);
+nsubjects = numel(uniqueID);
+
+maxRatio = max(tbl.Ratio_Visual_Angle);
+minRatio = min(tbl.Ratio_Visual_Angle);
+minElevation = min(tbl.Elevation);
+maxElevation = max(tbl.Elevation);
+minAbsElevation = min(tbl.AbsElevation);
+maxAbsElevation = max(tbl.AbsElevation);
+minLogAbsElevation = min(tbl.Log2_1plusAbsElevation);
+maxLogAbsElevation = max(tbl.Log2_1plusAbsElevation);
+
+minLogRatio = min(tbl.Log2_Ratio_Visual_Angle);
+maxLogRatio = max(tbl.Log2_Ratio_Visual_Angle);
+
+% maxPMLim = 16;
+% minPMLim = 0.25;
+maxPMLim=maxRatio;
+minPMLim=minRatio;
+
+if maxRatio > maxPMLim
+    fprintf(1,'Warning: max Ratio %.2f exceeds Ylim max %.2f\n', maxRatio, maxPMLim);
+end
+if minRatio < minPMLim
+    fprintf(1,'Warning: min Ratio %.2f is less than Ylim min %.2f\n', minRatio, minPMLim);
+end
+
+%% fit models
+lme_PM_by_Elevation = fitlme(tbl, ...
+    'Ratio_Visual_Angle ~ Elevation + (1|ID)');
+
+lme_PM_by_AbsElevation = fitlme(tbl, ...
+    'Ratio_Visual_Angle ~ AbsElevation + (1|ID)');
+
+lme_logPM_by_logabsElevation = fitlme(tbl, ...
+    'Log2_Ratio_Visual_Angle ~ Log2_1plusAbsElevation + (1|ID)');
+
+lme_logPM_by_logElevationD90=fitlme(tbl, ...
+    'Log2_Ratio_Visual_Angle ~ Log2_1plusElevationD90 + (1|ID)');
+
+lme_logPM_by_logabsElevationD90=fitlme(tbl, ...
+    'Log2_Ratio_Visual_Angle ~ Log2_1plusabsElevationD90 + (1|ID)');
+
+lme_logPM_by_logabsElevationRAD=fitlme(tbl, ...
+    'Log2_Ratio_Visual_Angle ~ Log2_1plusabsElevationRAD + (1|ID)');
+
+lme_logPM_by_logElevationRADPiHalf=fitlme(tbl, ...
+    'Log2_Ratio_Visual_Angle ~ Log2_1plusElevationRADPiHalf + (1|ID)');
+
+lme_PM_by_Elevation_RS = fitlme(tbl, ...
+    'Ratio_Visual_Angle ~ Elevation + (Elevation|ID)');
+
+lme_PM_by_AbsElevation_RS = fitlme(tbl, ...
+    'Ratio_Visual_Angle ~ AbsElevation + (AbsElevation|ID)');
+
+lme_logPM_by_logabsElevation_RS = fitlme(tbl, ...
+    'Log2_Ratio_Visual_Angle ~ Log2_1plusAbsElevation + (Log2_1plusAbsElevation|ID)');
+
+lme_logPM_by_logElevationD90_RS = fitlme(tbl, ...
+    'Log2_Ratio_Visual_Angle ~ Log2_1plusElevationD90 + (Log2_1plusElevationD90|ID)');
+
+lme_logPM_by_logabsElevationD90_RS = fitlme(tbl, ...
+    'Log2_Ratio_Visual_Angle ~ Log2_1plusabsElevationD90 + (Log2_1plusabsElevationD90|ID)');
+
+lme_logPM_by_logabsElevationRAD_RS = fitlme(tbl, ...
+    'Log2_Ratio_Visual_Angle ~ Log2_1plusabsElevationRAD + (Log2_1plusabsElevationRAD|ID)');
+
+lme_logPM_by_logElevationRADPiHalf_RS = fitlme(tbl, ...
+    'Log2_Ratio_Visual_Angle ~ Log2_1plusElevationRADPiHalf + (Log2_1plusElevationRADPiHalf|ID)');
+
+modelNames = { ...
+    'Elevation', ...
+    'AbsElevation', ...
+    'LogAbsElevation', ...
+    'LogElevationD90', ...
+    'LogAbsElevationD90', ...
+    'LogAbsElevationRAD', ...
+    'LogElevationRADPiHalf'};
+modelFormulas = { ...
+    'PM ~ Elevation + (1|ID)', ...
+    'PM ~ abs(Elevation) + (1|ID)', ...
+    'log2(PM) ~ log2(1+abs(Elevation)) + (1|ID)', ...
+    'log2(PM) ~ log2(1+Elevation/90) + (1|ID)', ...
+    'log2(PM) ~ log2(1+abs(Elevation)/90) + (1|ID)', ...
+    'log2(PM) ~ log2(1+abs(ElevationRad)) + (1|ID)', ...
+    'log2(PM) ~ log2(1+ElevationRad/(pi/2)) + (1|ID)'};
+modelList = { ...
+    lme_PM_by_Elevation, ...
+    lme_PM_by_AbsElevation, ...
+    lme_logPM_by_logabsElevation, ...
+    lme_logPM_by_logElevationD90, ...
+    lme_logPM_by_logabsElevationD90, ...
+    lme_logPM_by_logabsElevationRAD, ...
+    lme_logPM_by_logElevationRADPiHalf};
+leaderboardTbl = local_build_leaderboard(modelNames, modelFormulas, modelList);
+
+%% write text report
+if saveLME
+    savelmefile = fullfile(ResultsDir, [tblName '_ElevationModels.txt']);
+    fid = fopen(savelmefile,'w');
+    if fid == -1
+        error('Cannot open %s for writing.', savelmefile);
+    end
+
+    fprintf(fid, '%s\n', tblName);
+    fprintf(fid, 'Seven elevation-related LME models\n\n');
+    fprintf(fid, 'N subjects: %d\n', nsubjects);
+    fprintf(fid, 'N observations: %d\n\n', height(tbl));
+
+    writeModelToFile(fid, 'Model 1: PM ~ Elevation + (1|ID)', lme_PM_by_Elevation);
+    writeModelToFile(fid, 'Model 1 RS: PM ~ Elevation + (Elevation|ID)', lme_PM_by_Elevation_RS);
+    writeModelToFile(fid, 'Model 2: PM ~ abs(Elevation) + (1|ID)', lme_PM_by_AbsElevation);
+    writeModelToFile(fid, 'Model 2 RS: PM ~ abs(Elevation) + (AbsElevation|ID)', lme_PM_by_AbsElevation_RS);
+    writeModelToFile(fid, 'Model 3: log2(PM) ~ log2(1+abs(Elevation)) + (1|ID)', lme_logPM_by_logabsElevation);
+    writeModelToFile(fid, 'Model 3 RS: log2(PM) ~ log2(1+abs(Elevation)) + (Log2_1plusAbsElevation|ID)', lme_logPM_by_logabsElevation_RS);
+    writeModelToFile(fid, 'Model 4: log2(PM) ~ log2(1+Elevation_D90) + (1|ID)', lme_logPM_by_logElevationD90);
+    writeModelToFile(fid, 'Model 4 RS: log2(PM) ~ log2(1+Elevation_D90) + (Log2_1plusElevationD90|ID)', lme_logPM_by_logElevationD90_RS);
+    writeModelToFile(fid, 'Model 5: log2(PM) ~ log2(1+abs(Elevation_D90)) + (1|ID)', lme_logPM_by_logabsElevationD90);
+    writeModelToFile(fid, 'Model 5 RS: log2(PM) ~ log2(1+abs(Elevation_D90)) + (Log2_1plusabsElevationD90|ID)', lme_logPM_by_logabsElevationD90_RS);
+    writeModelToFile(fid, 'Model 6: log2(PM) ~ log2(1+abs(Elevation_rad)) + (1|ID)', lme_logPM_by_logabsElevationRAD);
+    writeModelToFile(fid, 'Model 6 RS: log2(PM) ~ log2(1+abs(Elevation_rad)) + (Log2_1plusabsElevationRAD|ID)', lme_logPM_by_logabsElevationRAD_RS);
+    writeModelToFile(fid, 'Model 7: log2(PM) ~ log2(1+Elevation_rad/(pi/2)) + (1|ID)', lme_logPM_by_logElevationRADPiHalf);
+    writeModelToFile(fid, 'Model 7 RS: log2(PM) ~ log2(1+Elevation_rad/(pi/2)) + (Log2_1plusElevationRADPiHalf|ID)', lme_logPM_by_logElevationRADPiHalf_RS);
+
+    fprintf(fid, 'Model comparisons\n');
+    fprintf(fid, '=================\n\n');
+
+    fprintf(fid, 'Model 1 vs Model 2\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_PM_by_Elevation, lme_PM_by_AbsElevation)'));
+
+    fprintf(fid, 'Model 2 vs Model 3\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_PM_by_AbsElevation,lme_logPM_by_logabsElevation)'));
+    
+    fprintf(fid, 'Model 3 vs Model 4\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_logPM_by_logabsElevation,lme_logPM_by_logElevationD90)'));
+
+    fprintf(fid, 'Model 4 vs Model 5\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_logPM_by_logElevationD90,lme_logPM_by_logabsElevationD90)'));
+
+    fprintf(fid, 'Model 5 vs Model 6\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_logPM_by_logabsElevationD90,lme_logPM_by_logabsElevationRAD)'));
+
+    fprintf(fid, 'Model 6 vs Model 7\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_logPM_by_logabsElevationRAD,lme_logPM_by_logElevationRADPiHalf)'));
+
+    fprintf(fid, 'Random-intercept vs random-slope comparisons\n');
+    fprintf(fid, '===========================================\n\n');
+    fprintf(fid, 'Model 1 RI vs RS\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_PM_by_Elevation,lme_PM_by_Elevation_RS)'));
+    fprintf(fid, 'Model 2 RI vs RS\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_PM_by_AbsElevation,lme_PM_by_AbsElevation_RS)'));
+    fprintf(fid, 'Model 3 RI vs RS\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_logPM_by_logabsElevation,lme_logPM_by_logabsElevation_RS)'));
+    fprintf(fid, 'Model 4 RI vs RS\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_logPM_by_logElevationD90,lme_logPM_by_logElevationD90_RS)'));
+    fprintf(fid, 'Model 5 RI vs RS\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_logPM_by_logabsElevationD90,lme_logPM_by_logabsElevationD90_RS)'));
+    fprintf(fid, 'Model 6 RI vs RS\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_logPM_by_logabsElevationRAD,lme_logPM_by_logabsElevationRAD_RS)'));
+    fprintf(fid, 'Model 7 RI vs RS\n');
+    fprintf(fid, '%s\n', evalc('compare(lme_logPM_by_logElevationRADPiHalf,lme_logPM_by_logElevationRADPiHalf_RS)'));
+
+    fprintf(fid, 'Leaderboard (sorted by AIC)\n');
+    fprintf(fid, '==========================\n\n');
+    fprintf(fid, '%s\n', evalc('disp(leaderboardTbl)'));
+
+    fclose(fid);
+
+    writetable(leaderboardTbl, fullfile(ResultsDir, [tblName '_ElevationModels_leaderboard.csv']));
+end
+
+%% subject colors
+ID = tbl.ID;
+subjectcolor = zeros(length(ID),3);
+for c = 1:length(ID)
+    cindex = find(uniqueID == ID(c), 1);
+    sorted_cindex = find(sorted_idx == cindex, 1);
+    if isempty(sorted_cindex)
+        sorted_cindex = cindex;
+    end
+    subjectcolor(c,:) = cmap(sorted_cindex,:);
+end
+
+%% plot
+figh = figure('Color',[1 1 1], 'Units','normalized', ...
+    'Position',[0 0 1 .45], 'Name',[tblName '_ElevationModels']);
+
+markerSize = 15;
+
+% ---------- Panel 1: PM by Elevation ----------
+subplot(1,7,1);
+hold on;
+
+scatter(tbl.Elevation, tbl.Ratio_Visual_Angle, markerSize, subjectcolor, 'filled');
+
+b0 = lme_PM_by_Elevation.Coefficients.Estimate(1);
+b1 = lme_PM_by_Elevation.Coefficients.Estimate(2);
+p1 = lme_PM_by_Elevation.Coefficients.pValue(2);
+t1 = lme_PM_by_Elevation.Coefficients.tStat(2);
+
+xline1 = linspace(minElevation, maxElevation, 200);
+yfit1 = b0 + b1*xline1;
+
+[b0L,b0U,b1L,b1U] = get_coef_bounds(lme_PM_by_Elevation);
+xU = xline1;
+xD = fliplr(xline1);
+y1L = b0L + b1L*xU;
+y1U = b0U + b1U*xD;
+
+plot(xline1, zeros(size(xline1)), 'k:', 'LineWidth', 1);
+fill([xU xD], [y1L y1U], 1, 'FaceColor','k', 'EdgeColor','none', 'FaceAlpha',0.3);
+plot(xline1, yfit1, 'k-', 'LineWidth', 3);
+
+xlim([minElevation*1.05 - 0.05*max(abs([minElevation maxElevation])), ...
+      maxElevation*1.05]);
+ylim([minPMLim ceil(maxPMLim)]);
+%ylim([2^ymin_log 2^ymax_log]);
+set(gca,'FontName','Avenir','FontSize',10);
+xlabel('Elevation [deg]','FontSize',10);
+ylabel('Perceptual Magnification','FontSize',10);
+if p1<0.001
+    title(sprintf('PM=%.2f+%.3fE\n p=%.2e, n=%d', ...
+        b0, b1, p1, nsubjects), 'FontSize',10,'FontWeight','normal');
+else
+      title(sprintf('PM=%.2f+%.3fE\n p=%.3f, n=%d', ...
+        b0, b1, p1, nsubjects), 'FontSize',10,'FontWeight','normal');
+end
+
+% ---------- Panel 2: PM by abs(Elevation) ----------
+subplot(1,7,2);
+hold on;
+
+scatter(tbl.AbsElevation, tbl.Ratio_Visual_Angle, markerSize, subjectcolor, 'filled');
+
+b0 = lme_PM_by_AbsElevation.Coefficients.Estimate(1);
+b1 = lme_PM_by_AbsElevation.Coefficients.Estimate(2);
+p2 = lme_PM_by_AbsElevation.Coefficients.pValue(2);
+t2 = lme_PM_by_AbsElevation.Coefficients.tStat(2);
+
+xline2 = linspace(minAbsElevation, maxAbsElevation, 200);
+yfit2 = b0 + b1*xline2;
+
+[b0L,b0U,b1L,b1U] = get_coef_bounds(lme_PM_by_AbsElevation);
+xU = xline2;
+xD = fliplr(xline2);
+y2L = b0L + b1L*xU;
+y2U = b0U + b1U*xD;
+
+plot(xline2, zeros(size(xline2)), 'k:', 'LineWidth', 1);
+fill([xU xD], [y2L y2U], 1, 'FaceColor','k', 'EdgeColor','none', 'FaceAlpha',0.3);
+plot(xline2, yfit2, 'k-', 'LineWidth', 3);
+
+xlim([.8*minAbsElevation maxAbsElevation*1.05 + eps]);
+ylim([minPMLim ceil(maxPMLim)]);
+%ylim([2^ymin_log 2^ymax_log]);
+
+set(gca,'FontName','Avenir','FontSize',10);
+xlabel('|Elevation| [deg]','FontSize',10);
+ylabel('Perceptual Magnification','FontSize',10);
+ax = gca;
+ax.YColor = 'w';
+if p2<0.001
+    title(sprintf('PM=%.2f+%.3f|E|\n p=%.2e, n=%d', ...
+      b0, b1, p2, nsubjects), 'FontSize',10,'FontWeight','normal');
+else
+    title(sprintf('PM=%.2f+%.3f|E|\n p=%.3f, n=%d', ...
+      b0, b1, p2, nsubjects), 'FontSize',10,'FontWeight','normal');
+end
+
+% ---------- Panel 3: log2(PM) by log2(1+abs(Elevation)) ----------
+subplot(1,7,3);
+hold on;
+
+scatter(tbl.Log2_1plusAbsElevation, tbl.Log2_Ratio_Visual_Angle, ...
+    markerSize, subjectcolor, 'filled');
+
+b0 = lme_logPM_by_logabsElevation.Coefficients.Estimate(1);
+b1 = lme_logPM_by_logabsElevation.Coefficients.Estimate(2);
+p3 = lme_logPM_by_logabsElevation.Coefficients.pValue(2);
+t3 = lme_logPM_by_logabsElevation.Coefficients.tStat(2);
+
+xline3 = linspace(minLogAbsElevation, maxLogAbsElevation, 200);
+yfit3 = b0 + b1*xline3;
+
+[b0L,b0U,b1L,b1U] = get_coef_bounds(lme_logPM_by_logabsElevation);
+xU = xline3;
+xD = fliplr(xline3);
+y3L = b0L + b1L*xU;
+y3U = b0U + b1U*xD;
+
+plot(xline3, zeros(size(xline3)), 'k:', 'LineWidth', 1);
+fill([xU xD], [y3L y3U], 1, 'FaceColor','k', 'EdgeColor','none', 'FaceAlpha',0.3);
+plot(xline3, yfit3, 'k-', 'LineWidth', 3);
+
+xlim([0.8*minLogAbsElevation maxLogAbsElevation*1.05 + eps]);
+ylim([floor(minLogRatio) ceil(maxLogRatio)]);
+
+%ylim([2^ymin_log 2^ymax_log]);
+set(gca,'FontName','Avenir','FontSize',10);
+xlabel('1 + |Elevation|, degree log scale','FontSize',10);
+ylabel('Perceptual Magnification, log scale','FontSize',10);
+ax = gca;
+ax.YColor = 'k';
+% X ticks
+xticks_vals = get(gca, 'XTick');
+xticklabels_vals = arrayfun(@(x) sprintf('%.2g', 2.^x), xticks_vals, 'UniformOutput', false);
+set(gca, 'XTickLabel', xticklabels_vals);
+
+% Y ticks
+yticks_vals = get(gca, 'YTick');
+yticklabels_vals = arrayfun(@(y) sprintf('%.2g', 2.^y), yticks_vals, 'UniformOutput', false);
+set(gca, 'YTickLabel', yticklabels_vals);
+
+if p3<0.001
+    title(sprintf('PM=%.2flog_2(1+|E_{deg}|)^{%.3f}\n p=%.2e, n=%d', ...
+         2^b0, b1, p3, nsubjects), 'FontSize',10,'FontWeight','normal');
+else
+   title(sprintf('PM=%.2flog_2(1+|E_{deg}|)^{%.3f}\n p=%.3f, n=%d', ...
+         2^b0, b1, p3, nsubjects), 'FontSize',10,'FontWeight','normal'); 
+end
+% ---------- Panel 4: log2(PM) by log2(1+Elevation/90) ----------
+subplot(1,7,4);
+hold on;
+
+scatter(tbl.Log2_1plusElevationD90, tbl.Log2_Ratio_Visual_Angle, ...
+    markerSize, subjectcolor, 'filled');
+
+b0 = lme_logPM_by_logElevationD90.Coefficients.Estimate(1);
+b1 = lme_logPM_by_logElevationD90.Coefficients.Estimate(2);
+p3 = lme_logPM_by_logElevationD90.Coefficients.pValue(2);
+t3 = lme_logPM_by_logElevationD90.Coefficients.tStat(2);
+
+xline3 = linspace(min(tbl.Log2_1plusElevationD90), max(tbl.Log2_1plusElevationD90), 200);
+yfit3 = b0 + b1*xline3;
+
+[b0L,b0U,b1L,b1U] = get_coef_bounds(lme_logPM_by_logElevationD90);
+xU = xline3;
+xD = fliplr(xline3);
+y3L = b0L + b1L*xU;
+y3U = b0U + b1U*xD;
+
+plot(xline3, zeros(size(xline3)), 'k:', 'LineWidth', 1);
+fill([xU xD], [y3L y3U], 1, 'FaceColor','k', 'EdgeColor','none', 'FaceAlpha',0.3);
+plot(xline3, yfit3, 'k-', 'LineWidth', 3);
+
+ylim([floor(minLogRatio) ceil(maxLogRatio)]);
+
+set(gca,'FontName','Avenir','FontSize',10);
+xlabel('Elevation/90, log scale','FontSize',10);
+ylabel('Perceptual Magnification, log scale','FontSize',10);
+ax = gca;
+ax.YColor = 'w';
+xticks_vals = get(gca, 'XTick');
+xticklabels_vals = arrayfun(@(x) sprintf('%.2g', (2.^x - 1)), xticks_vals, 'UniformOutput', false);
+set(gca, 'XTickLabel', xticklabels_vals);
+
+yticks_vals = get(gca, 'YTick');
+yticklabels_vals = arrayfun(@(y) sprintf('%.2g', 2.^y), yticks_vals, 'UniformOutput', false);
+set(gca, 'YTickLabel', yticklabels_vals);
+
+if p3<0.001
+    title(sprintf('PM=%.2flog_2(1+E/90)^{%.3f}\n p=%.2e, n=%d', ...
+         2^b0, b1, p3, nsubjects), 'FontSize',10,'FontWeight','normal');
+else
+     title(sprintf('PM=%.2flog_2(1+E/90)^{%.3f}\n p=%.3f, n=%d', ...
+         2^b0, b1, p3, nsubjects), 'FontSize',10,'FontWeight','normal');
+end
+% ---------- Panel 5: log2(PM) by log2(1+abs(Elevation)/90) ----------
+subplot(1,7,5);
+hold on;
+
+scatter(tbl.Log2_1plusabsElevationD90, tbl.Log2_Ratio_Visual_Angle, ...
+    markerSize, subjectcolor, 'filled');
+
+b0 = lme_logPM_by_logabsElevationD90.Coefficients.Estimate(1);
+b1 = lme_logPM_by_logabsElevationD90.Coefficients.Estimate(2);
+p3 = lme_logPM_by_logabsElevationD90.Coefficients.pValue(2);
+t3 = lme_logPM_by_logabsElevationD90.Coefficients.tStat(2);
+
+xline3 = linspace(min(tbl.Log2_1plusabsElevationD90), max(tbl.Log2_1plusabsElevationD90), 200);
+yfit3 = b0 + b1*xline3;
+
+[b0L,b0U,b1L,b1U] = get_coef_bounds(lme_logPM_by_logabsElevationD90);
+xU = xline3;
+xD = fliplr(xline3);
+y3L = b0L + b1L*xU;
+y3U = b0U + b1U*xD;
+
+plot(xline3, zeros(size(xline3)), 'k:', 'LineWidth', 1);
+fill([xU xD], [y3L y3U], 1, 'FaceColor','k', 'EdgeColor','none', 'FaceAlpha',0.3);
+plot(xline3, yfit3, 'k-', 'LineWidth', 3);
+ylim([floor(minLogRatio) ceil(maxLogRatio)]);
+set(gca,'FontName','Avenir','FontSize',10);
+xlabel('|Elevation|/90, log scale','FontSize',10);
+ylabel('Perceptual Magnification, log scale','FontSize',10);
+ax = gca;
+ax.YColor = 'w';
+xticks_vals = get(gca, 'XTick');
+xticklabels_vals = arrayfun(@(x) sprintf('%.2g', (2.^x - 1)), xticks_vals, 'UniformOutput', false);
+set(gca, 'XTickLabel', xticklabels_vals);
+
+yticks_vals = get(gca, 'YTick');
+yticklabels_vals = arrayfun(@(y) sprintf('%.2g', 2.^y), yticks_vals, 'UniformOutput', false);
+set(gca, 'YTickLabel', yticklabels_vals);
+
+if p3<0.001
+    title(sprintf('PM=%.2flog_2(1+|E|/90)^{%.3f}\n p=%.2e, n=%d', ...
+      2^b0, b1, p3, nsubjects), 'FontSize',10,'FontWeight','normal');
+else
+    title(sprintf('PM=%.2flog_2(1+|E|/90)^{%.3f}\n p=%.3f, n=%d', ...
+         2^b0, b1, p3, nsubjects), 'FontSize',10,'FontWeight','normal');
+end
+% ---------- Panel 6: log2(PM) by log2(1+abs(Elevation in radians)) ----------
+subplot(1,7,6);
+hold on;
+
+scatter(tbl.Log2_1plusabsElevationRAD, tbl.Log2_Ratio_Visual_Angle, ...
+    markerSize, subjectcolor, 'filled');
+
+b0 = lme_logPM_by_logabsElevationRAD.Coefficients.Estimate(1);
+b1 = lme_logPM_by_logabsElevationRAD.Coefficients.Estimate(2);
+p3 = lme_logPM_by_logabsElevationRAD.Coefficients.pValue(2);
+
+xline3 = linspace(min(tbl.Log2_1plusabsElevationRAD), max(tbl.Log2_1plusabsElevationRAD), 200);
+yfit3 = b0 + b1*xline3;
+
+[b0L,b0U,b1L,b1U] = get_coef_bounds(lme_logPM_by_logabsElevationRAD);
+xU = xline3;
+xD = fliplr(xline3);
+y3L = b0L + b1L*xU;
+y3U = b0U + b1U*xD;
+
+plot(xline3, zeros(size(xline3)), 'k:', 'LineWidth', 1);
+fill([xU xD], [y3L y3U], 1, 'FaceColor','k', 'EdgeColor','none', 'FaceAlpha',0.3);
+plot(xline3, yfit3, 'k-', 'LineWidth', 3);
+ylim([floor(minLogRatio) ceil(maxLogRatio)]);
+set(gca,'FontName','Avenir','FontSize',10);
+xlabel('|Elevation| [rad], log scale','FontSize',10);
+ylabel('Perceptual Magnification, log scale','FontSize',10);
+ax = gca;
+ax.YColor = 'w';
+xticks_vals = get(gca, 'XTick');
+xticklabels_vals = arrayfun(@(x) sprintf('%.2g', (2.^x - 1)), xticks_vals, 'UniformOutput', false);
+set(gca, 'XTickLabel', xticklabels_vals);
+yticks_vals = get(gca, 'YTick');
+yticklabels_vals = arrayfun(@(y) sprintf('%.2g', 2.^y), yticks_vals, 'UniformOutput', false);
+set(gca, 'YTickLabel', yticklabels_vals);
+
+if p3<0.0001
+    title(sprintf('PM=%.2flog_2(1+|E_{rad}|)^{%.3f}\n p=%.2e, n=%d', ...
+         2^b0, b1, p3, nsubjects), 'FontSize',10,'FontWeight','normal');
+else
+    title(sprintf('PM=%.2flog_2(1+|E_{rad}|)^{%.3f}\n p=%.3f, n=%d', ...
+         2^b0, b1, p3, nsubjects), 'FontSize',10,'FontWeight','normal');
+end
+% ---------- Panel 7: log2(PM) by log2(1+Elevation rad/(pi/2)) ----------
+subplot(1,7,7);
+hold on;
+
+scatter(tbl.Log2_1plusElevationRADPiHalf, tbl.Log2_Ratio_Visual_Angle, ...
+    markerSize, subjectcolor, 'filled');
+
+b0 = lme_logPM_by_logElevationRADPiHalf.Coefficients.Estimate(1);
+b1 = lme_logPM_by_logElevationRADPiHalf.Coefficients.Estimate(2);
+p3 = lme_logPM_by_logElevationRADPiHalf.Coefficients.pValue(2);
+
+xline3 = linspace(min(tbl.Log2_1plusElevationRADPiHalf), max(tbl.Log2_1plusElevationRADPiHalf), 200);
+yfit3 = b0 + b1*xline3;
+
+[b0L,b0U,b1L,b1U] = get_coef_bounds(lme_logPM_by_logElevationRADPiHalf);
+xU = xline3;
+xD = fliplr(xline3);
+y3L = b0L + b1L*xU;
+y3U = b0U + b1U*xD;
+
+plot(xline3, zeros(size(xline3)), 'k:', 'LineWidth', 1);
+fill([xU xD], [y3L y3U], 1, 'FaceColor','k', 'EdgeColor','none', 'FaceAlpha',0.3);
+plot(xline3, yfit3, 'k-', 'LineWidth', 3);
+
+ylim([floor(minLogRatio) ceil(maxLogRatio)]);
+
+set(gca,'FontName','Avenir','FontSize',10);
+xlabel('Elevation/(pi/2) [rad], log scale','FontSize',10);
+ylabel('Perceptual Magnification, log scale','FontSize',10);
+ax = gca;
+ax.YColor = 'w';
+xticks_vals = get(gca, 'XTick');
+xticklabels_vals = arrayfun(@(x) sprintf('%.2g', (2.^x - 1)*(pi/2)), xticks_vals, 'UniformOutput', false);
+set(gca, 'XTickLabel', xticklabels_vals);
+yticks_vals = get(gca, 'YTick');
+yticklabels_vals = arrayfun(@(y) sprintf('%.2g', 2.^y), yticks_vals, 'UniformOutput', false);
+set(gca, 'YTickLabel', yticklabels_vals);
+
+if p3<0.001
+    title(sprintf('PM=%.2flog_2(1+E_{rad}/(\\pi/2))^{%.3f}\n p=%.2e, n=%d', ...
+     2^b0, b1, p3, nsubjects), 'FontSize',10,'FontWeight','normal');
+else
+    title(sprintf('PM=%.2flog_2(1+E_{rad}/(\\pi/2))^{%.3f}\n p=%.3f, n=%d', ...
+     2^b0, b1, p3, nsubjects), 'FontSize',10,'FontWeight','normal');
+end
+
+
+%% save figure
+if saveLME
+    filenamePNG = fullfile(ResultsDir, [tblName '_ElevationModels.png']);
+    exportgraphics(figh, filenamePNG, 'Resolution', 600);
+    local_plot_leaderboard_figure(leaderboardTbl, ResultsDir, tblName);
+end
+
+%% random-slope figure
+fighRS = figure('Color',[1 1 1], 'Units','normalized', ...
+    'Position',[0 0 1 .45], 'Name',[tblName '_ElevationModels_RS']);
+
+subplot(1,7,1);
+plot_panel_with_subject_lines(gca, tbl.Elevation, tbl.Ratio_Visual_Angle, subjectcolor, ...
+    lme_PM_by_Elevation_RS, uniqueID, cmap, sorted_idx, tbl.ID, 'Elevation', ...
+    [minElevation*1.05 - 0.05*max(abs([minElevation maxElevation])), maxElevation*1.05], ...
+    [minPMLim ceil(maxPMLim)], 'Elevation [deg]', 'Perceptual Magnification', ...
+    sprintf('PM=%.2f+%.3fE\n p=%.2e, n=%d', ...
+    lme_PM_by_Elevation_RS.Coefficients.Estimate(1), lme_PM_by_Elevation_RS.Coefficients.Estimate(2), ...
+    lme_PM_by_Elevation_RS.Coefficients.pValue(2), nsubjects), false, [], []);
+
+subplot(1,7,2);
+plot_panel_with_subject_lines(gca, tbl.AbsElevation, tbl.Ratio_Visual_Angle, subjectcolor, ...
+    lme_PM_by_AbsElevation_RS, uniqueID, cmap, sorted_idx, tbl.ID, 'AbsElevation', ...
+    [.8*minAbsElevation maxAbsElevation*1.05 + eps], ...
+    [minPMLim ceil(maxPMLim)], '|Elevation| [deg]', 'Perceptual Magnification', ...
+    sprintf('PM=%.2f+%.3f|E|\n p=%.2e, n=%d', ...
+    lme_PM_by_AbsElevation_RS.Coefficients.Estimate(1), lme_PM_by_AbsElevation_RS.Coefficients.Estimate(2), ...
+    lme_PM_by_AbsElevation_RS.Coefficients.pValue(2), nsubjects), false, [], []);
+ax = gca; ax.YColor = 'w';
+
+subplot(1,7,3);
+plot_panel_with_subject_lines(gca, tbl.Log2_1plusAbsElevation, tbl.Log2_Ratio_Visual_Angle, subjectcolor, ...
+    lme_logPM_by_logabsElevation_RS, uniqueID, cmap, sorted_idx, tbl.ID, 'Log2_1plusAbsElevation', ...
+    [0.8*minLogAbsElevation maxLogAbsElevation*1.05 + eps], ...
+    [floor(minLogRatio) ceil(maxLogRatio)], '1 + |Elevation|, degree log scale', 'Perceptual Magnification, log scale', ...
+    sprintf('PM=%.2flog_2(1+|E_{deg}|)^{%.3f}\n p=%.2e, n=%d', ...
+    2^lme_logPM_by_logabsElevation_RS.Coefficients.Estimate(1), lme_logPM_by_logabsElevation_RS.Coefficients.Estimate(2), ...
+    lme_logPM_by_logabsElevation_RS.Coefficients.pValue(2), nsubjects), true, ...
+    @(x) sprintf('%.2g', 2.^x), @(y) sprintf('%.2g', 2.^y));
+ax = gca; ax.YColor = 'k';
+
+subplot(1,7,4);
+plot_panel_with_subject_lines(gca, tbl.Log2_1plusElevationD90, tbl.Log2_Ratio_Visual_Angle, subjectcolor, ...
+    lme_logPM_by_logElevationD90_RS, uniqueID, cmap, sorted_idx, tbl.ID, 'Log2_1plusElevationD90', ...
+    [min(tbl.Log2_1plusElevationD90) max(tbl.Log2_1plusElevationD90)], ...
+    [floor(minLogRatio) ceil(maxLogRatio)], 'Elevation/90, log scale', 'Perceptual Magnification, log scale', ...
+    sprintf('PM=%.2flog_2(1+E/90)^{%.3f}\n p=%.2e, n=%d', ...
+    2^lme_logPM_by_logElevationD90_RS.Coefficients.Estimate(1), lme_logPM_by_logElevationD90_RS.Coefficients.Estimate(2), ...
+    lme_logPM_by_logElevationD90_RS.Coefficients.pValue(2), nsubjects), true, ...
+    @(x) sprintf('%.2g', (2.^x - 1)), @(y) sprintf('%.2g', 2.^y));
+ax = gca; ax.YColor = 'w';
+
+subplot(1,7,5);
+plot_panel_with_subject_lines(gca, tbl.Log2_1plusabsElevationD90, tbl.Log2_Ratio_Visual_Angle, subjectcolor, ...
+    lme_logPM_by_logabsElevationD90_RS, uniqueID, cmap, sorted_idx, tbl.ID, 'Log2_1plusabsElevationD90', ...
+    [min(tbl.Log2_1plusabsElevationD90) max(tbl.Log2_1plusabsElevationD90)], ...
+    [floor(minLogRatio) ceil(maxLogRatio)], '|Elevation|/90, log scale', 'Perceptual Magnification, log scale', ...
+    sprintf('PM=%.2flog_2(1+|E|/90)^{%.3f}\n p=%.2e, n=%d', ...
+    2^lme_logPM_by_logabsElevationD90_RS.Coefficients.Estimate(1), lme_logPM_by_logabsElevationD90_RS.Coefficients.Estimate(2), ...
+    lme_logPM_by_logabsElevationD90_RS.Coefficients.pValue(2), nsubjects), true, ...
+    @(x) sprintf('%.2g', (2.^x - 1)), @(y) sprintf('%.2g', 2.^y));
+ax = gca; ax.YColor = 'w';
+
+subplot(1,7,6);
+plot_panel_with_subject_lines(gca, tbl.Log2_1plusabsElevationRAD, tbl.Log2_Ratio_Visual_Angle, subjectcolor, ...
+    lme_logPM_by_logabsElevationRAD_RS, uniqueID, cmap, sorted_idx, tbl.ID, 'Log2_1plusabsElevationRAD', ...
+    [min(tbl.Log2_1plusabsElevationRAD) max(tbl.Log2_1plusabsElevationRAD)], ...
+    [floor(minLogRatio) ceil(maxLogRatio)], '|Elevation| [rad], log scale', 'Perceptual Magnification, log scale', ...
+    sprintf('PM=%.2flog_2(1+|E_{rad}|)^{%.3f}\n p=%.2e, n=%d', ...
+    2^lme_logPM_by_logabsElevationRAD_RS.Coefficients.Estimate(1), lme_logPM_by_logabsElevationRAD_RS.Coefficients.Estimate(2), ...
+    lme_logPM_by_logabsElevationRAD_RS.Coefficients.pValue(2), nsubjects), true, ...
+    @(x) sprintf('%.2g', (2.^x - 1)), @(y) sprintf('%.2g', 2.^y));
+ax = gca; ax.YColor = 'w';
+
+subplot(1,7,7);
+plot_panel_with_subject_lines(gca, tbl.Log2_1plusElevationRADPiHalf, tbl.Log2_Ratio_Visual_Angle, subjectcolor, ...
+    lme_logPM_by_logElevationRADPiHalf_RS, uniqueID, cmap, sorted_idx, tbl.ID, 'Log2_1plusElevationRADPiHalf', ...
+    [min(tbl.Log2_1plusElevationRADPiHalf) max(tbl.Log2_1plusElevationRADPiHalf)], ...
+    [floor(minLogRatio) ceil(maxLogRatio)], 'Elevation/(pi/2) [rad], log scale', 'Perceptual Magnification, log scale', ...
+    sprintf('PM=%.2flog_2(1+E_{rad}/(\\pi/2))^{%.3f}\n p=%.2e, n=%d', ...
+    2^lme_logPM_by_logElevationRADPiHalf_RS.Coefficients.Estimate(1), lme_logPM_by_logElevationRADPiHalf_RS.Coefficients.Estimate(2), ...
+    lme_logPM_by_logElevationRADPiHalf_RS.Coefficients.pValue(2), nsubjects), true, ...
+    @(x) sprintf('%.2g', (2.^x - 1)*(pi/2)), @(y) sprintf('%.2g', 2.^y));
+ax = gca; ax.YColor = 'w';
+
+if saveLME
+    exportgraphics(fighRS, fullfile(ResultsDir, [tblName '_ElevationModels_RS.png']), 'Resolution', 600);
+end
+
+close(fighRS);
+
+end
+
+% ========================= helpers =========================
+
+function writeModelToFile(fid, modelLabel, lme)
+fprintf(fid, '%s\n', modelLabel);
+fprintf(fid, '%s\n', repmat('=',1,length(modelLabel)));
+fprintf(fid, 'Formula: %s\n\n', lme.Formula.char);
+
+fprintf(fid, 'Coefficients:\n');
+coefTbl = lme.Coefficients;
+for i = 1:height(coefTbl)
+    fprintf(fid, '%-24s Estimate=%10.5f  SE=%10.5f  t=%10.5f  p=%10.5g', ...
+        coefTbl.Name{i}, coefTbl.Estimate(i), coefTbl.SE(i), ...
+        coefTbl.tStat(i), coefTbl.pValue(i));
+    % if ismember('Lower', coefTbl.Properties.VarNames) && ismember('Upper', coefTbl.Properties.VarNames)
+    %     fprintf(fid, '  CI=[%10.5f %10.5f]', coefTbl.Lower(i), coefTbl.Upper(i));
+    % end
+    fprintf(fid, '\n');
+end
+fprintf(fid, '\n');
+
+fprintf(fid, 'Model fit:\n');
+if isprop(lme,'LogLikelihood')
+    fprintf(fid, 'LogLikelihood: %.6f\n', lme.LogLikelihood);
+end
+if isprop(lme,'ModelCriterion')
+    fprintf(fid, 'AIC: %.6f\n', lme.ModelCriterion.AIC);
+    fprintf(fid, 'BIC: %.6f\n', lme.ModelCriterion.BIC);
+end
+fprintf(fid, '\nANOVA:\n%s\n', evalc('anova(lme)'));
+fprintf(fid, '\n');
+end
+
+function leaderboardTbl = local_build_leaderboard(modelNames, modelFormulas, modelList)
+nModels = numel(modelList);
+aicVals = nan(nModels,1);
+bicVals = nan(nModels,1);
+for i = 1:nModels
+    aicVals(i) = modelList{i}.ModelCriterion.AIC;
+    bicVals(i) = modelList{i}.ModelCriterion.BIC;
+end
+
+[sortedAIC, orderAIC] = sort(aicVals, 'ascend');
+[sortedBIC, orderBIC] = sort(bicVals, 'ascend');
+rankAIC = zeros(nModels,1);
+rankBIC = zeros(nModels,1);
+rankAIC(orderAIC) = 1:nModels;
+rankBIC(orderBIC) = 1:nModels;
+
+leaderboardTbl = table( ...
+    string(modelNames(:)), ...
+    string(modelFormulas(:)), ...
+    aicVals, ...
+    bicVals, ...
+    aicVals - min(sortedAIC), ...
+    bicVals - min(sortedBIC), ...
+    rankAIC, ...
+    rankBIC, ...
+    'VariableNames', {'Model','Formula','AIC','BIC','DeltaAIC','DeltaBIC','RankAIC','RankBIC'});
+leaderboardTbl = sortrows(leaderboardTbl, {'RankAIC','RankBIC'}, {'ascend','ascend'});
+end
+
+function local_plot_leaderboard_figure(leaderboardTbl, ResultsDir, tblName)
+fh = figure('Color', [1 1 1], 'Units', 'normalized', ...
+    'Position', [0.2 0.2 0.42 0.5], 'Name', [tblName '_ElevationModelsLeaderboard']);
+tiledlayout(1,2, 'Padding', 'compact', 'TileSpacing', 'compact');
+
+nexttile;
+barh(leaderboardTbl.AIC, 'FaceColor', [0.25 0.45 0.75], 'EdgeColor', 'none');
+set(gca, 'YDir', 'reverse', 'YTick', 1:height(leaderboardTbl), ...
+    'YTickLabel', cellstr(leaderboardTbl.Model), 'FontName', 'Avenir', 'FontSize', 10);
+xlabel('AIC');
+title('AIC leaderboard', 'FontWeight', 'normal');
+box off;
+grid off;
+
+nexttile;
+barh(leaderboardTbl.BIC, 'FaceColor', [0.85 0.55 0.30], 'EdgeColor', 'none');
+set(gca, 'YDir', 'reverse', 'YTick', 1:height(leaderboardTbl), ...
+    'YTickLabel', cellstr(leaderboardTbl.Model), 'FontName', 'Avenir', 'FontSize', 10);
+xlabel('BIC');
+title('BIC leaderboard', 'FontWeight', 'normal');
+box off;
+grid off;
+
+exportgraphics(fh, fullfile(ResultsDir, [tblName '_ElevationModels_leaderboard.png']), 'Resolution', 600);
+close(fh);
+end
