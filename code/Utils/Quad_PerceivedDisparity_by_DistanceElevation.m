@@ -1,5 +1,7 @@
 function [lme_logPM_by_logDistance, lme_logPM_by_logElevation, lme_logPM_by_logDistanceNElevation] = ...
-    Quad_PerceivedDisparity_by_DistanceElevation(tbl, tblName, ResultsDir, saveLME, mycolormap, sorted_idx, modelTransform, degreeFlag, fullUniqueID, removeOutlierParticipants, secondYAxisColor)
+    Quad_PerceivedDisparity_by_DistanceElevation(tbl, tblName, ResultsDir, ...
+    saveLME, mycolormap, sorted_idx, modelTransform, degreeFlag, ...
+    fullUniqueID, removeOutlierParticipants, secondYAxisColor, colorConfig)
 
 % QUAD_PERCEIVEDDISPARITY_BY_DISTANCEELEVATION
 % Distance/elevation-only mirror of Quad_PerceivedDisparity_by_task.
@@ -18,6 +20,9 @@ if nargin < 10 || isempty(removeOutlierParticipants)
 end
 if nargin < 11 || isempty(secondYAxisColor)
     secondYAxisColor = 'k';
+end
+if nargin < 12
+    colorConfig = [];
 end
 
 ResultsDir = local_distance_elevation_dir(ResultsDir);
@@ -54,10 +59,16 @@ figh = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 1 .8], '
 t = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
 t.Position = [0.10 0.12 0.84 0.78];
 
-local_plot_single_model(nexttile, tbl, subjectcolor, lme_logPM_by_logDistance, 'D', minDisp, maxDisp, modelTransform, nIDs);
+ax1 = nexttile;
+local_plot_single_model(ax1, tbl, subjectcolor, lme_logPM_by_logDistance, ...
+    'D', minDisp, maxDisp, modelTransform, nIDs);
 ax2 = nexttile;
 local_plot_single_model(ax2, tbl, subjectcolor, lme_logPM_by_logElevation, 'E', minDisp, maxDisp, modelTransform, nIDs);
 ax2.YColor = secondYAxisColor;
+if isstruct(colorConfig) && string(colorConfig.Mode) == "clinicalnotes"
+    legendHandle = Quad_add_clinical_notes_legend(ax2, colorConfig);
+    legendHandle.FontSize = 11;
+end
 
 if ~exist(ResultsDir, 'dir')
     mkdir(ResultsDir);

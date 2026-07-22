@@ -1,7 +1,11 @@
-function interceptTbl = Quad_PM_intercept_StereoNotes(tblStereo, lmePerceptual, lmeAdjusted, QuadBasename, ResultsDir, setaxesLim, val)
+function interceptTbl = Quad_PM_intercept_StereoNotes( ...
+    tblStereo, lmePerceptual, lmeAdjusted, QuadBasename, ResultsDir, ...
+    setaxesLim, val, colorConfig)
 % QUAD_PM_INTERCEPT_STEREONOTES
 % Build a per-subject table of PM intercepts from the perceptual and
 % adjusted 3-factor LMEs together with normed stereo score and notes.
+% An optional participant color configuration may select clinical-note
+% colors. Omitting it preserves the original stereo-score coloring.
 
 if nargin < 5 || isempty(ResultsDir)
     ResultsDir = pwd;
@@ -13,6 +17,9 @@ end
 
 if nargin < 7
     val = [];
+end
+if nargin < 8
+    colorConfig = [];
 end
 
 if ~exist(ResultsDir, 'dir')
@@ -55,7 +62,8 @@ interceptTbl = table(string(uniqueID), perceptualIntercept, adjustedIntercept, i
 interceptTbl = sortrows(interceptTbl, 'PowerLawIntercept_Perceptual', 'descend');
 outFile = fullfile(ResultsDir, [QuadBasename '_PM_intercept_StereoNotes.csv']);
 writetable(interceptTbl, outFile);
-local_plot_intercept_scatter(interceptTbl, QuadBasename, ResultsDir, hasStereo, setaxesLim, val);
+plotInterceptScatter(interceptTbl, QuadBasename, ResultsDir, ...
+    hasStereo, setaxesLim, val, colorConfig);
 end
 
 function subjectIntercept = local_extract_subject_intercepts(lmeFull, uniqueID)
@@ -120,9 +128,11 @@ uniqueNotes = unique(rawNotes, 'stable');
 noteText = strjoin(uniqueNotes, " | ");
 end
 
-function local_plot_intercept_scatter(interceptTbl, QuadBasename, ResultsDir, hasStereo, setaxesLim, val)
+function plotInterceptScatter(interceptTbl, QuadBasename, ResultsDir, ...
+    hasStereo, setaxesLim, val, colorConfig)
 validMask = ~isnan(interceptTbl.PowerLawIntercept_Perceptual) & ~isnan(interceptTbl.PowerLawIntercept_Adjusted);
-if hasStereo
+useClinicalColors = isstruct(colorConfig) && string(colorConfig.Mode) == "clinicalnotes";
+if hasStereo && ~useClinicalColors
     validMask = validMask & ~isnan(interceptTbl.NormedStereoScore);
 end
 plotTbl = interceptTbl(validMask, :);
@@ -131,9 +141,11 @@ if isempty(plotTbl)
     return;
 end
 
-if hasStereo
+if hasStereo && ~useClinicalColors
     [~, plotOrder] = sort(plotTbl.NormedStereoScore, 'descend', 'MissingPlacement', 'last');
     plotTbl = plotTbl(plotOrder, :);
+elseif useClinicalColors
+    plotTbl = sortrows(plotTbl, 'ID');
 end
 
 figH = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0.18 0.18 0.8 0.8], ...
@@ -141,8 +153,14 @@ figH = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0.18 0.18 0.
 ax = axes(figH, 'Position', [0.13 0.14 0.68 0.72]);
 hold(ax, 'on');
 
-if hasStereo
-     scatter(ax, plotTbl.PowerLawIntercept_Adjusted, plotTbl.PowerLawIntercept_Perceptual, 120, ...
+if useClinicalColors
+    pointColors = Quad_colors_for_participant_ids(plotTbl.ID, colorConfig);
+    scatter(ax, plotTbl.PowerLawIntercept_Adjusted, plotTbl.PowerLawIntercept_Perceptual, 120, ...
+        pointColors, 'filled', 'MarkerEdgeColor', 'none');
+    legendHandle = Quad_add_clinical_notes_legend(ax, colorConfig);
+    legendHandle.FontSize = 12;
+elseif hasStereo
+    scatter(ax, plotTbl.PowerLawIntercept_Adjusted, plotTbl.PowerLawIntercept_Perceptual, 120, ...
         plotTbl.NormedStereoScore, 'filled', 'MarkerEdgeColor', 'none');
     apply_stereo_score_colormap(ax);
     cb = add_stereo_score_colorbar(ax, 'Normed stereo score');

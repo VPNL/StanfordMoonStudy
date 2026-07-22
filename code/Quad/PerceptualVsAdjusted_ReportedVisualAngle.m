@@ -1,4 +1,4 @@
-function [pairedTbl, lmeRI, lmeRS, cmpTbl] = PerceptualVsAdjusted_ReportedVisualAngle(tbl, Basename, ResultsDir)
+function [pairedTbl, lmeRI, lmeRS, cmpTbl] = PerceptualVsAdjusted_ReportedVisualAngle(tbl, Basename, ResultsDir, colorBy)
 % PERCEPTUALVSADJUSTED_REPORTEDVISUALANGLE
 %
 % Compare Perceptual and Adjusted reported visual angles while including
@@ -8,6 +8,9 @@ function [pairedTbl, lmeRI, lmeRS, cmpTbl] = PerceptualVsAdjusted_ReportedVisual
 %   tbl        - table containing both Perceptual and Adjusted task rows
 %   Basename   - base label used for exported files
 %   ResultsDir - directory for figures and text output
+%   colorBy    - participant coloring: 'stereoscore' (default),
+%                'clinicalnotes', or 'none'. This affects plots only;
+%                stereo score remains in the statistical model when present.
 %
 % Outputs
 %   pairedTbl  - paired Perceptual/Adjusted table used for fitting
@@ -24,6 +27,10 @@ end
 if nargin < 3 || isempty(ResultsDir)
     ResultsDir = pwd;
 end
+if nargin < 4 || isempty(colorBy)
+    colorBy = 'stereoscore';
+end
+colorBy = local_normalize_color_mode(colorBy);
 
 if ~exist(ResultsDir, 'dir')
     mkdir(ResultsDir);
@@ -58,9 +65,10 @@ lmeRI = fitlme(pairedTbl, formulaRI);
 lmeRS = fitlme(pairedTbl, formulaRS);
 cmpTbl = compare(lmeRI, lmeRS);
 
-local_write_report(pairedTbl, lmeRI, lmeRS, cmpTbl, Basename, ResultsDir, formulaRI, formulaRS, hasStereo);
-local_plot_ri_figure(pairedTbl, lmeRI, Basename, ResultsDir, hasStereo);
-local_plot_rs_figure(pairedTbl, lmeRS, Basename, ResultsDir, hasStereo);
+colorSpec = local_build_color_spec(tbl, Basename, ResultsDir, colorBy);
+local_write_report(pairedTbl, lmeRI, lmeRS, cmpTbl, Basename, ResultsDir, formulaRI, formulaRS, hasStereo, colorBy);
+local_plot_ri_figure(pairedTbl, lmeRI, Basename, ResultsDir, hasStereo, colorSpec);
+local_plot_rs_figure(pairedTbl, lmeRS, Basename, ResultsDir, hasStereo, colorSpec);
 end
 
 function pairedTbl = local_build_paired_table(tbl)
@@ -117,7 +125,7 @@ end
 scoreVar = '';
 end
 
-function local_write_report(pairedTbl, lmeRI, lmeRS, cmpTbl, Basename, ResultsDir, formulaRI, formulaRS, hasStereo)
+function local_write_report(pairedTbl, lmeRI, lmeRS, cmpTbl, Basename, ResultsDir, formulaRI, formulaRS, hasStereo, colorBy)
 reportFile = fullfile(ResultsDir, [Basename '_PerceptualVsAdjusted_ReportedVisualAngle.txt']);
 fid = fopen(reportFile, 'w');
 if fid == -1
@@ -131,6 +139,7 @@ fprintf(fid, 'Rows paired: %d\n', height(pairedTbl));
 fprintf(fid, 'Unique participants: %d\n\n', numel(categories(removecats(pairedTbl.ID))));
 
 fprintf(fid, 'Stereo predictor included: %s\n\n', string(hasStereo));
+fprintf(fid, 'Participant color mode: %s\n\n', colorBy);
 fprintf(fid, 'Model: %s\n', formulaRI);
 fprintf(fid, '%s\n\n', evalc('disp(lmeRI)'));
 
@@ -141,8 +150,8 @@ fprintf(fid, 'Model comparison\n');
 fprintf(fid, '%s\n', evalc('disp(cmpTbl)'));
 end
 
-function local_plot_ri_figure(pairedTbl, lmeRI, Basename, ResultsDir, hasStereo)
-[plotTbl, scoreVals] = local_sorted_plot_table(pairedTbl, hasStereo);
+function local_plot_ri_figure(pairedTbl, lmeRI, Basename, ResultsDir, hasStereo, colorSpec)
+[plotTbl, scoreVals] = local_sorted_plot_table(pairedTbl, hasStereo, colorSpec.Mode);
 
 figH = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0.18 0.18 0.56 0.62], ...
     'Name', [Basename '_PerceptualVsAdjusted_RI'], 'Visible', 'off');
@@ -161,15 +170,20 @@ if ~isnan(pAdj) && pAdj < 0.05
         'EdgeColor', 'none', 'FaceAlpha', .3);
     plot(ax, xGrid, yFit, 'k-', 'LineWidth', 3);
 end
-if hasStereo
+if colorSpec.Mode == "clinicalnotes"
+    pointColors = local_colors_for_ids(plotTbl.ID, colorSpec);
+    scatter(ax, plotTbl.Adjusted_Reported_Visual_Angle, plotTbl.Perceptual_Reported_Visual_Angle, ...
+        50, pointColors, 'filled', 'MarkerEdgeColor', 'none');
+    local_add_clinical_legend(ax, colorSpec);
+elseif colorSpec.Mode == "stereoscore" && hasStereo
     scatter(ax, plotTbl.Adjusted_Reported_Visual_Angle, plotTbl.Perceptual_Reported_Visual_Angle, ...
         50, scoreVals, 'filled', 'MarkerEdgeColor', 'none');
     apply_stereo_score_colormap(ax);
     cb = add_stereo_score_colorbar(ax, 'Normed stereo score');
     cb.FontName = 'Avenir';
-    cb.FontSize = 18;
+    cb.FontSize = 9;
     cb.Label.FontName = 'Avenir';
-    cb.Label.FontSize = 18;
+    cb.Label.FontSize =9;
 else
     scatter(ax, plotTbl.Adjusted_Reported_Visual_Angle, plotTbl.Perceptual_Reported_Visual_Angle, ...
         50, 'k', 'filled', 'MarkerEdgeColor', 'none');
@@ -184,25 +198,30 @@ exportgraphics(figH, fullfile(ResultsDir, [Basename '_PerceptualVsAdjusted_RI.pn
 close(figH);
 end
 
-function local_plot_rs_figure(pairedTbl, lmeRS, Basename, ResultsDir, hasStereo)
-[plotTbl, scoreVals] = local_sorted_plot_table(pairedTbl, hasStereo);
+function local_plot_rs_figure(pairedTbl, lmeRS, Basename, ResultsDir, hasStereo, colorSpec)
+[plotTbl, scoreVals] = local_sorted_plot_table(pairedTbl, hasStereo, colorSpec.Mode);
 
 figH = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0.18 0.18 0.56 0.62], ...
     'Name', [Basename '_PerceptualVsAdjusted_RS'], 'Visible', 'off');
 ax = axes(figH, 'Position', [0.13 0.14 0.68 0.72]);
 hold(ax, 'on');
 
-local_plot_subject_lines(ax, plotTbl, lmeRS, hasStereo);
+local_plot_subject_lines(ax, plotTbl, lmeRS, hasStereo, colorSpec);
 
-if hasStereo
+if colorSpec.Mode == "clinicalnotes"
+    pointColors = local_colors_for_ids(plotTbl.ID, colorSpec);
+    scatter(ax, plotTbl.Adjusted_Reported_Visual_Angle, plotTbl.Perceptual_Reported_Visual_Angle, ...
+        50, pointColors, 'filled', 'MarkerEdgeColor', 'none');
+    local_add_clinical_legend(ax, colorSpec);
+elseif colorSpec.Mode == "stereoscore" && hasStereo
     scatter(ax, plotTbl.Adjusted_Reported_Visual_Angle, plotTbl.Perceptual_Reported_Visual_Angle, ...
         50, scoreVals, 'filled', 'MarkerEdgeColor', 'none');
     apply_stereo_score_colormap(ax);
     cb = add_stereo_score_colorbar(ax, 'Normed stereo score');
     cb.FontName = 'Avenir';
-    cb.FontSize = 18;
+    cb.FontSize = 9;
     cb.Label.FontName = 'Avenir';
-    cb.Label.FontSize = 18;
+    cb.Label.FontSize = 9;
 else
     scatter(ax, plotTbl.Adjusted_Reported_Visual_Angle, plotTbl.Perceptual_Reported_Visual_Angle, ...
         50, 'k', 'filled', 'MarkerEdgeColor', 'none');
@@ -221,17 +240,20 @@ exportgraphics(figH, fullfile(ResultsDir, [Basename '_PerceptualVsAdjusted_RS.pn
 close(figH);
 end
 
-function [plotTbl, scoreVals] = local_sorted_plot_table(pairedTbl, hasStereo)
-if hasStereo
+function [plotTbl, scoreVals] = local_sorted_plot_table(pairedTbl, hasStereo, colorMode)
+if colorMode == "stereoscore" && hasStereo
     plotTbl = sortrows(pairedTbl, 'NormedStereoScore', 'descend');
     scoreVals = plotTbl.NormedStereoScore;
+elseif colorMode == "clinicalnotes"
+    plotTbl = sortrows(pairedTbl, 'ID');
+    scoreVals = [];
 else
     plotTbl = pairedTbl;
     scoreVals = [];
 end
 end
 
-function local_plot_subject_lines(ax, pairedTbl, lmeRS, hasStereo)
+function local_plot_subject_lines(ax, pairedTbl, lmeRS, hasStereo, colorSpec)
 [reEfx, reNames] = randomEffects(lmeRS);
 levels = string(reNames.Level);
 names = string(reNames.Name);
@@ -277,6 +299,10 @@ for k = 1:numel(order)
     subjScore = 0;
     if hasStereo
         subjScore = subjectScores(i);
+    end
+    if colorSpec.Mode == "clinicalnotes"
+        thisColor = local_colors_for_ids(pairedTbl.ID(find(rowMask, 1, 'first')), colorSpec);
+    elseif colorSpec.Mode == "stereoscore" && hasStereo
         colorRow = local_score_to_color_row(subjScore, size(baseCmap, 1));
         thisColor = baseCmap(colorRow, :);
     else
@@ -295,6 +321,57 @@ for k = 1:numel(order)
         fixedStereo .* subjScore;
     plot(ax, xGrid, ySub, '-', 'Color', thisColor, 'LineWidth', 1);
 end
+end
+
+function colorBy = local_normalize_color_mode(colorBy)
+colorBy = lower(strtrim(string(colorBy)));
+switch colorBy
+    case {"stereoscore", "stereo", "normed", "normedstereoscore"}
+        colorBy = "stereoscore";
+    case {"clinicalnotes", "clinical"}
+        colorBy = "clinicalnotes";
+    case {"none", "black"}
+        colorBy = "none";
+    otherwise
+        error('PerceptualVsAdjusted:InvalidColorMode', ...
+            'Unsupported colorBy value "%s". Use "stereoscore", "clinicalnotes", or "none".', colorBy);
+end
+end
+
+function colorSpec = local_build_color_spec(tbl, Basename, ResultsDir, colorBy)
+colorSpec = struct('Mode', colorBy, 'ID', strings(0, 1), ...
+    'Category', strings(0, 1), 'Cmap', zeros(0, 3));
+
+if colorBy ~= "clinicalnotes"
+    return;
+end
+
+[~, categoryByID, uniqueID, cmap] = ...
+    Quad_compute_clinical_notes_color_idx(tbl, ResultsDir, Basename, true);
+colorSpec.ID = string(uniqueID);
+colorSpec.Category = categoryByID;
+colorSpec.Cmap = cmap;
+end
+
+function colors = local_colors_for_ids(ids, colorSpec)
+idStrings = string(ids);
+[isKnown, colorRows] = ismember(idStrings, colorSpec.ID);
+colors = repmat([0.5, 0.5, 0.5], numel(idStrings), 1);
+colors(isKnown, :) = colorSpec.Cmap(colorRows(isKnown), :);
+end
+
+function local_add_clinical_legend(ax, colorSpec)
+[categoryNames, firstRows] = unique(colorSpec.Category, 'stable');
+legendHandles = gobjects(numel(categoryNames), 1);
+for categoryIdx = 1:numel(categoryNames)
+    legendHandles(categoryIdx) = scatter(ax, NaN, NaN, 50, ...
+        colorSpec.Cmap(firstRows(categoryIdx), :), 'filled', ...
+        'MarkerEdgeColor', 'none', 'DisplayName', categoryNames(categoryIdx));
+end
+lgd = legend(ax, legendHandles, categoryNames, 'Location', 'eastoutside');
+lgd.FontName = 'Avenir';
+lgd.FontSize = 9;
+lgd.AutoUpdate = 'off';
 end
 
 function [yFit, yLow, yHigh] = local_fixed_line_with_ci(lme, xGrid, stereoVal, adjustedVarName)
@@ -390,8 +467,8 @@ set(ax, 'FontName', 'Avenir', 'FontSize', 18, ...
     'XTick', tickVals, 'YTick', tickVals);
 xlim(ax, lims);
 ylim(ax, lims);
-xlabel(ax, 'Perceived VA Adjusted, Monocular (degrees)', 'FontSize', 18);
-ylabel(ax, 'Perceived VA Binocular (degrees)', 'FontSize', 18);
+xlabel(ax, 'Perceived VA Adjusted, Monocular (degrees)', 'FontSize', 14);
+ylabel(ax, 'Perceived VA Binocular (degrees)', 'FontSize', 14);
 box(ax, 'off');
 grid(ax, 'off');
 axis(ax, 'square');

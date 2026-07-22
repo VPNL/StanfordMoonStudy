@@ -1,10 +1,12 @@
 function [resultsTbl, slopeTbl] = PM_compare_single_RS_across_tasks(tblStereo, ...
     lme_logPM_by_logAngle_RS_perceptual, lme_logPM_by_logDistance_RS_perceptual, lme_logPM_by_logElevation_RS_perceptual, ...
     lme_logPM_by_logAngle_RS_adjusted, lme_logPM_by_logDistance_RS_adjusted, lme_logPM_by_logElevation_RS_adjusted, ...
-    QuadBasename, ResultsDir, setaxesLim, val)
+    QuadBasename, ResultsDir, setaxesLim, val, colorConfig)
 % PM_COMPARE_SINGLE_RS_ACROSS_TASKS
 % Compare subject-level random-slope estimates across perceptual and
 % adjusted tasks for angle, distance, and elevation.
+% An optional participant color configuration may select clinical-note
+% colors. Omitting it preserves the original stereo-score coloring.
 
 if nargin < 9 || isempty(ResultsDir)
     ResultsDir = pwd;
@@ -16,6 +18,9 @@ end
 
 if nargin < 11
     val = [];
+end
+if nargin < 12
+    colorConfig = [];
 end
 
 if ~exist(ResultsDir, 'dir')
@@ -56,10 +61,15 @@ for i = 1:numel(factorSpecs)
     ax = nexttile(tlo);
     axList(i) = ax;
     axesLim = local_get_axes_lim_for_factor(val, factorSpecs{i}.name, i, setaxesLim);
-    local_plot_factor_panel(ax, slopeTblParts{i}, lmStore{i}, factorSpecs{i}.name, setaxesLim, axesLim);
+    local_plot_factor_panel(ax, slopeTblParts{i}, lmStore{i}, ...
+        factorSpecs{i}.name, setaxesLim, axesLim, colorConfig);
 end
 
-if hasStereo
+useClinicalColors = isstruct(colorConfig) && string(colorConfig.Mode) == "clinicalnotes";
+if useClinicalColors
+    legendHandle = Quad_add_clinical_notes_legend(axList(end), colorConfig);
+    legendHandle.FontSize = 10;
+elseif hasStereo
     apply_stereo_score_colormap(axList);
     cb = add_stereo_score_colorbar(axList(end), 'Normed stereo score');
     cb.FontSize = 16;
@@ -145,17 +155,27 @@ resultRow = table(string(factorName), height(slopeTbl), ...
     'StereoEstimate', 'StereoPValue', 'Rsq', 'RsqAdjusted'});
 end
 
-function local_plot_factor_panel(ax, slopeTbl, lmObj, factorName, setaxesLim, axesLim)
+function local_plot_factor_panel(ax, slopeTbl, lmObj, factorName, ...
+    setaxesLim, axesLim, colorConfig)
 hold(ax, 'on');
 
 hasStereo = any(~isnan(slopeTbl.NormedStereoScore));
+useClinicalColors = isstruct(colorConfig) && string(colorConfig.Mode) == "clinicalnotes";
 if hasStereo
     [~, plotOrder] = sort(slopeTbl.NormedStereoScore, 'descend', 'MissingPlacement', 'last');
     plotTbl = slopeTbl(plotOrder, :);
+else
+    plotTbl = slopeTbl;
+end
+
+if useClinicalColors
+    pointColors = Quad_colors_for_participant_ids(plotTbl.ID, colorConfig);
+    scatter(ax, plotTbl.RS_slope_adjusted, plotTbl.RS_slope_perceptual, 60, ...
+        pointColors, 'filled', 'MarkerEdgeColor', 'none');
+elseif hasStereo
     scatter(ax, plotTbl.RS_slope_adjusted, plotTbl.RS_slope_perceptual, 60, plotTbl.NormedStereoScore, ...
         'filled', 'MarkerEdgeColor', 'none');
 else
-    plotTbl = slopeTbl;
     scatter(ax, plotTbl.RS_slope_adjusted, plotTbl.RS_slope_perceptual, 60, ...
         [0.5 .5 .5], 'filled', 'MarkerEdgeColor', 'none');
 end

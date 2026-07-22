@@ -1,6 +1,9 @@
 function [lme_logPM_by_logDistance, lme_logPM_by_logElevation, ...
     lme_logPM_by_logDistance_RS, lme_logPM_by_logElevation_RS] = ...
-    Quad_PerceivedDisparity_by_DistanceElevation_single(tbl, tblName, ResultsDir, saveLME, mycolormap, sorted_idx, modelTransform, degreeFlag, fullUniqueID, removeOutlierParticipants, colorbarLabel, secondYAxisColor, plotFixedEffectsRS)
+    Quad_PerceivedDisparity_by_DistanceElevation_single(tbl, tblName, ...
+    ResultsDir, saveLME, mycolormap, sorted_idx, modelTransform, ...
+    degreeFlag, fullUniqueID, removeOutlierParticipants, colorbarLabel, ...
+    secondYAxisColor, plotFixedEffectsRS, colorConfig, runStereoAnalysis)
 % QUAD_PERCEIVEDDISPARITY_BY_DISTANCEELEVATION_SINGLE
 % Fit and plot single-factor distance/elevation perceived-disparity models
 % with random-intercept and random-slope variants.
@@ -25,6 +28,12 @@ if nargin < 12 || isempty(secondYAxisColor)
 end
 if nargin < 13 || isempty(plotFixedEffectsRS)
     plotFixedEffectsRS = false;
+end
+if nargin < 14
+    colorConfig = [];
+end
+if nargin < 15 || isempty(runStereoAnalysis)
+    runStereoAnalysis = true;
 end
 
 ResultsDir = fullfile(ResultsDir, 'DistanceElevationModel');
@@ -52,7 +61,9 @@ if saveLME
     local_compare_if_available( ...
         'log2mean_disparity ~ 1 + log2elevation + (1|ID)', lme_logPM_by_logElevation, ...
         'log2mean_disparity ~ 1 + log2elevation + (log2elevation|ID)', lme_logPM_by_logElevation_RS)
-    local_log_stereo_relationships(tbl, lme_logPM_by_logDistance_RS)
+    if runStereoAnalysis
+        local_log_stereo_relationships(tbl, lme_logPM_by_logDistance_RS)
+    end
     diary off
 end
 
@@ -64,23 +75,38 @@ nIDs = numel(categories(removecats(tbl.ID)));
 figRI = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 .92 .72], 'Name', [tblName '_RI'], 'Visible', 'off');
 tRI = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
 tRI.Position = [0.10 0.12 0.69 0.64];
-local_plot_fixed_only(nexttile, tbl, subjectcolor, lme_logPM_by_logDistance, 'D', minDisp, maxDisp, modelTransform, nIDs, true);
-local_plot_fixed_only(nexttile, tbl, subjectcolor, lme_logPM_by_logElevation, 'E', minDisp, maxDisp, modelTransform, nIDs, false, secondYAxisColor);
-local_add_subject_colorbar(figRI, mycolormap, nIDs, colorbarLabel);
+axRI1 = nexttile;
+local_plot_fixed_only(axRI1, tbl, subjectcolor, lme_logPM_by_logDistance, ...
+    'D', minDisp, maxDisp, modelTransform, nIDs, true);
+axRI2 = nexttile;
+local_plot_fixed_only(axRI2, tbl, subjectcolor, lme_logPM_by_logElevation, ...
+    'E', minDisp, maxDisp, modelTransform, nIDs, false, secondYAxisColor);
+local_add_subject_colorbar(figRI, mycolormap, nIDs, colorbarLabel, ...
+    colorConfig, axRI2);
 exportgraphics(figRI, fullfile(ResultsDir, [tblName '_RI.png']), 'Resolution', 600);
 close(figRI);
 
 figRS = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 .92 .72], 'Name', [tblName '_RS'], 'Visible', 'off');
 tRS = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
 tRS.Position = [0.10 0.12 0.69 0.64];
-local_plot_random_slopes(nexttile, tbl, subjectcolor, lme_logPM_by_logDistance_RS, 'D', minDisp, maxDisp, modelTransform, nIDs, fullUniqueID, mycolormap, sorted_idx, true, [], plotFixedEffectsRS);
-local_plot_random_slopes(nexttile, tbl, subjectcolor, lme_logPM_by_logElevation_RS, 'E', minDisp, maxDisp, modelTransform, nIDs, fullUniqueID, mycolormap, sorted_idx, false, secondYAxisColor, plotFixedEffectsRS);
-local_add_subject_colorbar(figRS, mycolormap, nIDs, colorbarLabel);
+axRS1 = nexttile;
+local_plot_random_slopes(axRS1, tbl, subjectcolor, ...
+    lme_logPM_by_logDistance_RS, 'D', minDisp, maxDisp, modelTransform, ...
+    nIDs, fullUniqueID, mycolormap, sorted_idx, true, [], plotFixedEffectsRS);
+axRS2 = nexttile;
+local_plot_random_slopes(axRS2, tbl, subjectcolor, ...
+    lme_logPM_by_logElevation_RS, 'E', minDisp, maxDisp, modelTransform, ...
+    nIDs, fullUniqueID, mycolormap, sorted_idx, false, ...
+    secondYAxisColor, plotFixedEffectsRS);
+local_add_subject_colorbar(figRS, mycolormap, nIDs, colorbarLabel, ...
+    colorConfig, axRS2);
 exportgraphics(figRS, fullfile(ResultsDir, [tblName '_RS.png']), 'Resolution', 600);
 close(figRS);
 
-local_plot_stereo_relationship_figure(tbl, lme_logPM_by_logDistance_RS, ResultsDir, tblName, ...
-    fullUniqueID, mycolormap, sorted_idx);
+if runStereoAnalysis
+    local_plot_stereo_relationship_figure(tbl, lme_logPM_by_logDistance_RS, ResultsDir, tblName, ...
+        fullUniqueID, mycolormap, sorted_idx, colorConfig);
+end
 end
 
 function local_plot_fixed_only(ax, tbl, subjectcolor, lme, modeChar, minDisp, maxDisp, modelTransform, nIDs, showYLabel, hiddenYAxisColor)
@@ -317,7 +343,8 @@ disp(lmSlopeContinuous)
 fprintf('\n');
 end
 
-function local_plot_stereo_relationship_figure(tbl, lmeDistanceRS, ResultsDir, tblName, fullUniqueID, mycolormap, sorted_idx)
+function local_plot_stereo_relationship_figure(tbl, lmeDistanceRS, ...
+    ResultsDir, tblName, fullUniqueID, mycolormap, sorted_idx, colorConfig)
 stereoTbl = local_subject_distance_rs_table(tbl, lmeDistanceRS, fullUniqueID, mycolormap, sorted_idx);
 if isempty(stereoTbl)
     return;
@@ -346,7 +373,8 @@ ax2 = nexttile;
 local_plot_stereo_relationship_panel(ax2, x, stereoTbl.SubjectSlope, stereoTbl.SubjectColor, ...
     xLabel, 'Subject slope', lmSlope);
 
-local_add_subject_colorbar(figStereo, mycolormap, numel(stereoTbl.ID), xLabel);
+local_add_subject_colorbar(figStereo, mycolormap, numel(stereoTbl.ID), ...
+    xLabel, colorConfig, ax2);
 exportgraphics(figStereo, fullfile(ResultsDir, [tblName figSuffix]), 'Resolution', 600);
 close(figStereo);
 end
@@ -359,7 +387,8 @@ scatter(ax, x, y, markerSize, colors, 'filled', 'MarkerFaceAlpha', 0.9, 'MarkerE
 pSlope = lm.Coefficients.pValue(2);
 if pSlope < 0.05
     xGrid = linspace(min(x), max(x), 200)';
-    [yPred, yCI] = predict(lm, table(xGrid, 'VariableNames', {lm.PredictorNames{1}}), 'Alpha', 0.05);
+    [yPred, yCI] = predict(lm, ...
+        table(xGrid, 'VariableNames', lm.PredictorNames(1)), 'Alpha', 0.05);
     fill(ax, [xGrid; flipud(xGrid)], [yCI(:,1); flipud(yCI(:,2))], 'k', ...
         'FaceAlpha', 0.18, 'EdgeColor', 'none');
     plot(ax, xGrid, yPred, ':', 'Color',[.6 .6 .6] ,'LineWidth', 5);
@@ -375,9 +404,23 @@ title(ax, sprintf('%s \n p=%s, slope=%s', yLabel, ...
     'FontSize', 16, 'FontWeight', 'normal');
 end
 
-function local_add_subject_colorbar(figHandle, mycolormap, nIDs, labelText)
+function local_add_subject_colorbar(figHandle, mycolormap, nIDs, ...
+    labelText, colorConfig, legendAxes)
 if nargin < 4 || isempty(labelText)
     labelText = 'Participant color order';
+end
+if nargin < 5
+    colorConfig = [];
+end
+if nargin < 6 || isempty(legendAxes)
+    legendAxes = findobj(figHandle, 'Type', 'axes', '-not', 'Tag', 'Colorbar');
+    legendAxes = legendAxes(1);
+end
+
+if isstruct(colorConfig) && string(colorConfig.Mode) == "clinicalnotes"
+    legendHandle = Quad_add_clinical_notes_legend(legendAxes, colorConfig);
+    legendHandle.FontSize = 11;
+    return;
 end
 
 if isempty(mycolormap)
