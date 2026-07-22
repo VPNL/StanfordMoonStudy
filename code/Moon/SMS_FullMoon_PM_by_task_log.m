@@ -1,5 +1,7 @@
 
-function [lme_by_logRatio_by_Elevation]=SMS_FullMoon_PM_by_task_log(dataDir,datafile,ResultsDir,task, recomputeSort,saveLME)
+function [lme_by_logRatio_by_Elevation, ...
+    lme_by_logRatio_by_Elevation_RS, all_data] = ...
+    SMS_FullMoon_PM_by_task_log(dataDir,datafile,ResultsDir,task, recomputeSort,saveLME)
 %
 % FullMoon_PM_by_task_log(dataDir,datafile,ResultsDir,task, recomputeSort,saveLME)
 % Plots the perceived size and perceived perceptual magnification by
@@ -208,9 +210,9 @@ if pvalL < 0.05
         sindex=find(uniqueID==ID(sortedID));
         jj=find(all_data.ID==uniqueID(sindex));
         if numel(jj) > 1
-            sdata=all_data(jj,:);
-            lower=find(strcmp(sdata.Session,'Lower'));
-            higher=find(strcmp(sdata.Session,'Higher'));
+            % sdata=all_data(jj,:);
+            % lower=find(strcmp(sdata.Session,'Lower'));
+            % higher=find(strcmp(sdata.Session,'Higher'));
             %xvectorS=[sdata.logElevation(lower) sdata.logElevation(higher)];
              xvectorS=xvectoru;
            % rand effex: each subject has different intercept
@@ -320,9 +322,9 @@ if pvalL < 0.05
         sindex=find(uniqueID==ID(sortedID));
         jj=find(all_data.ID==uniqueID(sindex));
         if numel(jj) > 1
-            sdata=all_data(jj,:);
-            lower=find(strcmp(sdata.Session,'Lower'));
-            higher=find(strcmp(sdata.Session,'Higher'));
+            % sdata=all_data(jj,:);
+            % lower=find(strcmp(sdata.Session,'Lower'));
+            % higher=find(strcmp(sdata.Session,'Higher'));
             %xvectorS=[sdata.logElevation(lower) sdata.logElevation(higher)]; % use subject specific xVector
             xvectorS=xvectoru;
            % rand effex: each subject has different intercept
@@ -421,9 +423,9 @@ if pvalR<0.05
         sindex=find(uniqueID==ID(sortedID));
         jj=find(all_data.ID==uniqueID(sindex));
         if numel(jj) > 1
-            sdata=all_data(jj,:);
-            lower=find(strcmp(sdata.Session,'Lower'));
-            higher=find(strcmp(sdata.Session,'Higher'));
+            % sdata=all_data(jj,:);
+            % lower=find(strcmp(sdata.Session,'Lower'));
+            % higher=find(strcmp(sdata.Session,'Higher'));
             %xvectorS=[sdata.Elevation(lower) sdata.Elevation(higher)]; % use subject specific xVector
             xvectorS=xvectoru;
            % rand effex: each subject has differnet intercept
@@ -543,7 +545,6 @@ filenamePNG=fullfile(ResultsDir,['Fig1_MoonIllusion_' basename,'_' task ,'_', nu
 print(figMoonIllusion,filenamePNG,'-dpng','-r600');
 filenameEPS=fullfile(ResultsDir,['Fig1_MoonIllusion_' basename,'_' task ,'_', num2str(nsubjects),'.eps']);
 print(figMoonIllusion,filenameEPS,'-depsc','-r600');
-
 
 
 
