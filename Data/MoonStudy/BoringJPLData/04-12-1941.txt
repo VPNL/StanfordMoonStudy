@@ -1,0 +1,272 @@
+*******************************************************************************
+ Revised: July 31, 2013             Moon / (Earth)                          301
+ 
+ GEOPHYSICAL DATA (updated 2018-Aug-15):
+  Vol. mean radius, km  = 1737.53+-0.03    Mass, x10^22 kg       =    7.349
+  Radius (gravity), km  = 1738.0           Surface emissivity    =    0.92
+  Radius (IAU), km      = 1737.4           GM, km^3/s^2          = 4902.800066
+  Density, g/cm^3       =    3.3437        GM 1-sigma, km^3/s^2  =  +-0.0001  
+  V(1,0)                =   +0.21          Surface accel., m/s^2 =    1.62
+  Earth/Moon mass ratio = 81.3005690769    Farside crust. thick. = ~80 - 90 km
+  Mean crustal density  = 2.97+-.07 g/cm^3 Nearside crust. thick.= 58+-8 km 
+  Heat flow, Apollo 15  = 3.1+-.6 mW/m^2   Mean angular diameter = 31'05.2"
+  Heat flow, Apollo 17  = 2.2+-.5 mW/m^2   Sid. rot. rate, rad/s = 0.0000026617
+  Geometric Albedo      = 0.12             Mean solar day        = 29.5306 d
+  Obliquity to orbit    = 6.67 deg         Orbit period          = 27.321582 d
+  Semi-major axis, a    = 384400 km        Eccentricity          = 0.05490
+  Mean motion, rad/s    = 2.6616995x10^-6  Inclination           = 5.145 deg
+  Apsidal period        = 3231.50 d        Nodal period          = 6798.38 d
+                                 Perihelion  Aphelion    Mean
+  Solar Constant (W/m^2)         1414+-7     1323+-7     1368+-7
+  Maximum Planetary IR (W/m^2)   1314        1226        1268
+  Minimum Planetary IR (W/m^2)      5.2         5.2         5.2
+********************************************************************************
+
+
+*******************************************************************************
+Ephemeris / WWW_USER Tue Jul 21 14:48:49 2026 Pasadena, USA      / Horizons    
+*******************************************************************************
+Target body name: Moon (301)                      {source: DE441}
+Center body name: Earth (399)                     {source: DE441}
+Center-site name: (user defined site below)
+*******************************************************************************
+Start time      : A.D. 1941-Apr-11 17:30:00.0000 UT      
+Stop  time      : A.D. 1941-Apr-13 01:00:00.0000 UT      
+Step-size       : 60 minutes
+*******************************************************************************
+Target pole/equ : MOON_ME                         {East-longitude positive}
+Target radii    : 1737.4, 1737.4, 1737.4 km       {Equator_a, b, pole_c}       
+Center geodetic : 288.88623, 42.37882, .005       {E-lon(deg),Lat(deg),Alt(km)}
+Center cylindric: 288.88623,4718.7437,4276.78408  {E-lon(deg),Dxy(km),Dz(km)}
+Center pole/equ : ITRF93                          {East-longitude positive}
+Center radii    : 6378.137, 6378.137, 6356.752 km {Equator_a, b, pole_c}       
+Target primary  : Earth
+Vis. interferer : MOON (R_eq= 1737.400) km        {source: DE441}
+Rel. light bend : Sun                             {source: DE441}
+Rel. lght bnd GM: 1.3271E+11 km^3/s^2                                          
+Atmos refraction: NO (AIRLESS)
+RA format       : HMS
+Time format     : CAL 
+Calendar mode   : Mixed Julian/Gregorian
+EOP file        : eop.260720.p261016                                           
+EOP coverage    : DATA-BASED 1962-JAN-20 TO 2026-JUL-20. PREDICTS-> 2026-OCT-15
+Units conversion: 1 au= 149597870.700 km, c= 299792.458 km/s, 1 day= 86400.0 s 
+Table cut-offs 1: Elevation (-90.0deg=NO ),Airmass (>38.000=NO), Daylight (NO )
+Table cut-offs 2: Solar elongation (  0.0,180.0=NO ),Local Hour Angle( 0.0=NO )
+Table cut-offs 3: RA/DEC angular rate (     0.0=NO )                           
+******************************************************************************************************************************************************************************
+ Date__(UT)__HR:MN     R.A._____(ICRF)_____DEC    APmag   S-brt             delta      deldot     S-O-T /r     S-T-O  Sky_motion  Sky_mot_PA  RelVel-ANG  Lun_Sky_Brt  sky_SNR
+******************************************************************************************************************************************************************************
+$$SOE
+ 1941-Apr-11 17:30 *   13 17 00.01 -06 57 43.8  -12.781   3.436  0.00242406824859  -0.0809686  177.8579 /T    2.1367   48.712227   103.50986   -3.241166         n.a.     n.a.
+ 1941-Apr-11 18:30 *   13 20 09.40 -07 09 10.3  -12.797   3.422  0.00242119596955  -0.1566118  178.3763 /T    1.6196   47.910619   104.10532   -6.367447         n.a.     n.a.
+ 1941-Apr-11 19:30 *   13 23 13.99 -07 20 54.3  -12.808   3.415  0.00241660362423  -0.2231777  178.6458 /L    1.3509   46.510749   104.90124   -9.322902         n.a.     n.a.
+ 1941-Apr-11 20:30 *   13 26 11.42 -07 32 54.4  -12.811   3.418  0.00241056117435  -0.2764896  178.5570 /L    1.4397   44.595276   105.89171   -12.00667         n.a.     n.a.
+ 1941-Apr-11 21:30 *   13 28 59.75 -07 45 08.1  -12.809   3.427  0.00240343056409  -0.3131184  178.2003 /L    1.7955   42.277816   107.06455   -14.29632         n.a.     n.a.
+ 1941-Apr-11 22:30 *   13 31 37.57 -07 57 31.5  -12.804   3.439  0.00239564502630  -0.3306018  177.7339 /L    2.2609   39.697645   108.39329   -16.03932         n.a.     n.a.
+ 1941-Apr-11 23:30 Cm  13 34 04.11 -08 09 59.6  -12.798   3.451  0.00238768356128  -0.3276242  177.2436 /L    2.7501   37.012125   109.82605   -17.04531         n.a.     n.a.
+ 1941-Apr-12 00:30 Am  13 36 19.30 -08 22 26.5  -12.793   3.463  0.00238004173091  -0.3041397  176.7644 /L    3.2281   34.386863   111.27258   -17.08383         n.a.     n.a.
+ 1941-Apr-12 01:30  m  13 38 23.80 -08 34 45.8  -12.787   3.475  0.00237320032380  -0.2614231  176.3092 /L    3.6823   31.984468   112.59380   -15.89799         n.a.     n.a.
+ 1941-Apr-12 02:30  m  13 40 19.02 -08 46 50.8  -12.781   3.486  0.00236759384846  -0.2020317  175.8796 /L    4.1108   29.953717   113.60372   -13.25577         n.a.     n.a.
+ 1941-Apr-12 03:30  m  13 42 06.99 -08 58 35.3  -12.774   3.496  0.00236358111418  -0.1296685  175.4718 /L    4.5178   28.421329   114.09646   -9.067251         n.a.     n.a.
+ 1941-Apr-12 04:30  m  13 43 50.30 -09 09 54.2  -12.766   3.506  0.00236142026754  -0.0489501  175.0777 /L    4.9110   27.487266   113.90491   -3.564248         n.a.     n.a.
+ 1941-Apr-12 05:30  m  13 45 31.86 -09 20 43.6  -12.756   3.516  0.00236125048297   0.0349107  174.6873 /L    5.3004   27.221434   112.97481   2.5783806         n.a.     n.a.
+ 1941-Apr-12 06:30  m  13 47 14.73 -09 31 01.4  -12.744   3.526  0.00236308202741   0.1164785  174.2896 /L    5.6972   27.657702   111.41103   8.3925849         n.a.     n.a.
+ 1941-Apr-12 07:30  m  13 49 01.89 -09 40 47.7  -12.730   3.536  0.00236679566639   0.1904914  173.8735 /L    6.1122   28.784232   109.45447   13.029907         n.a.     n.a.
+ 1941-Apr-12 08:30 Am  13 50 56.01 -09 50 04.5  -12.713   3.547  0.00237215146289   0.2522391  173.4290 /L    6.5558   30.535481   107.39524   16.075973         n.a.     n.a.
+ 1941-Apr-12 09:30 Nm  13 52 59.30 -09 58 55.7  -12.695   3.559  0.00237880609375   0.2978873  172.9474 /L    7.0361   32.793171   105.47888   17.536861         n.a.     n.a.
+ 1941-Apr-12 10:30 *m  13 55 13.33 -10 07 26.7  -12.674   3.572  0.00238633703213   0.3247204  172.4228 /L    7.5595   35.397996   103.85801   17.646614         n.a.     n.a.
+ 1941-Apr-12 11:30 *   13 57 38.94 -10 15 44.3  -12.652   3.587  0.00239427143166   0.3312878  171.8517 /L    8.1292   38.167511   102.59551   16.699541         n.a.     n.a.
+ 1941-Apr-12 12:30 *   14 00 16.26 -10 23 55.6  -12.629   3.602  0.00240211734646   0.3174526  171.2335 /L    8.7459   40.914324   101.69348   14.965874         n.a.     n.a.
+ 1941-Apr-12 13:30 *   14 03 04.69 -10 32 08.3  -12.605   3.618  0.00240939500370   0.2843498  170.5704 /L    9.4074   43.461158   101.12330   12.666177         n.a.     n.a.
+ 1941-Apr-12 14:30 *   14 06 02.94 -10 40 29.3  -12.581   3.635  0.00241566613506   0.2342689  169.8674 /L   10.1087   45.651848   100.84642   9.9726634         n.a.     n.a.
+ 1941-Apr-12 15:30 *   14 09 09.21 -10 49 05.3  -12.558   3.653  0.00242055977251   0.1704807  169.1317 /L   10.8426   47.358681   100.82574   7.0192012         n.a.     n.a.
+ 1941-Apr-12 16:30 *   14 12 21.20 -10 58 01.5  -12.535   3.671  0.00242379333424   0.0970221  168.3723 /L   11.6002   48.486878   101.03035   3.9124517         n.a.     n.a.
+ 1941-Apr-12 17:30 *   14 15 36.35 -11 07 22.0  -12.514   3.690  0.00242518820531   0.0184551  167.5995 /L   12.3711   48.977019   101.43655   0.7418274         n.a.     n.a.
+ 1941-Apr-12 18:30 *   14 18 51.91 -11 17 09.2  -12.494   3.708  0.00242467932553  -0.0603880  166.8245 /L   13.1443   48.806026   102.02684   -2.411960         n.a.     n.a.
+ 1941-Apr-12 19:30 *   14 22 05.12 -11 27 23.8  -12.476   3.727  0.00242231853193  -0.1346677  166.0583 /L   13.9087   47.987088   102.78792   -5.469314         n.a.     n.a.
+ 1941-Apr-12 20:30 *   14 25 13.34 -11 38 04.5  -12.460   3.744  0.00241827158541  -0.1997984  165.3117 /L   14.6536   46.568667   103.70764   -8.344537         n.a.     n.a.
+ 1941-Apr-12 21:30 *   14 28 14.22 -11 49 08.4  -12.447   3.761  0.00241280897313  -0.2517030  164.5943 /L   15.3694   44.632462   104.77080   -10.93843         n.a.     n.a.
+ 1941-Apr-12 22:30 *   14 31 05.83 -12 00 30.3  -12.435   3.777  0.00240629075482  -0.2870519  163.9140 /L   16.0483   42.290038   105.95339   -13.13031         n.a.     n.a.
+ 1941-Apr-12 23:30 C   14 33 46.75 -12 12 03.7  -12.425   3.792  0.00239914594630  -0.3034761  163.2766 /L   16.6842   39.677741   107.21466   -14.76956         n.a.     n.a.
+ 1941-Apr-13 00:30 A   14 36 16.24 -12 23 40.4  -12.416   3.806  0.00239184722618  -0.2997403  162.6856 /L   17.2741   36.949695   108.48728   -15.66788         n.a.     n.a.
+$$EOE
+******************************************************************************************************************************************************************************
+Column meaning:
+ 
+TIME
+
+  Times PRIOR to 1962 are UT1, a mean-solar time closely related to the
+prior but now-deprecated GMT. Times AFTER 1962 are in UTC, the current
+civil or "wall-clock" time-scale. UTC is kept within 0.9 seconds of UT1
+using integer leap-seconds for 1972 and later years.
+
+  Conversion from the internal Barycentric Dynamical Time (TDB) of solar
+system dynamics to the non-uniform civil UT time-scale requested for output
+has not been determined for UTC times after the next July or January 1st.
+Therefore, the last known leap-second is used as a constant over future
+intervals.
+
+  Time tags refer to the UT time-scale conversion from TDB on Earth
+regardless of observer location within the solar system, although clock
+rates may differ due to the local gravity field and no analog to "UT"
+may be defined for that location.
+
+  Any 'b' symbol in the 1st-column denotes a B.C. date. First-column blank
+(" ") denotes an A.D. date.
+ 
+CALENDAR SYSTEM
+
+  Mixed calendar mode was active such that calendar dates after AD 1582-Oct-15
+(if any) are in the modern Gregorian system. Dates prior to 1582-Oct-5 (if any)
+are in the Julian calendar system, which is automatically extended for dates
+prior to its adoption on 45-Jan-1 BC.  The Julian calendar is useful for
+matching historical dates. The Gregorian calendar more accurately corresponds
+to the Earth's orbital motion and seasons. A "Gregorian-only" calendar mode is
+available if such physical events are the primary interest.
+
+  NOTE: "n.a." in output means quantity "not available" at the print-time.
+ 
+SOLAR PRESENCE (OBSERVING SITE)
+  Time tag is followed by a blank, then a solar-presence symbol:
+
+       '*'  Daylight (refracted solar upper-limb on or above apparent horizon)
+       'C'  Civil twilight/dawn
+       'N'  Nautical twilight/dawn
+       'A'  Astronomical twilight/dawn
+       ' '  Night OR geocentric ephemeris
+
+LUNAR PRESENCE (OBSERVING SITE)
+  The solar-presence symbol is immediately followed by a lunar-presence symbol:
+
+       'm'  Refracted upper-limb of Moon on or above apparent horizon
+       ' '  Refracted upper-limb of Moon below apparent horizon OR geocentric
+            ephemeris
+ 
+ 'R.A._____(ICRF)_____DEC' =
+  Astrometric right ascension and declination of the target center with
+respect to the observing site (coordinate origin) in the reference frame of
+the planetary ephemeris (ICRF). Compensated for down-leg light-time delay
+aberration.
+
+  Units: RA  in hours-minutes-seconds of time,    HH MM SS.ff{ffff}
+         DEC in degrees-minutes-seconds of arc,  sDD MN SC.f{ffff}
+ 
+ 'APmag   S-brt' =
+   Moon's approximate apparent visual magnitude and surface brightness. When
+phase angle < 7 deg (within ~1 day of full Moon), computed magnitude tends to
+be about 0.12 too small.
+
+   For Earth-based observers, the estimated dimming due to atmospheric
+absorption (extinction) is available as a separate, requestable quantity.
+
+   Surface brightness is the average airless visual magnitude of a
+square-arcsecond of the illuminated portion of the apparent disk.
+
+   Units: MAGNITUDES & MAGNITUDES PER SQUARE ARCSECOND
+ 
+ 'delta      deldot' =
+   Apparent range ("delta", light-time aberrated) and range-rate ("delta-dot")
+of the target center relative to the observer. A positive "deldot" means the
+target center is moving away from the observer, negative indicates movement
+toward the observer.  Units: AU and KM/S
+ 
+ 'S-O-T /r' =
+   Sun-Observer-Target apparent SOLAR ELONGATION ANGLE seen from the observers'
+location at print-time.
+
+   The '/r' column provides a code indicating the targets' apparent position
+relative to the Sun in the observers' sky, as described below:
+
+   Case A: For an observing location on the surface of a rotating body, that
+body rotational sense is considered:
+
+    /T indicates target TRAILS Sun   (evening sky: rises and sets AFTER Sun)
+    /L indicates target LEADS Sun    (morning sky: rises and sets BEFORE Sun)
+
+   Case B: For an observing point that does not have a rotational model (such
+as a spacecraft), the "leading" and "trailing" condition is defined by the
+observers' heliocentric ORBITAL motion:
+
+    * If continuing in the observers' current direction of heliocentric
+       motion would encounter the targets' apparent longitude first, followed
+       by the Sun's, the target LEADS the Sun as seen by the observer.
+
+    * If the Sun's apparent longitude would be encountered first, followed
+       by the targets', the target TRAILS the Sun.
+
+   Two other codes can be output:
+    /* indicates observer is Sun-centered    (undefined)
+    /? Target is aligned with Sun center     (no lead or trail)
+
+   The S-O-T solar elongation angle is numerically the minimum separation
+angle of the Sun and target in the sky in any direction. It does NOT indicate
+the amount of separation in the leading or trailing directions, which would
+be defined along the equator of a spherical coordinate system.
+
+   Units: DEGREES
+ 
+ 'S-T-O' =
+   The Sun-Target-Observer angle; the interior vertex angle at target center
+formed by a vector from the target to the apparent center of the Sun (at
+reflection time on the target) and the apparent vector from target to the
+observer at print-time. Slightly different from true PHASE ANGLE (requestable
+separately) at the few arcsecond level in that it includes stellar aberration
+on the down-leg from target to observer.  Units: DEGREES
+ 
+ 'Sky_motion  Sky_mot_PA  RelVel-ANG' =
+  Total apparent angular rate of the target in the plane-of-sky. "Sky_mot_PA"
+is the position angle of the target's direction of motion in the plane-of-sky,
+measured counter-clockwise from the apparent of-date north pole direction.
+"RelVel-ANG" is the flight path angle of the target's relative motion with
+respect to the observer's line-of-sight, in the range [-90,+90], where positive
+values indicate motion away from the observer, negative values are toward the
+observer:
+
+  -90 = target is moving directly toward the observer
+    0 = target is moving at right angles to the observer's line-of-sight
+  +90 = target is moving directly away from the observer
+
+UNITS:  ARCSECONDS/MINUTE, DEGREES, DEGREES
+ 
+ 'Lun_Sky_Brt  sky_SNR' =
+  Sky brightness due to moonlight scattered by Earth's atmosphere at the
+target's position in the sky. "sky_SNR" is the visual signal-to-noise ratio
+(SNR) of the target's surface brightness relative to background sky. Output
+only for topocentric Earth observers when both the Moon and target are above
+the local horizon and the Sun is in astronomical twilight (or further) below
+the horizon, and the target is not the Moon or Sun. If all conditions are
+not met, "n.a." is output. Galactic brightness, local sky light-pollution
+and weather are NOT considered. Lunar opposition surge is considered. The
+value returned is accurate under ideal conditions at the approximately 8-23%
+level, so is a useful but not definitive value.
+
+  If the target-body radius is also known, "sky_SNR" is output. This is the
+approximate visual signal-to-noise ratio of the target's brightness divided
+by lunar sky brightness. When sky_SNR < 1, the target is dimmer than the
+ideal moonlight-scattering background sky, so unlikely to be detectable at
+visual wavelengths. In practice, visibility requires sky_SNR > 1 and a
+detector sensitive enough to reach the target's magnitude, even if it isn't
+washed out by moonlight. When relating magnitudes and brightness values,
+keep in mind their logarithmic relationship m2-m1 = -2.5*log_10(b2/b1).
+
+  UNITS: VISUAL MAGNITUDES / ARCSECOND^2, and unitless ratio
+
+Computations by ...
+
+    Solar System Dynamics Group, Horizons On-Line Ephemeris System
+    4800 Oak Grove Drive, Jet Propulsion Laboratory
+    Pasadena, CA  91109   USA
+
+    General site: https://ssd.jpl.nasa.gov/
+    Mailing list: https://ssd.jpl.nasa.gov/email_list.html
+    System news : https://ssd.jpl.nasa.gov/horizons/news.html
+    User Guide  : https://ssd.jpl.nasa.gov/horizons/manual.html
+    Connect     : browser        https://ssd.jpl.nasa.gov/horizons/app.html#/x
+                  API            https://ssd-api.jpl.nasa.gov/doc/horizons.html
+                  command-line   telnet ssd.jpl.nasa.gov 6775
+                  e-mail/batch   https://ssd.jpl.nasa.gov/ftp/ssd/horizons_batch.txt
+                  scripts        https://ssd.jpl.nasa.gov/ftp/ssd/SCRIPTS
+    Inquiries   : Jon.D.Giorgini@jpl.nasa.gov
+
+******************************************************************************************************************************************************************************
