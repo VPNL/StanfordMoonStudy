@@ -114,13 +114,14 @@ VAe=lme.Coefficients.Estimate(2);
 De=lme.Coefficients.Estimate(3);
 Ee=lme.Coefficients.Estimate(4);
 if ElevationTransform==1
-  titlestr=sprintf('PM=%.2f(VA)^{%.2f}D^{%.2f}(1+E)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
+  titlestr=sprintf('PM=%.2fVA^{%.2f}D^{%.2f}(1+E)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
 elseif ElevationTransform==2
-  titlestr=sprintf('PM=%.2f(VA)^{%.2f}D^{%.2f}(1+|E|)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
+  titlestr=sprintf('PM=%.2fVA^{%.2f}D^{%.2f}(1+|E|)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
+  % titlestr=sprintf('PM=cVA^{%.2f}D^{%.2f}(1+|E|)^{%.2f}\n',VAe,De,Ee);
 elseif ElevationTransform==5
-  titlestr=sprintf('PM=%.2f(VA)^{%.2f}D^{%.2f}(1+E/90)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
+  titlestr=sprintf('PM=%.2fVA^{%.2f}D^{%.2f}(1+E/90)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
 elseif ElevationTransform==6
-  titlestr=sprintf('PM=%.2f(VA)^{%.2f}D^{%.2f}(1+|E|/90)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
+  titlestr=sprintf('PM=%.2fVA^{%.2f}D^{%.2f}(1+|E|/90)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
 
 end
 
