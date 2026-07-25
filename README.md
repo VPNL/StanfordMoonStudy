@@ -1,4 +1,4 @@
-This repository contains the data and code that generates the figures in
+This repository contains the data and code that generates the figures in:
 
 Why does the Moon look larger on the horizon? The curious case of perceptual magnification 
 
