@@ -12,7 +12,7 @@ Figures: output of code in CodeForGeneratingFigures.
 
 Rcode: R code that takes the raw data tables and generates the processed data tables.
 
-code: matlab functions to analyze the data;
+code: matlab functions to analyze the data.
 
 edit SMS_setCodePath.m in CodeForGeneratingFigures to include this directory and subdirectories in matlab path
 
