@@ -1,0 +1,29 @@
+write_moon_lme_report.m: Moon task comparison models
+===========================
+
+Generated: 2026-08-25 19:03:50
+
+Models test whether elevation effects differ across Perceptual and Adjusted tasks.
+Rows: 639
+Subjects: 157
+
+lme_angle_by_Elevation_and_task.Coefficients = 
+
+    Fixed effect coefficients: DFMethod = Residual, Alpha = 0.05
+
+    Name                       Estimate     SE           tStat      DF     pValue        Lower        Upper
+    Intercept                  1.8972       0.062231     30.486     627    6.711e-126    1.775        2.0194
+    Task_Adjusted              -0.6935      0.070553     -9.8296    627    2.6466e-21    -0.83205     -0.55496
+    Elevation                  -0.025034    0.0025171    -9.9458    627    9.6938e-22    -0.029977    -0.020091
+    Task_Adjusted:Elevation    0.028601     0.0031928    8.958      627    3.7464e-18    0.022331     0.034871
+
+lme_PM_by_Elevation_and_task.Coefficients = 
+
+    Fixed effect coefficients: DFMethod = Residual, Alpha = 0.05
+
+    Name                       Estimate     SE           tStat      DF     pValue         Lower        Upper
+    Intercept                  3.5605       0.11712      30.4       627    1.9336e-125    3.3305       3.7905
+    Task_Adjusted              -1.3011      0.13248      -9.8211    627    2.8464e-21     -1.5613      -1.041
+    Elevation                  -0.047614    0.0047291    -10.068    627    3.329e-22      -0.056901    -0.038328
+    Task_Adjusted:Elevation    0.053407     0.0059954    8.9079     627    5.5987e-18     0.041633     0.06518
+
