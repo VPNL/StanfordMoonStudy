@@ -25,7 +25,6 @@ saveLME=1; % 1 save files; 0 don't save
 %%  read data and plot experiment parameter range
 
 task='Perceptual';
-recomputeSort=1; % sort subject colors by slopes of perceptual magnification
 
 all_quad_data=readtable(fullfile(dataDir,QuadFile));
 
@@ -47,11 +46,20 @@ uniqueID=unique(all_quad_data.ID);
 nsubjects=length(uniqueID);
 all_data_perceptual=all_quad_data;
 meanPM=zeros(1,nsubjects);
-for i=1:nsubjects
-    idx=find(all_data_perceptual.ID==uniqueID(i));
-    meanPM(i)=mean(all_data_perceptual.Ratio_Visual_Angle(idx));
+
+recomputeSort=1; % sort subject colors by slopes of perceptual magnification
+if recomputeSort
+    for i=1:nsubjects
+        idx=find(all_data_perceptual.ID==uniqueID(i));
+     meanPM(i)=mean(all_data_perceptual.Ratio_Visual_Angle(idx));
+    end
+    [~, sorted_idx] = sort(meanPM);
+     savefile=fullfile(ResultsDir, [QuadBasename  '_sortedidx']);
+     save(savefile ,'sorted_idx');
+else
+    loadfile=fullfile(ResultsDir, [QuadBasename  '_sortedidx']);
+    sorted_idx=load(loadfile);
 end
-[~, sorted_idx] = sort(meanPM);
 cmap=brighten(colormap(plasma(nsubjects*1.1)),0);
 
 elevationTransform=2;

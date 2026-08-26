@@ -1,0 +1,83 @@
+write_moon_lme_report.m: Moon perceptual magnification by elevation FullMoonDataLong090225.csv Adjusted 
+===============================================================================
+
+Generated: 2026-08-25 19:03:45
+
+Task: Adjusted
+Median PM: 2.09
+Mean PM: 2.38
+PM SD: 1.04
+Participants with negative slopes: 0.00%
+
+lme_ratio_by_Elevation = 
+
+Linear mixed-effects model fit by ML
+
+Model information:
+    Number of observations         314
+    Fixed effects coefficients     2
+    Random effects coefficients    157
+    Covariance parameters          2
+
+Formula:
+    Ratio_Visual_Angle ~ 1 + Elevation + (1 | ID)
+
+Model fit statistics:
+    AIC       BIC       LogLikelihood    Deviance
+    820.83    835.83    -406.42          812.83
+
+Fixed effects coefficients (95% CIs):
+    Name         Estimate     SE           tStat     DF     pValue        Lower         Upper
+    Intercept    2.2735       0.10925      20.811    312    6.2278e-61    2.0585        2.4884
+    Elevation    0.0051977    0.0039878    1.3034    312    0.19339       -0.0026486    0.013044
+
+Random effects covariance parameters (95% CIs):
+Group: ID (157 Levels)
+    Name1        Name2        Type    Estimate    Lower     Upper
+    Intercept    Intercept    std     0.86241     0.7509    0.99048
+
+Group: Error
+    Name       Estimate    Lower      Upper
+    Res Std    0.58275     0.52213    0.65041
+
+lme_ratio_by_Elevation_RS = 
+
+Linear mixed-effects model fit by ML
+
+Model information:
+    Number of observations         314
+    Fixed effects coefficients     2
+    Random effects coefficients    314
+    Covariance parameters          4
+
+Formula:
+    Ratio_Visual_Angle ~ 1 + Elevation + (1 + Elevation | ID)
+
+Model fit statistics:
+    AIC       BIC       LogLikelihood    Deviance
+    822.77    845.26    -405.38          810.77
+
+Fixed effects coefficients (95% CIs):
+    Name         Estimate     SE           tStat     DF     pValue        Lower         Upper
+    Intercept    2.2895       0.11613      19.715    312    9.2632e-57    2.061         2.518
+    Elevation    0.0045915    0.0039204    1.1712    312    0.24243       -0.0031224    0.012305
+
+Random effects covariance parameters (95% CIs):
+Group: ID (157 Levels)
+    Name1        Name2        Type    Estimate     Lower        Upper
+    Intercept    Intercept    std     1.0035       0.8919       1.1291
+    Elevation    Intercept    corr    -1           NaN          NaN
+    Elevation    Elevation    std     0.0070346    0.0059679    0.008292
+
+Group: Error
+    Name       Estimate    Lower      Upper
+    Res Std    0.57743     0.51777    0.64398
+
+model_comp = 
+
+    Theoretical Likelihood Ratio Test
+
+    Model                        DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue
+    lme_ratio_by_Elevation       4     820.83    835.83    -406.42
+    lme_ratio_by_Elevation_RS    6     822.77    845.26    -405.38    2.0684    2          0.35551
+
