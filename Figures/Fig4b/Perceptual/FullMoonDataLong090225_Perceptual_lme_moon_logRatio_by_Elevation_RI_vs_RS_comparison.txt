@@ -1,0 +1,20 @@
+write_moon_lme_report.m: Moon log perceptual magnification by log elevation: FullMoonDataLong090225.csv Perceptual - RI versus RS model comparison
+=========================================================================================================================
+
+Generated: 2026-09-21 16:09:18
+
+Task: Perceptual
+Median matched size: 1.31
+Mean matched size: 1.41
+Matched-size SD: 1.16
+Random-intercept formula: logRatio ~ logElevation + (1|ID)
+Random-slope formula: logRatio ~ logElevation + (logElevation|ID)
+
+Random-intercept versus random-slope model comparison = 
+
+    Theoretical Likelihood Ratio Test
+
+    Model                              DF    AIC       BIC       LogLik     LRStat      deltaDF    pValue
+    lme_by_logRatio_by_Elevation       4     499.74    514.77    -245.87
+    lme_by_logRatio_by_Elevation_RS    6     503.68    526.24    -245.84    0.055972    2          0.9724
+

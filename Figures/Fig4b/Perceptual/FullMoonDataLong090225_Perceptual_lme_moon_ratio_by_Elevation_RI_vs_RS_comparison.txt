@@ -1,0 +1,21 @@
+write_moon_lme_report.m: Moon perceptual magnification by elevation: FullMoonDataLong090225.csv Perceptual - RI versus RS model comparison
+=================================================================================================================
+
+Generated: 2026-09-21 16:09:33
+
+Task: Perceptual
+Median PM: 2.39
+Mean PM: 2.63
+PM SD: 1.16
+Participants with negative slopes: 100.00%
+Random-intercept formula: Ratio_Visual_Angle ~ Elevation + (1|ID)
+Random-slope formula: Ratio_Visual_Angle ~ Elevation + (Elevation|ID)
+
+Random-intercept versus random-slope model comparison = 
+
+    Theoretical Likelihood Ratio Test
+
+    Model                        DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue
+    lme_ratio_by_Elevation       4     880.33    895.37    -436.17
+    lme_ratio_by_Elevation_RS    6     854.41    876.96    -421.2     29.927    2          3.1723e-07
+

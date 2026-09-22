@@ -1,0 +1,43 @@
+write_moon_lme_report.m: Moon perceptual magnification by elevation: FullMoonDataLong090225.csv Adjusted - random-intercept model
+========================================================================================================
+
+Generated: 2026-09-21 16:09:53
+
+Task: Adjusted
+Median PM: 2.09
+Mean PM: 2.38
+PM SD: 1.04
+Participants with negative slopes: 0.00%
+
+Random-intercept model: Ratio_Visual_Angle ~ Elevation + (1|ID) = 
+Formula: Ratio_Visual_Angle ~ 1 + Elevation + (1 | ID)
+
+Linear mixed-effects model fit by ML
+
+Model information:
+    Number of observations         314
+    Fixed effects coefficients     2
+    Random effects coefficients    157
+    Covariance parameters          2
+
+Formula:
+    Ratio_Visual_Angle ~ 1 + Elevation + (1 | ID)
+
+Model fit statistics:
+    AIC       BIC       LogLikelihood    Deviance
+    820.83    835.83    -406.42          812.83
+
+Fixed effects coefficients (95% CIs):
+    Name         Estimate     SE           tStat     DF     pValue        Lower         Upper
+    Intercept    2.2735       0.10925      20.811    312    6.2278e-61    2.0585        2.4884
+    Elevation    0.0051977    0.0039878    1.3034    312    0.19339       -0.0026486    0.013044
+
+Random effects covariance parameters (95% CIs):
+Group: ID (157 Levels)
+    Name1        Name2        Type    Estimate    Lower     Upper
+    Intercept    Intercept    std     0.86241     0.7509    0.99048
+
+Group: Error
+    Name       Estimate    Lower      Upper
+    Res Std    0.58275     0.52213    0.65041
+
