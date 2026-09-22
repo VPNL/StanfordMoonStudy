@@ -1,0 +1,45 @@
+write_moon_lme_report.m: Moon perceptual magnification by elevation and task
+===================================================
+
+Generated: 2026-09-21 16:10:00
+
+Model tests whether elevation effects differ across Perceptual and Adjusted tasks.
+Reference task: Perceptual
+Task coefficient: Adjusted relative to Perceptual
+Rows: 639
+Subjects: 157
+
+Perceptual magnification model = 
+Formula: logRatio ~ 1 + Task*logElevation + (1 | ID)
+
+Linear mixed-effects model fit by ML
+
+Model information:
+    Number of observations         631
+    Fixed effects coefficients     4
+    Random effects coefficients    157
+    Covariance parameters          2
+
+Formula:
+    logRatio ~ 1 + Task*logElevation + (1 | ID)
+
+Model fit statistics:
+    AIC       BIC       LogLikelihood    Deviance
+    827.95    854.63    -407.97          815.95
+
+Fixed effects coefficients (95% CIs):
+    Name                          Estimate    SE          tStat      DF     pValue        Lower       Upper
+    Intercept                     2.6544      0.12844     20.667     627    9.2623e-73    2.4022      2.9066
+    Task_Adjusted                 -1.8021     0.15846     -11.372    627    2.2463e-27    -2.1132     -1.4909
+    logElevation                  -0.3349     0.029613    -11.309    627    4.0767e-27    -0.39305    -0.27675
+    Task_Adjusted:logElevation    0.40707     0.037382    10.889     627    2.0655e-25    0.33366     0.48048
+
+Random effects covariance parameters (95% CIs):
+Group: ID (157 Levels)
+    Name1        Name2        Type    Estimate    Lower      Upper
+    Intercept    Intercept    std     0.37856     0.32896    0.43565
+
+Group: Error
+    Name       Estimate    Lower      Upper
+    Res Std    0.37886     0.35549    0.40376
+

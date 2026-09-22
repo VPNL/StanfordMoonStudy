@@ -1,0 +1,44 @@
+write_moon_lme_report.m: Moon log perceptual magnification by log elevation: FullMoonDataLong090225.csv Perceptual - random-slope model
+==============================================================================================================
+
+Generated: 2026-09-21 16:09:18
+
+Task: Perceptual
+Median matched size: 1.31
+Mean matched size: 1.41
+Matched-size SD: 1.16
+
+Random-slope model: logRatio ~ logElevation + (logElevation|ID) = 
+Formula: logRatio ~ 1 + logElevation + (1 + logElevation | ID)
+
+Linear mixed-effects model fit by ML
+
+Model information:
+    Number of observations         317
+    Fixed effects coefficients     2
+    Random effects coefficients    314
+    Covariance parameters          4
+
+Formula:
+    logRatio ~ 1 + logElevation + (1 + logElevation | ID)
+
+Model fit statistics:
+    AIC       BIC       LogLikelihood    Deviance
+    503.68    526.24    -245.84          491.68
+
+Fixed effects coefficients (95% CIs):
+    Name            Estimate    SE          tStat      DF     pValue        Lower       Upper
+    Intercept       2.6266      0.1406      18.682     315    6.0365e-53    2.35        2.9033
+    logElevation    -0.32832    0.032201    -10.196    315    2.7734e-21    -0.39167    -0.26496
+
+Random effects covariance parameters (95% CIs):
+Group: ID (157 Levels)
+    Name1           Name2           Type    Estimate    Lower         Upper
+    Intercept       Intercept       std     0.46862     0.25698       0.85457
+    logElevation    Intercept       corr    -1          NaN           NaN
+    logElevation    logElevation    std     0.008129    1.9776e-06    33.414
+
+Group: Error
+    Name       Estimate    Lower      Upper
+    Res Std    0.38451     0.34447    0.42921
+
