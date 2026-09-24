@@ -4,7 +4,6 @@
 
 clx
 
-codeDir = '/Users/kalanit/Projects/PerceptualMagnification/Paper/ExperimentalData/code/code_Paper2Figures/';
 expDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
 
 addpath(genpath(codeDir));
