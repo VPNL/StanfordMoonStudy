@@ -252,7 +252,7 @@ set(gca,'YTick',log2(minPMLim):1:log2(maxPMLim) ,'YTickLabel',2.^([log2(minPMLim
 xlim([log2(minRealAngle*.95) log2(maxRealAngle*1.05)]);
 ylim([log2(minPMLim) ceil(log2(maxPMLim))]);
 set(gca,'FontName','Avenir','FontSize', 20)
-xlabel ({'Real Visual Angle [degree]','log scale'},'FontSize', 24)
+xlabel ({'Visual Angle [degree]','log scale'},'FontSize', 24)
 ylabel ({'Perceptual Magnification', 'log scale'},'FontSize', 24)
 
 titlestr=sprintf('PM=%.2fVA^{%.2f}\n p=%-.2e \n n=%d',2.^mean_intercept_angle,mean_slope_angle,pval_angle, nsubjects);
