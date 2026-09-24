@@ -1,25 +1,25 @@
-function [lme] = fit_PM_full_VA_D_E_model(tbl, tblName, ResultsDir, saveModels, mycolormap, sorted_idx, ElevationTransform)
-% fit_PM_full_VA_D_E_model
-% Fit the full VA/D/E perceptual magnification LME and plot model fits.
+function [lme] = fit_PM_full_S_D_E_model(tbl, tblName, ResultsDir, saveModels, mycolormap, sorted_idx, ElevationTransform)
+% fit_PM_full_S_D_E_model
+% Fit the full S/D/E perceptual magnification LME and plot model fits.
 %
 % Can use several transforms for Elevation
 %   (1) linear mixed-effects model (fitlme): ElevationTranform==1
-%       log2(PM) ~ log2(VA) + log2(D) + log2(1+E) + (1|ID)
+%       log2(PM) ~ log2(S) + log2(D) + log2(1+E) + (1|ID)
 %   (2)  ElevationTranform==2
-%       log2(PM) ~ log2(VA) + log2(D) + log2(1+|E|) + (1|ID)
+%       log2(PM) ~ log2(S) + log2(D) + log2(1+|E|) + (1|ID)
 %   (3)  ElevationTransform==3
-%       log2(PM) ~ log2(VA) + log2(D) + log2(1+E/90) + (1|ID)
+%       log2(PM) ~ log2(S) + log2(D) + log2(1+E/90) + (1|ID)
 %   (4)  ElevationTransform==4
-%       log2(PM) ~ log2(VA) + log2(D) + log2(1+|E|/90) + (1|ID)
+%       log2(PM) ~ log2(S) + log2(D) + log2(1+|E|/90) + (1|ID)
 % Also generates a figure:
 %   <tblName>.png                       (LME)
 % 
 % Inputs
 %   tbl        : MATLAB table containing at least ID and either:
-%                - log2ratio_visual_angle, log2real_angle, log2distance, log2elevation
+%                - log2ratio_visual_angle, log2size, log2distance, log2elevation
 %                  OR
-%                - Ratio_Visual_Angle (or Reported_Visual_Angle + Real_Visual_Angle),
-%                  Real_Visual_Angle, Distance, Elevation
+%                - Ratio_Visual_Angle (or Reported_Visual_Angle + Size),
+%                  Size, Distance, Elevation
 %   tblName    : string/char used for figure titles and output filenames
 %   ResultsDir : output directory for figures/models (set [] or '' to skip saving)
 %   saveModels : logical, if true saves the fitted model to .mat and writes
@@ -50,7 +50,7 @@ ElevationTransform = normalize_quad_pm_transform_id(ElevationTransform, 'standar
 %% ensure required variables exist (compute if needed)
 tbl = local_ensure_log_variables(tbl,ElevationTransform);
 
-required = {'ID','log2ratio_visual_angle','log2real_angle','log2distance','log2elevation'};
+required = {'ID','log2ratio_visual_angle','log2size','log2distance','log2elevation'};
 for i = 1:numel(required)
     if ~ismember(required{i}, tbl.Properties.VariableNames)
         error('Missing required variable "%s" after preprocessing.', required{i});
@@ -58,7 +58,7 @@ for i = 1:numel(required)
 end
 
 % drop non-finite rows early
-Xraw = [tbl.log2real_angle, tbl.log2distance, tbl.log2elevation];
+Xraw = [tbl.log2size, tbl.log2distance, tbl.log2elevation];
 yraw = tbl.log2ratio_visual_angle;
 
 group = tbl.ID;
@@ -108,21 +108,21 @@ for c=1:length(ID)
 end
 
 %% (1) LME (fitlme)
-formula = 'log2ratio_visual_angle ~ 1 + log2real_angle + log2distance + log2elevation + (1|ID)';
+formula = 'log2ratio_visual_angle ~ 1 + log2size + log2distance + log2elevation + (1|ID)';
 lme = fitlme(tbl, formula)
 Intercept=lme.Coefficients.Estimate(1);
 VAe=lme.Coefficients.Estimate(2);
 De=lme.Coefficients.Estimate(3);
 Ee=lme.Coefficients.Estimate(4);
 if ElevationTransform==1
-  titlestr=sprintf('PM=%.2fVA^{%.2f}D^{%.2f}(1+E)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
+  titlestr=sprintf('PM=%.2fS^{%.2f}D^{%.2f}(1+E)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
 elseif ElevationTransform==2
-  titlestr=sprintf('PM=%.2fVA^{%.2f}D^{%.2f}(1+|E|)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
+  titlestr=sprintf('PM=%.2fS^{%.2f}D^{%.2f}(1+|E|)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
   % titlestr=sprintf('PM=cVA^{%.2f}D^{%.2f}(1+|E|)^{%.2f}\n',VAe,De,Ee);
 elseif ElevationTransform==5
-  titlestr=sprintf('PM=%.2fVA^{%.2f}D^{%.2f}(1+E/90)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
+  titlestr=sprintf('PM=%.2fS^{%.2f}D^{%.2f}(1+E/90)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
 elseif ElevationTransform==6
-  titlestr=sprintf('PM=%.2fVA^{%.2f}D^{%.2f}(1+|E|/90)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
+  titlestr=sprintf('PM=%.2fS^{%.2f}D^{%.2f}(1+|E|/90)^{%.2f}\n', 2.^Intercept,VAe,De,Ee);
 
 end
 
@@ -134,7 +134,7 @@ maxPMLim = max(2.^y, [], 'omitnan');
 minPMLim=.25;
 maxPMLim=16;
 % Hold-at values for partial-effect plots (do NOT center data; just use raw predictor means)
-muX = [mean(tbl.log2real_angle,'omitnan'), mean(tbl.log2distance,'omitnan'), mean(tbl.log2elevation,'omitnan')];
+muX = [mean(tbl.log2size,'omitnan'), mean(tbl.log2distance,'omitnan'), mean(tbl.log2elevation,'omitnan')];
 muX(~isfinite(muX)) = 0;
 
 
@@ -147,7 +147,7 @@ fig1 = figure('Color',[1 1 1],'Units','normalized','Position',[0 0 1 .7],'Name',
 tiledlayout(1,3,'Padding','compact','TileSpacing','compact');
 
 local_plot_one_predictor_lme(nexttile, tbl, subjectcolor, lme, ...
-    'log2real_angle', {'Visual Angle [deg]','log scale'}, muX, minPMLim, maxPMLim, true, ElevationTransform);
+    'log2size', {'Size [m]','log scale'}, muX, minPMLim, maxPMLim, true, ElevationTransform);
 
 local_plot_one_predictor_lme(nexttile, tbl, subjectcolor, lme, ...
     'log2distance', {'Distance [m]', 'log scale'}, muX, minPMLim, maxPMLim, false, ElevationTransform);
@@ -182,16 +182,16 @@ if saveModels && ~isempty(ResultsDir)
     reportFile = fullfile(ResultsDir, [char(string(tblName)) '.txt']);
 
     reportOpts = struct();
-    reportOpts.ReportTitle = sprintf('Quad PM Full VA/D/E LME Report: %s', ...
+    reportOpts.ReportTitle = sprintf('Quad PM Full S/D/E LME Report: %s', ...
         char(string(tblName)));
     reportOpts.GeneratedBy = mfilename;
     reportOpts.SourceFile = sourceCsv;
     reportOpts.ModelLabel = ...
-        'Log2 perceptual magnification predicted by log2 visual angle, distance, and elevation';
+        'Log2 perceptual magnification predicted by log2 size, distance, and elevation';
     reportOpts.SummaryLines = { ...
         sprintf('Rows in model table: %d', height(tbl)), ...
         sprintf('Participants in model table: %d', nsubjects), ...
-        'Visual-angle units: degrees', ...
+        'Size units: meters', ...
         'Distance units: meters', ...
         'Elevation units: degrees', ...
         sprintf('Elevation transform: %s', ...
@@ -212,28 +212,28 @@ end
 %% ----------------------- Local functions -----------------------
 
 function tbl = local_ensure_log_variables(tbl,ElevationTransform)
-% Ensure log2ratio_visual_angle, log2real_angle, log2distance, log2elevation exist.
+% Ensure log2ratio_visual_angle, log2size, log2distance, log2elevation exist.
 
 % PM ratio
 if ~ismember('log2ratio_visual_angle', tbl.Properties.VariableNames)
     if ismember('Ratio_Visual_Angle', tbl.Properties.VariableNames)
         ratio = tbl.Ratio_Visual_Angle;
-    elseif all(ismember({'Reported_Visual_Angle','Real_Visual_Angle'}, tbl.Properties.VariableNames))
-        ratio = tbl.Reported_Visual_Angle ./ tbl.Real_Visual_Angle;
+    elseif all(ismember({'Reported_Visual_Angle','Size'}, tbl.Properties.VariableNames))
+        ratio = tbl.Reported_Visual_Angle ./ tbl.Size;
     else
-        error('Need Ratio_Visual_Angle OR (Reported_Visual_Angle and Real_Visual_Angle) to compute PM ratio.');
+        error('Need Ratio_Visual_Angle OR (Reported_Visual_Angle and Size) to compute PM ratio.');
     end
     tbl.log2ratio_visual_angle = log2(ratio);
 end
 
 % VA
-if ~ismember('log2real_angle', tbl.Properties.VariableNames)
-    if ismember('Real_Visual_Angle', tbl.Properties.VariableNames)
-        tbl.log2real_angle = log2(tbl.Real_Visual_Angle);
-    elseif ismember('log2Real_Visual_Angle', tbl.Properties.VariableNames)
-        tbl.log2real_angle = tbl.log2Real_Visual_Angle;
+if ~ismember('log2size', tbl.Properties.VariableNames)
+    if ismember('Size', tbl.Properties.VariableNames)
+        tbl.log2size = log2(tbl.Size);
+    elseif ismember('log2Size', tbl.Properties.VariableNames)
+        tbl.log2size = tbl.log2Size;
     else
-        error('Need Real_Visual_Angle to compute log2real_angle.');
+        error('Need Size to compute log2size.');
     end
 end
 
@@ -334,7 +334,7 @@ x = tbl.(varName);
 xgrid = linspace(xlimVals(1), xlimVals(2), 200)';
 
 newTbl = table();
-newTbl.log2real_angle = repmat(muX(1), size(xgrid));
+newTbl.log2size = repmat(muX(1), size(xgrid));
 newTbl.log2distance   = repmat(muX(2), size(xgrid));
 newTbl.log2elevation  = repmat(muX(3), size(xgrid));
 newTbl.(varName)      = xgrid;
@@ -354,7 +354,7 @@ set(ax,'XLim',xlimVals,'XTick',xt,'XTickLabel',xlbl);
 plot([min(xgrid) max(xgrid)], [0 0], 'k-', 'LineWidth', 1);
 set(gca, 'FontName','Avenir', 'FontSize', 24);
 xlabel(xLabelStr);
-if strcmp(varName,'log2real_angle')
+if strcmp(varName,'log2size')
     ylabel({'Perceptual Magnification' 'log scale'});
 else
     ylabel('');
@@ -370,7 +370,7 @@ minX = min(x);
 maxX = max(x);
 
 switch varName
-    case 'log2real_angle'
+    case 'log2size'
         tickdelta = (maxX - minX) / 3;
         if ~isfinite(tickdelta) || tickdelta <= 0
             xt = [minX maxX];

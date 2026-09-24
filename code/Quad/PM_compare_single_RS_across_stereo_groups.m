@@ -26,7 +26,7 @@ end
 
 factorNames = ["Angle", "Distance", "Elevation"];
 predictorNames = ["log2real_visual_angle", "log2distance", "log2elevation"];
-groupOrder = ["StereoTypical", "StereoDeficient"];
+groupOrder = ["StereoTypical", "StereoBlind"];
 typicalIDs = unique(string(tblTypical.ID), 'stable');
 deficientIDs = unique(string(tblDeficient.ID), 'stable');
 slopeParts = cell(numel(factorNames), 1);

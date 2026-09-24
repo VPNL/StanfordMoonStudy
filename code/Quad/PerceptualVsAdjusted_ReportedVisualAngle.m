@@ -361,17 +361,8 @@ colors(isKnown, :) = colorSpec.Cmap(colorRows(isKnown), :);
 end
 
 function local_add_clinical_legend(ax, colorSpec)
-[categoryNames, firstRows] = unique(colorSpec.Category, 'stable');
-legendHandles = gobjects(numel(categoryNames), 1);
-for categoryIdx = 1:numel(categoryNames)
-    legendHandles(categoryIdx) = scatter(ax, NaN, NaN, 50, ...
-        colorSpec.Cmap(firstRows(categoryIdx), :), 'filled', ...
-        'MarkerEdgeColor', 'none', 'DisplayName', categoryNames(categoryIdx));
-end
-lgd = legend(ax, legendHandles, categoryNames, 'Location', 'eastoutside');
-lgd.FontName = 'Avenir';
+lgd = Quad_add_clinical_notes_legend(ax, colorSpec);
 lgd.FontSize = 9;
-lgd.AutoUpdate = 'off';
 end
 
 function [yFit, yLow, yHigh] = local_fixed_line_with_ci(lme, xGrid, stereoVal, adjustedVarName)

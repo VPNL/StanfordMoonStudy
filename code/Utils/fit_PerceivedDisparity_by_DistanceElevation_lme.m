@@ -12,7 +12,6 @@ if nargin < 9 || isempty(removeOutlierParticipants)
     removeOutlierParticipants = false;
 end
 
-ResultsDir = fullfile(ResultsDir, 'DistanceElevationModel');
 tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform, removeOutlierParticipants);
 subjectcolor = local_subject_colors(tbl, mycolormap, sorted_idx, fullUniqueID);
 local_write_full_model_diagnostics(tbl, tblName, ResultsDir);
@@ -45,7 +44,7 @@ fid = fopen(fullfile(ResultsDir, [tblName '.txt']), 'a');
 if fid < 0
     return;
 end
-cleanupObj = onCleanup(@() fclose(fid)); %#ok<NASGU>
+cleanupObj = onCleanup(@() fclose(fid));
 fprintf(fid, 'Model: log2mean_disparity ~ 1 + log2distance + log2elevation + (1|ID)\n');
 fprintf(fid, 'Skipped: %s\n\n', msg);
 end
@@ -169,12 +168,10 @@ if strcmp(varName, 'log2elevation')
         pos = log2(1 + guideVals/90);
         valid = isfinite(pos) & (1 + guideVals/90) > 0;
         guideVals = guideVals(valid);
-        pos = pos(valid);
         dataMinNative = 90 * (min(xData) - 1);
         dataMaxNative = 90 * (max(xData) - 1);
         inRange = guideVals >= dataMinNative & guideVals <= dataMaxNative;
         guideVals = guideVals(inRange);
-        pos = pos(inRange);
         vals = unique([round(dataMinNative,1); guideVals(:); round(dataMaxNative,1)]);
         xt = log2(1 + vals/90);
         xl = string(vals);

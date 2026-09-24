@@ -1,12 +1,15 @@
-function [lme_logPM_by_logDistance, lme_logPM_by_logElevation, ...
-    lme_logPM_by_logDistance_RS, lme_logPM_by_logElevation_RS, ...
-    lme_logPM_by_logVisualAngle, lme_logPM_by_logVisualAngle_RS] = ...
-    Quad_PerceivedDisparity_by_DistanceElevation_single(tbl, tblName, ...
+function [lme_logPM_by_logDistance, lme_logPM_by_logDistance_RS,...
+    lme_logPM_by_logElevation,lme_logPM_by_logElevation_RS, ...
+    lme_logPM_by_logVisualAngle, lme_logPM_by_logVisualAngle_RS,...
+    lme_logPM_by_logDistanceXStereoGroup, ...
+    lme_logPM_by_logElevationXStereoGroup, ...
+    lme_logPM_by_logVisualAngleXStereoGroup] = ...
+    Quad_PerceivedOffset_by_VADistanceElevation_single(tbl, tblName, ...
     ResultsDir, saveLME, mycolormap, sorted_idx, modelTransform, ...
     degreeFlag, fullUniqueID, removeOutlierParticipants, colorbarLabel, ...
     secondYAxisColor, plotFixedEffectsRS, colorConfig, runStereoAnalysis)
-% QUAD_PERCEIVEDDISPARITY_BY_DISTANCEELEVATION_SINGLE
-% Fit and plot single-factor visual-angle/distance/elevation perceived-disparity models
+% QUAD_PERCEIVEDOFFSET_BY_VADISTANCEELEVATION_SINGLE
+% Fit and plot single-factor visual-angle/distance/elevation perceived-offset models
 % with random-intercept and random-slope variants.
 
 if nargin < 8 || isempty(degreeFlag)
@@ -37,78 +40,65 @@ if nargin < 15 || isempty(runStereoAnalysis)
     runStereoAnalysis = true;
 end
 
+sourceCsv = local_source_file_label(tbl, tblName);
+tbl.h_va = compute_h_va_from_table_geometry(tbl);
 tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform, removeOutlierParticipants);
+[tbl, stereoGroupSummaryLines, runStereoGroupInteractions] = local_prepare_stereo_group(tbl);
 
-lme_logPM_by_logVisualAngle = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2real_visual_angle + (1|ID)');
-lme_logPM_by_logDistance = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2distance + (1|ID)');
-lme_logPM_by_logElevation = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2elevation + (1|ID)');
-lme_logPM_by_logVisualAngle_RS = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2real_visual_angle + (log2real_visual_angle|ID)');
-lme_logPM_by_logDistance_RS = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2distance + (log2distance|ID)');
-lme_logPM_by_logElevation_RS = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2elevation + (log2elevation|ID)');
+logDistanceRIFormula = 'log2mean_disparity ~ 1 + log2distance + (1|ID)';
+logElevationRIFormula = 'log2mean_disparity ~ 1 + log2elevation + (1|ID)';
+logVisualAngleRIFormula = 'log2mean_disparity ~ 1 + log2h_va + (1|ID)';
+logDistanceRSFormula = 'log2mean_disparity ~ 1 + log2distance + (log2distance|ID)';
+logElevationRSFormula = 'log2mean_disparity ~ 1 + log2elevation + (log2elevation|ID)';
+logVisualAngleRSFormula = 'log2mean_disparity ~ 1 + log2h_va + (log2h_va|ID)';
+logVisualAngleStereoRIFormula = 'log2mean_disparity ~ 1 + log2h_va * StereoGroup + (1|ID)';
+logDistanceStereoRIFormula = 'log2mean_disparity ~ 1 + log2distance*StereoGroup + (1|ID)';
+logElevationStereoRIFormula = 'log2mean_disparity ~ 1 + log2elevation*StereoGroup + (1|ID)';
+
+lme_logPM_by_logDistance = local_try_fitlme(tbl, logDistanceRIFormula);
+lme_logPM_by_logElevation = local_try_fitlme(tbl, logElevationRIFormula);
+lme_logPM_by_logVisualAngle = local_try_fitlme(tbl, logVisualAngleRIFormula);
+lme_logPM_by_logDistance_RS = local_try_fitlme(tbl, logDistanceRSFormula);
+lme_logPM_by_logElevation_RS = local_try_fitlme(tbl, logElevationRSFormula);
+lme_logPM_by_logVisualAngle_RS = local_try_fitlme(tbl, logVisualAngleRSFormula);
+
+
+lme_logPM_by_logDistanceXStereoGroup = [];
+lme_logPM_by_logElevationXStereoGroup = [];
+lme_logPM_by_logVisualAngleXStereoGroup = [];
+if runStereoGroupInteractions
+    lme_logPM_by_logVisualAngleXStereoGroup = local_try_fitlme(tbl, logVisualAngleStereoRIFormula);
+    lme_logPM_by_logDistanceXStereoGroup = local_try_fitlme(tbl, logDistanceStereoRIFormula);
+    lme_logPM_by_logElevationXStereoGroup = local_try_fitlme(tbl, logElevationStereoRIFormula);
+end
 
 if ~exist(ResultsDir, 'dir')
     mkdir(ResultsDir);
 end
 
 if saveLME
-    savelmefile = fullfile(ResultsDir, [tblName '_distance_elevation_single_RI_RS.txt']);
-    diary(savelmefile);
-    local_log_model('log2mean_disparity ~ 1 + log2real_visual_angle + (1|ID)', lme_logPM_by_logVisualAngle)
-    local_log_model('log2mean_disparity ~ 1 + log2distance + (1|ID)', lme_logPM_by_logDistance)
-    local_log_model('log2mean_disparity ~ 1 + log2elevation + (1|ID)', lme_logPM_by_logElevation)
-    local_log_model('log2mean_disparity ~ 1 + log2real_visual_angle + (log2real_visual_angle|ID)', lme_logPM_by_logVisualAngle_RS)
-    local_log_model('log2mean_disparity ~ 1 + log2distance + (log2distance|ID)', lme_logPM_by_logDistance_RS)
-    local_log_model('log2mean_disparity ~ 1 + log2elevation + (log2elevation|ID)', lme_logPM_by_logElevation_RS)
-    local_compare_if_available( ...
-        'log2mean_disparity ~ 1 + log2real_visual_angle + (1|ID)', lme_logPM_by_logVisualAngle, ...
-        'log2mean_disparity ~ 1 + log2real_visual_angle + (log2real_visual_angle|ID)', lme_logPM_by_logVisualAngle_RS)
-    local_compare_if_available( ...
-        'log2mean_disparity ~ 1 + log2distance + (1|ID)', lme_logPM_by_logDistance, ...
-        'log2mean_disparity ~ 1 + log2distance + (log2distance|ID)', lme_logPM_by_logDistance_RS)
-    local_compare_if_available( ...
-        'log2mean_disparity ~ 1 + log2elevation + (1|ID)', lme_logPM_by_logElevation, ...
-        'log2mean_disparity ~ 1 + log2elevation + (log2elevation|ID)', lme_logPM_by_logElevation_RS)
-    if runStereoAnalysis
-        local_log_stereo_relationships(tbl, lme_logPM_by_logDistance_RS)
-    end
-    diary off
+    savelmefile = fullfile(ResultsDir, [tblName '_VA_Distance_Elevation_single_RI_RS.txt']);
+    local_write_model_report(savelmefile, tbl, tblName, sourceCsv, ...
+        modelTransform, stereoGroupSummaryLines, ...
+        runStereoAnalysis, ...
+        {lme_logPM_by_logVisualAngle, lme_logPM_by_logVisualAngle_RS, ...
+        lme_logPM_by_logDistance,  lme_logPM_by_logDistance_RS, ...
+        lme_logPM_by_logElevation, lme_logPM_by_logElevation_RS, ...
+        lme_logPM_by_logVisualAngleXStereoGroup, ...
+        lme_logPM_by_logDistanceXStereoGroup, ...
+        lme_logPM_by_logElevationXStereoGroup}, ...
+        {logVisualAngleRIFormula, logVisualAngleRSFormula, ...
+        logDistanceRIFormula, logDistanceRSFormula, ...
+        logElevationRIFormula, logElevationRSFormula, ...
+        logVisualAngleStereoRIFormula, ...
+        logDistanceStereoRIFormula,...
+        logElevationStereoRIFormula});
 end
 
 subjectcolor = local_subject_colors(tbl, mycolormap, sorted_idx, fullUniqueID);
 minDisp = max(0.01, min(tbl.MeanDisparity));
 maxDisp = max(tbl.MeanDisparity);
 nIDs = numel(categories(removecats(tbl.ID)));
-
-figRI = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 .92 .72], 'Name', [tblName '_RI'], 'Visible', 'off');
-tRI = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
-tRI.Position = [0.10 0.12 0.69 0.64];
-axRI1 = nexttile;
-local_plot_fixed_only(axRI1, tbl, subjectcolor, lme_logPM_by_logDistance, ...
-    'D', minDisp, maxDisp, modelTransform, nIDs, true);
-axRI2 = nexttile;
-local_plot_fixed_only(axRI2, tbl, subjectcolor, lme_logPM_by_logElevation, ...
-    'E', minDisp, maxDisp, modelTransform, nIDs, false, secondYAxisColor);
-local_add_subject_colorbar(figRI, mycolormap, nIDs, colorbarLabel, ...
-    colorConfig, axRI2);
-exportgraphics(figRI, fullfile(ResultsDir, [tblName '_RI.png']), 'Resolution', 600);
-close(figRI);
-
-figRS = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 .92 .72], 'Name', [tblName '_RS'], 'Visible', 'off');
-tRS = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
-tRS.Position = [0.10 0.12 0.69 0.64];
-axRS1 = nexttile;
-local_plot_random_slopes(axRS1, tbl, subjectcolor, ...
-    lme_logPM_by_logDistance_RS, 'D', minDisp, maxDisp, modelTransform, ...
-    nIDs, fullUniqueID, mycolormap, sorted_idx, true, [], plotFixedEffectsRS);
-axRS2 = nexttile;
-local_plot_random_slopes(axRS2, tbl, subjectcolor, ...
-    lme_logPM_by_logElevation_RS, 'E', minDisp, maxDisp, modelTransform, ...
-    nIDs, fullUniqueID, mycolormap, sorted_idx, false, ...
-    secondYAxisColor, plotFixedEffectsRS);
-local_add_subject_colorbar(figRS, mycolormap, nIDs, colorbarLabel, ...
-    colorConfig, axRS2);
-exportgraphics(figRS, fullfile(ResultsDir, [tblName '_RS.png']), 'Resolution', 600);
-close(figRS);
 
 figRIVDE = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 1 .72], 'Name', [tblName '_VA_D_E_RI'], 'Visible', 'off');
 tRIVDE = tiledlayout(1,3,'Padding','compact','TileSpacing','compact');
@@ -142,7 +132,7 @@ axRSE = nexttile;
 local_plot_random_slopes(axRSE, tbl, subjectcolor, ...
     lme_logPM_by_logElevation_RS, 'E', minDisp, maxDisp, modelTransform, ...
     nIDs, fullUniqueID, mycolormap, sorted_idx, false, ...
-    secondYAxisColor, plotFixedEffectsRS);
+    'w', plotFixedEffectsRS);
 local_add_subject_colorbar(figRSVDE, mycolormap, nIDs, colorbarLabel, ...
     colorConfig, axRSE);
 exportgraphics(figRSVDE, fullfile(ResultsDir, [tblName '_VA_D_E_RS.png']), 'Resolution', 600);
@@ -151,6 +141,311 @@ close(figRSVDE);
 if runStereoAnalysis
     local_plot_stereo_relationship_figure(tbl, lme_logPM_by_logDistance_RS, ResultsDir, tblName, ...
         fullUniqueID, mycolormap, sorted_idx, colorConfig);
+end
+end
+
+function local_write_model_report(reportFile, tbl, tblName, sourceCsv, ...
+    modelTransform, stereoGroupSummaryLines, ...
+    runStereoAnalysis, models, formulas)
+modelLabels = cellfun(@(f) ['Model: ' f], formulas, 'UniformOutput', false);
+validModel = ~cellfun(@isempty, models);
+if ~any(validModel)
+    local_write_empty_report(reportFile, tblName, sourceCsv, formulas);
+    return;
+end
+
+[comparisons, comparisonLabels] = local_model_comparisons(models, formulas);
+if runStereoAnalysis
+    [stereoComparisons, stereoLabels] = ...
+        local_stereo_relationship_models(tbl, models{5});
+    comparisons = [comparisons stereoComparisons];
+    comparisonLabels = [comparisonLabels stereoLabels];
+end
+
+reportOpts = struct();
+reportOpts.ReportTitle = sprintf('Quad Interocular Offset Single-Factor LME Report: %s', ...
+    char(string(tblName)));
+reportOpts.GeneratedBy = mfilename;
+reportOpts.SourceFile = sourceCsv;
+reportOpts.ModelLabel = 'Single-factor interocular offset models by h_va, distance, and elevation';
+baseSummaryLines = { ...
+    sprintf('Experiment: Quad'), ...
+    sprintf('Rows in model table: %d', height(tbl)), ...
+    sprintf('Participants in model table: %d', numel(categories(removecats(tbl.ID)))), ...
+    sprintf('Elevation transform: %s', local_transform_label(modelTransform)), ...
+    sprintf('Fit method: ML'), ...
+    sprintf('h_va parameter: h_va = visualangle(Width, Observer_Distance).'), ...
+    sprintf('Log models use transformed elevation through log2elevation.')};
+stereoInteractionNote = {};
+if ~isempty(stereoGroupSummaryLines) && strcmp(stereoGroupSummaryLines{1}, 'StereoGroup counts:')
+    stereoInteractionNote = {'StereoGroup interaction models are RI models only and are not plotted.'};
+end
+reportOpts.SummaryLines = [ ...
+    baseSummaryLines, ...
+    stereoInteractionNote, ...
+    stereoGroupSummaryLines];
+reportOpts.Models = models(validModel);
+reportOpts.ModelLabels = modelLabels(validModel);
+reportOpts.Comparisons = comparisons;
+reportOpts.ComparisonLabels = comparisonLabels;
+reportOpts.RemoveGroupError = false;
+write_lme_stats_report(models{find(validModel, 1, 'first')}, reportFile, reportOpts);
+end
+
+function [comparisons, comparisonLabels] = local_model_comparisons(models, formulas)
+comparisons = {};
+comparisonLabels = {};
+
+comparisonPairs = { ...
+    1, 2, 'h_va RI vs RS comparison'; ...
+    3, 5, 'Distance RI vs RS comparison'; ...
+    4, 6, 'Elevation RI vs RS comparison'; ...
+    1, 7, 'h_va StereoGroup RI interaction comparison'; ...
+    3, 8, 'Distance StereoGroup RI interaction comparison'; ...
+    4, 9, 'Elevation StereoGroup RI interaction comparison'};
+
+for iPair = 1:size(comparisonPairs, 1)
+    baseIdx = comparisonPairs{iPair, 1};
+    fullIdx = comparisonPairs{iPair, 2};
+    [comparisonTbl, ok] = local_try_compare(models{baseIdx}, models{fullIdx});
+    if ok
+        comparisons{end + 1} = comparisonTbl;
+        comparisonLabels{end + 1} = sprintf('%s: %s vs %s', ...
+            comparisonPairs{iPair, 3}, formulas{baseIdx}, formulas{fullIdx});
+    end
+end
+
+[fitStatsTbl, ok] = local_fit_stat_table( ...
+    models, formulas, ...
+    ["Log h_va RI"; ...
+    "Log h_va RS"; ...
+    "Log distance RI"; ...
+    "Log elevation RI"; ...
+    "Log distance RS"; ...
+    "Log elevation RS"; ...
+    "Log h_va x StereoGroup RI"; ...
+    "Log distance x StereoGroup RI"; ...
+    "Log elevation x StereoGroup RI"], ...
+    ["log2mean_disparity"; ...
+    "log2mean_disparity"; ...
+    "log2mean_disparity"; ...
+    "log2mean_disparity"; ...
+    "log2mean_disparity"; ...
+    "log2mean_disparity"; ...
+    "log2mean_disparity"; ...
+    "log2mean_disparity"; ...
+    "log2mean_disparity"]);
+if ok
+    comparisons{end + 1} = fitStatsTbl;
+    comparisonLabels{end + 1} = ...
+        'AIC/BIC summary: log h_va/distance/elevation models';
+end
+end
+
+function [comparisonTbl, ok] = local_try_compare(lme1, lme2)
+comparisonTbl = [];
+ok = false;
+if isempty(lme1) || isempty(lme2)
+    return;
+end
+
+try
+    comparisonTbl = compare(lme1, lme2);
+    ok = true;
+catch ME
+    fprintf('Skipping model comparison: %s\n', ME.message);
+end
+end
+
+function [fitStatsTbl, ok] = local_fit_stat_table(models, formulas, labels, responseScales)
+valid = ~cellfun(@isempty, models);
+models = models(valid);
+formulas = formulas(valid);
+labels = labels(valid);
+responseScales = responseScales(valid);
+ok = ~isempty(models);
+
+if ~ok
+    fitStatsTbl = table();
+    return;
+end
+
+nModels = numel(models);
+nObs = nan(nModels, 1);
+logLikelihood = nan(nModels, 1);
+aic = nan(nModels, 1);
+bic = nan(nModels, 1);
+deviance = nan(nModels, 1);
+
+for iModel = 1:nModels
+    nObs(iModel) = models{iModel}.NumObservations;
+    logLikelihood(iModel) = models{iModel}.LogLikelihood;
+    aic(iModel) = models{iModel}.ModelCriterion.AIC;
+    bic(iModel) = models{iModel}.ModelCriterion.BIC;
+    deviance(iModel) = -2 * models{iModel}.LogLikelihood;
+end
+
+fitStatsTbl = table(labels(:), string(formulas(:)), responseScales(:), ...
+    nObs, logLikelihood, aic, bic, deviance, ...
+    'VariableNames', {'Model','Formula','Response','N','LogLikelihood','AIC','BIC','Deviance'});
+end
+
+function [stereoComparisons, stereoLabels] = local_stereo_relationship_models(tbl, lmeDistanceRS)
+stereoComparisons = {};
+stereoLabels = {};
+stereoTbl = local_subject_distance_rs_table(tbl, lmeDistanceRS, [], [], []);
+if isempty(stereoTbl)
+    return;
+end
+
+scoreVarLabel = stereoTbl.Properties.UserData.StereoScoreVarName;
+lmInterceptContinuous = fitlm(stereoTbl, 'SubjectIntercept ~ StereoScore');
+lmSlopeContinuous = fitlm(stereoTbl, 'SubjectSlope ~ StereoScore');
+
+stereoComparisons = {lmInterceptContinuous, lmSlopeContinuous};
+stereoLabels = { ...
+    sprintf('Stereo score analysis: SubjectIntercept ~ %s', scoreVarLabel), ...
+    sprintf('Stereo score analysis: SubjectSlope ~ %s', scoreVarLabel)};
+end
+
+function local_write_empty_report(reportFile, tblName, sourceCsv, formulas)
+[reportDir, ~, ~] = fileparts(reportFile);
+if ~isempty(reportDir) && ~exist(reportDir, 'dir')
+    mkdir(reportDir);
+end
+[fid, msg] = fopen(reportFile, 'w');
+if fid == -1
+    error('Could not open report file %s: %s', reportFile, msg);
+end
+cleanupObj = onCleanup(@() fclose(fid));
+
+reportTitle = sprintf('Quad Interocular Offset Single-Factor LME Report: %s', ...
+    char(string(tblName)));
+fprintf(fid, '%s\n', reportTitle);
+fprintf(fid, '%s\n\n', repmat('=', 1, numel(reportTitle)));
+fprintf(fid, 'Generated: %s\n', char(string(datetime("now", "Format", "yyyy-MM-dd HH:mm:ss"))));
+fprintf(fid, 'Generated by: %s\n', mfilename);
+fprintf(fid, 'Source CSV: %s\n\n', sourceCsv);
+fprintf(fid, 'No models were fit successfully.\n\n');
+fprintf(fid, 'Attempted formulas:\n');
+for iFormula = 1:numel(formulas)
+    fprintf(fid, '    %s\n', formulas{iFormula});
+end
+end
+
+function sourceCsv = local_source_file_label(tbl, tblName)
+sourceCsv = char(string(tblName));
+try
+    if isstruct(tbl.Properties.UserData) && isfield(tbl.Properties.UserData, 'SourceFile')
+        sourceCsv = char(string(tbl.Properties.UserData.SourceFile));
+    end
+catch
+end
+
+if ~endsWith(string(sourceCsv), ".csv", "IgnoreCase", true)
+    sourceCsv = sprintf('%s.csv (inferred from tblName; function input is a table)', sourceCsv);
+end
+end
+
+function [tbl, stereoGroupSummaryLines, runStereoGroupInteractions] = local_prepare_stereo_group(tbl)
+stereoGroupSummaryLines = {'StereoGroup interaction models: skipped (StereoGroup variable not found).'};
+runStereoGroupInteractions = false;
+if ~ismember('StereoGroup', tbl.Properties.VariableNames)
+    return;
+end
+
+tbl.StereoGroup = local_stereo_group_categorical(tbl.StereoGroup);
+validStereoGroup = ~isundefined(tbl.StereoGroup);
+if ~all(validStereoGroup)
+    tbl = tbl(validStereoGroup, :);
+end
+tbl.StereoGroup = removecats(tbl.StereoGroup);
+
+groupNames = string(categories(tbl.StereoGroup));
+if numel(groupNames) < 2
+    stereoGroupSummaryLines = {'StereoGroup interaction models: skipped (fewer than two valid groups).'};
+    return;
+end
+
+stereoGroupSummaryLines = local_group_summary_lines(tbl);
+runStereoGroupInteractions = true;
+end
+
+function stereoGroup = local_stereo_group_categorical(rawGroup)
+if isnumeric(rawGroup) || islogical(rawGroup)
+    groupValues = double(rawGroup);
+    groupText = strings(size(groupValues));
+    groupText(~isfinite(groupValues)) = "";
+    if all(ismember(unique(groupValues(isfinite(groupValues))), [0 1 2 3]))
+        groupText(groupValues == 1) = "StereoTypical";
+        groupText(groupValues == 2) = "StereoDeficient";
+        groupText(groupValues == 3) = "StereoBlind";
+    else
+        validRows = isfinite(groupValues);
+        groupText(validRows) = "Group" + string(groupValues(validRows));
+    end
+    stereoGroup = categorical(groupText);
+elseif iscategorical(rawGroup)
+    stereoGroup = rawGroup;
+else
+    stereoGroup = categorical(strtrim(string(rawGroup)));
+end
+stereoGroup = local_standardize_numeric_group_labels(stereoGroup);
+stereoGroup = reordercats(stereoGroup, local_order_categories(categories(stereoGroup)));
+end
+
+function stereoGroup = local_standardize_numeric_group_labels(stereoGroup)
+groupText = string(stereoGroup);
+validText = groupText(~ismissing(groupText) & groupText ~= "");
+if ~isempty(validText) && all(ismember(validText, ["1", "2", "3"]))
+    groupText(groupText == "1") = "StereoTypical";
+    groupText(groupText == "2") = "StereoDeficient";
+    groupText(groupText == "3") = "StereoBlind";
+    stereoGroup = categorical(groupText);
+end
+end
+
+function orderedCategories = local_order_categories(categoriesIn)
+categoriesIn = string(categoriesIn(:));
+preferred = ["StereoTypical"; "Typical"; "StereoDeficient"; "Deficient"; ...
+    "StereoBlind"; "Blind"];
+orderedCategories = strings(0, 1);
+for iPreferred = 1:numel(preferred)
+    if any(categoriesIn == preferred(iPreferred))
+        orderedCategories(end + 1, 1) = preferred(iPreferred); %#ok<AGROW>
+    end
+end
+for iCategory = 1:numel(categoriesIn)
+    if ~ismember(categoriesIn(iCategory), orderedCategories)
+        orderedCategories(end + 1, 1) = categoriesIn(iCategory); %#ok<AGROW>
+    end
+end
+orderedCategories = cellstr(orderedCategories);
+end
+
+function groupSummaryLines = local_group_summary_lines(tbl)
+groupNames = string(categories(tbl.StereoGroup));
+groupSummaryLines = cell(1, numel(groupNames) + 1);
+groupSummaryLines{1} = 'StereoGroup counts:';
+for iGroup = 1:numel(groupNames)
+    rowMask = string(tbl.StereoGroup) == groupNames(iGroup);
+    groupSummaryLines{iGroup + 1} = sprintf('  %s: %d rows, %d participants', ...
+        groupNames(iGroup), sum(rowMask), numel(unique(tbl.ID(rowMask))));
+end
+end
+
+function transformLabel = local_transform_label(modelTransform)
+switch modelTransform
+    case 1
+        transformLabel = 'Elevation';
+    case 2
+        transformLabel = 'absElevation';
+    case 5
+        transformLabel = 'ElevationD90';
+    case 6
+        transformLabel = 'absElevationD90';
+    otherwise
+        transformLabel = sprintf('modelTransform %d', modelTransform);
 end
 end
 
@@ -175,20 +470,23 @@ end
 xlinerange = linspace(min(xlog), max(xlog), 200);
 b0 = lme.Coefficients.Estimate(1);
 b1 = lme.Coefficients.Estimate(2);
-ciL0 = lme.Coefficients.Lower(1);
-ciL1 = lme.Coefficients.Lower(2);
-ciU0 = lme.Coefficients.Upper(1);
-ciU1 = lme.Coefficients.Upper(2);
+pval = lme.Coefficients.pValue(2);
+if isfinite(pval) && pval < 0.05
+    ciL0 = lme.Coefficients.Lower(1);
+    ciL1 = lme.Coefficients.Lower(2);
+    ciU0 = lme.Coefficients.Upper(1);
+    ciU1 = lme.Coefficients.Upper(2);
 
-yFit = b0 + b1 * xlinerange;
-xvector = [xlinerange fliplr(xlinerange)];
-yvector = [ciL0 + ciL1 * xlinerange fliplr(ciU0 + ciU1 * xlinerange)];
-fill(ax, xvector, yvector, 'k', 'EdgeColor', 'none', 'FaceAlpha', 0.25);
-plot(ax, xlinerange, yFit, ':','Color',[.6 .6 .6], 'LineWidth', 5);
+    yFit = b0 + b1 * xlinerange;
+    xvector = [xlinerange fliplr(xlinerange)];
+    yvector = [ciL0 + ciL1 * xlinerange fliplr(ciU0 + ciU1 * xlinerange)];
+    fill(ax, xvector, yvector, 'k', 'EdgeColor', 'none', 'FaceAlpha', 0.25);
+    plot(ax, xlinerange, yFit, 'k-', 'LineWidth', 5);
+end
 scatter_by_measurement(ax, xlog, y, subjectcolor, tbl.Measurement);
 
 local_finish_axes(ax, tickVals, xlabelText, minDisp, maxDisp, x, showYLabel, hiddenYAxisColor);
-titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number(b1), local_format_pvalue(lme.Coefficients.pValue(2)), nIDs);
+titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number(b1), local_format_pvalue(pval), nIDs);
 title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
 end
 
@@ -218,15 +516,16 @@ local_plot_subject_lines(ax, tbl, lme, modeChar, fullUniqueID, mycolormap, sorte
 xlinerange = linspace(min(xlog), max(xlog), 200);
 b0 = lme.Coefficients.Estimate(1);
 b1 = lme.Coefficients.Estimate(2);
+pval = lme.Coefficients.pValue(2);
 
-if plotFixedEffectsRS
+if plotFixedEffectsRS && isfinite(pval) && pval < 0.05
     yFit = b0 + b1 * xlinerange;
-    plot(ax, xlinerange, yFit, ':', 'Color',[ .6 .6 .6], 'LineWidth', 5);
+    plot(ax, xlinerange, yFit, 'k-', 'LineWidth', 5);
 end
 scatter_by_measurement(ax, xlog, y, subjectcolor, tbl.Measurement);
 
 local_finish_axes(ax, tickVals, xlabelText, minDisp, maxDisp, x, showYLabel, hiddenYAxisColor);
-titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number(b1), local_format_pvalue(lme.Coefficients.pValue(2)), nIDs);
+titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number(b1), local_format_pvalue(pval), nIDs);
 title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
 end
 
@@ -243,8 +542,8 @@ end
 
 switch modeChar
     case 'A'
-        slopeName = "log2real_visual_angle";
-        xAll = tbl.log2real_visual_angle;
+        slopeName = "log2h_va";
+        xAll = tbl.log2h_va;
     case 'D'
         slopeName = "log2distance";
         xAll = tbl.log2distance;
@@ -253,7 +552,9 @@ switch modeChar
         xAll = tbl.log2elevation;
 end
 
-for i = 1:numel(uniqueID)
+plotOrder = local_subject_stereo_score_plot_order(tbl, uniqueID);
+for orderIdx = 1:numel(plotOrder)
+    i = plotOrder(orderIdx);
     subj = uniqueID(i);
     rowMask = string(tbl.ID) == subj;
     if ~any(rowMask)
@@ -282,32 +583,52 @@ for i = 1:numel(uniqueID)
 end
 end
 
+function plotOrder = local_subject_stereo_score_plot_order(tbl, uniqueID)
+plotOrder = 1:numel(uniqueID);
+stereoVar = local_find_first_var(tbl, ...
+    {'ContinuousStereoScore', 'ContinousStereoScore', 'ContiousStereoScores', ...
+    'ContinuousScore', 'ContinousScore', 'NormedStereoScore', 'NormedScore'});
+if isempty(stereoVar)
+    return;
+end
+
+scoreByID = nan(numel(uniqueID), 1);
+for iID = 1:numel(uniqueID)
+    rowMask = string(tbl.ID) == uniqueID(iID);
+    scoreByID(iID) = mean(double(tbl.(stereoVar)(rowMask)), 'omitnan');
+end
+
+scoreForSort = scoreByID;
+scoreForSort(isnan(scoreForSort)) = inf;
+[~, plotOrder] = sort(scoreForSort, 'descend');
+end
+
 function [x, xlog, xlabelText, tickVals, titleFormula] = local_axis_setup(tbl, modeChar, modelTransform)
 switch modeChar
     case 'A'
-        x = tbl.Real_Visual_Angle;
-        xlog = tbl.log2real_visual_angle;
-        xlabelText = {'Real VA [deg]','log scale'};
-        tickVals = local_log_ticks(min(x), max(x), false);
-        titleFormula = 'Disparity=%s(VA)^{%s}\n p=%s\n n=%d';
+        x = tbl.h_va;
+        xlog = tbl.log2h_va;
+        xlabelText = {'h_{VA} [deg]','log scale'};
+        tickVals = local_visual_angle_ticks(min(x), max(x));
+        titleFormula = 'Offset=%s(h_{VA})^{%s}\n p=%s\n n=%d';
     case 'D'
         x = tbl.Distance;
         xlog = tbl.log2distance;
         xlabelText = {'Distance [m]','log scale'};
         tickVals = local_log_ticks(min(x), max(x), false);
-        titleFormula = 'Disparity=%s(D)^{%s}\n p=%s\n n=%d';
+        titleFormula = 'Offset=%s(D)^{%s}\n p=%s\n n=%d';
     otherwise
         x = tbl.ElevationModel;
         xlog = tbl.log2elevation;
         if modelTransform == 2
             xlabelText = {'|Elevation| [deg]','log scale'};
-            titleFormula = 'Disparity=%s(1+|E|)^{%s}\n p=%s\n n=%d';
+            titleFormula = 'Offset=%s(1+|E|)^{%s}\n p=%s\n n=%d';
         elseif modelTransform == 6
             xlabelText = {'|Elevation| [deg]','log scale'};
-            titleFormula = 'Disparity=%s(1+|E|/90)^{%s}\n p=%s\n n=%d';
+            titleFormula = 'Offset=%s(1+|E|/90)^{%s}\n p=%s\n n=%d';
         else
             xlabelText = {'Elevation [deg]','log scale'};
-            titleFormula = 'Disparity=%s(1+E/90)^{%s}\n p=%s\n n=%d';
+            titleFormula = 'Offset=%s(1+E/90)^{%s}\n p=%s\n n=%d';
         end
         tickVals = local_log_ticks(min(x), max(x), true, modelTransform);
 end
@@ -326,7 +647,7 @@ set(ax, 'XTick', tickVals.positions, 'XTickLabel', tickVals.labels, ...
     'FontName', 'Avenir', 'FontSize', 18);
 xlabel(ax, xlabelText, 'FontSize', 22);
 if showYLabel
-    ylabel(ax, {'Perceived Disparity [deg]','log scale'}, 'FontSize', 22);
+    ylabel(ax, {'Perceived Interocular Offset [deg]','log scale'}, 'FontSize', 22);
 else
     ylabel(ax, '');
     ax.YColor = hiddenYAxisColor;
@@ -374,28 +695,6 @@ catch ME
     fprintf('Skipping model: %s\n Reason: %s\n', formulaStr, ME.message);
     lme = [];
 end
-end
-
-function local_log_stereo_relationships(tbl, lmeDistanceRS)
-fprintf('\n Stereo score analysis from distance random-slope model\n');
-fprintf('----------------------------------------------------\n');
-
-stereoTbl = local_subject_distance_rs_table(tbl, lmeDistanceRS, [], [], []);
-if isempty(stereoTbl)
-    fprintf('Stereo-score analysis skipped: distance random-slope model unavailable or stereo scores missing. \n \n');
-    return;
-end
-
-scoreVarLabel = stereoTbl.Properties.UserData.StereoScoreVarName;
-
-lmInterceptContinuous = fitlm(stereoTbl, 'SubjectIntercept ~ StereoScore');
-lmSlopeContinuous = fitlm(stereoTbl, 'SubjectSlope ~ StereoScore');
-
-fprintf('Model: SubjectIntercept ~ %s\n', scoreVarLabel);
-disp(lmInterceptContinuous)
-fprintf('Model: SubjectSlope ~ %s\n', scoreVarLabel);
-disp(lmSlopeContinuous)
-fprintf('\n');
 end
 
 function local_plot_stereo_relationship_figure(tbl, lmeDistanceRS, ...
@@ -472,7 +771,13 @@ if nargin < 6 || isempty(legendAxes)
     legendAxes = legendAxes(1);
 end
 
-if isstruct(colorConfig) && string(colorConfig.Mode) == "clinicalnotes"
+if isstruct(colorConfig) && isfield(colorConfig, 'Mode') && ...
+        string(colorConfig.Mode) == "id"
+    return;
+end
+
+if isstruct(colorConfig) && isfield(colorConfig, 'Mode') && ...
+        string(colorConfig.Mode) == "clinicalnotes"
     legendHandle = Quad_add_clinical_notes_legend(legendAxes, colorConfig);
     legendHandle.FontSize = 11;
     return;
@@ -493,8 +798,10 @@ if isNormedStereoBar
         apply_stereo_score_colormap(plotAxes);
     end
     cb = add_stereo_score_colorbar(figHandle, labelText, [0.885 0.22 0.012 0.52]);
-    cb.FontSize = 12;
-    cb.Label.FontSize = 14;
+    cb.FontName = 'Avenir';
+    cb.FontSize = 18;
+    cb.Label.FontName = 'Avenir';
+    cb.Label.FontSize = 20;
     return;
 else
     nColorLevels = min(size(mycolormap, 1), max(1, nIDs));
@@ -660,32 +967,15 @@ idx = round(sorted_idx(:));
 tf = ~(all(isfinite(idx)) && isequal(sort(idx)', 1:nSubjects));
 end
 
-function local_log_model(formulaStr, lme)
-fprintf('Model: %s\n', formulaStr);
-if isempty(lme)
-    fprintf('Skipped: rank-deficient or singular design.\n \n');
-else
-    disp(lme);
-end
+function tickStruct = local_visual_angle_ticks(minVal, maxVal)
+candidateVals = [0.025 0.05 0.1 0.2 0.5 1 1.5 2 3 5 8 10 15];
+tickVals = candidateVals(candidateVals >= minVal * 0.95 & candidateVals <= maxVal * 1.02);
+
+if numel(tickVals) < 3
+    tickVals = unique(round(logspace(log10(minVal), log10(maxVal), 4), 2));
 end
 
-function local_compare_if_available(formula1, lme1, formula2, lme2)
-if isempty(lme1) || isempty(lme2)
-    fprintf('Comparison skipped:\n');
-    fprintf('  %s\n', formula1);
-    fprintf('  %s\n', formula2);
-    fprintf('Reason: one or both models were unavailable.\n \n');
-else
-    fprintf('Model comparison:\n');
-    fprintf('  %s\n', formula1);
-    fprintf('  %s\n', formula2);
-    cmpTbl = compare(lme1, lme2);
-    try
-        cmpTbl.Model = string({formula1; formula2});
-    catch
-    end
-    disp(cmpTbl)
-end
+tickStruct = local_finalize_ticks(tickVals(:), log2(tickVals(:)), 0.45);
 end
 
 function tickStruct = local_log_ticks(minVal, maxVal, isElevation, modelTransform)
@@ -722,25 +1012,43 @@ end
 end
 
 function lims = local_expand_log_limits(x)
-xmin = min(x);
-xmax = max(x);
-span = xmax - xmin;
-if span <= 0
-    pad = max(0.01 * max(abs(xmin), 1), 0.01);
-else
-    pad = max(0.05 * span, 0.005 * max(abs([xmin xmax])));
-end
-xlow = max(eps, xmin - pad);
-xhigh = xmax + pad;
-lims = log2([xlow xhigh]);
+x = x(isfinite(x) & x > 0);
+if isempty(x)
+    lims = [0 1];
+    return;
 end
 
-function tickStruct = local_finalize_ticks(labelVals, positions)
+logX = log2(x);
+xmin = min(logX);
+xmax = max(logX);
+span = xmax - xmin;
+pad = max(0.06 * span, 0.12);
+lims = [xmin - pad xmax + pad];
+end
+
+function tickStruct = local_finalize_ticks(labelVals, positions, minSep)
+if nargin < 3 || isempty(minSep)
+    minSep = 0.18;
+end
+
 labelVals = labelVals(:);
 positions = positions(:);
 valid = isfinite(labelVals) & isfinite(positions);
 labelVals = labelVals(valid);
 positions = positions(valid);
+
+if isempty(labelVals)
+    tickStruct.positions = [];
+    tickStruct.labels = strings(0, 1);
+    return;
+end
+
+[positions, order] = sort(positions);
+labelVals = labelVals(order);
+roundedVals = round(labelVals, 2);
+[~, uniqueIdx] = unique(roundedVals, 'stable');
+positions = positions(uniqueIdx);
+labelVals = labelVals(uniqueIdx);
 
 if numel(labelVals) <= 2
     tickStruct.positions = positions;
@@ -749,7 +1057,6 @@ if numel(labelVals) <= 2
 end
 
 keep = true(size(positions));
-minSep = 0.18;
 for i = 2:numel(positions)-1
     if abs(positions(i) - positions(i-1)) < minSep || abs(positions(i+1) - positions(i)) < minSep
         keep(i) = false;

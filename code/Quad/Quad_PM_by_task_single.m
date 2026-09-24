@@ -310,8 +310,12 @@ xLimits = log2([plotMin plotMax]);
 end
 
 function pStr = local_format_pvalue(pval)
-if pval >= 0.01
-    pStr = sprintf('%.2f', pval);
+if ~isfinite(pval)
+    pStr = 'n/a';
+elseif pval > 0.001
+    pStr = sprintf('%.3f', pval);
+elseif pval == 0
+    pStr = sprintf('<%.2e', realmin);
 else
     pStr = sprintf('%.2e', pval);
 end
