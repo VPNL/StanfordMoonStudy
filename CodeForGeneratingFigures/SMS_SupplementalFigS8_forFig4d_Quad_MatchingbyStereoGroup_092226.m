@@ -55,6 +55,22 @@ allQuadDataBase = allQuadDataBase( strcmpi(string(allQuadDataBase.Task), "Percep
 [~, quadBasenameBase] = fileparts(quadFile);
 stereoScoreVar = quadFindFirstTableVariable(allQuadDataBase, ...
     {'NormedStereoScore', 'NormedScore', 'NormScore', 'StereoScore'});
+score = allQuadDataBase.(stereoScoreVar);
+stereoGroup = strings(height(allQuadDataBase), 1);
+stereoGroup(score > stereoTypicalThreshold) = "StereoTypical";
+stereoGroup(score >= stereoBlindThreshold & score <= stereoTypicalThreshold) = ...
+    "StereoDeficient";
+stereoGroup(score < stereoBlindThreshold) = "StereoBlind";
+allQuadDataBase.StereoGroup = categorical(stereoGroup, ...
+    ["StereoTypical", "StereoDeficient", "StereoBlind"], ...
+    ["StereoTypical", "StereoDeficient", "StereoBlind"]);
+
+if ~exist(resultsRoot, 'dir')
+    mkdir(resultsRoot);
+end
+compute_mean_pm_stereo_group_test(allQuadDataBase, ...
+    fullfile(resultsRoot, [quadBasenameBase '_mean_PM_by_stereo_group.txt']), ...
+    quadFile);
 stereoGroupResults = struct();
 
 for runIdx = 1:numel(runConfigs)
