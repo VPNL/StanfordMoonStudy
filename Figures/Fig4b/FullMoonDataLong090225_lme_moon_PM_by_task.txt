@@ -1,13 +1,15 @@
 write_moon_lme_report.m: Moon perceptual magnification by elevation and task
 ===================================================
 
-Generated: 2026-09-21 16:10:00
+Generated: 2026-09-23 22:00:56
 
 Model tests whether elevation effects differ across Perceptual and Adjusted tasks.
 Reference task: Perceptual
 Task coefficient: Adjusted relative to Perceptual
 Rows: 639
 Subjects: 157
+Paired observers in mean PM test: 157
+Mean PM paired task test: Perceptual 2.62 +/- 0.96, Adjusted 2.37 +/- 0.96, t(156) = 2.96, p = 3.51e-03
 
 Perceptual magnification model = 
 Formula: logRatio ~ 1 + Task*logElevation + (1 | ID)

@@ -14,13 +14,13 @@ basename = erase(datafile,'.csv');
 
 saveLME=1;
 elevationModel = 'deg';
-
+%% Test each task and generate the same coloring by participant across tasks
 task='Perceptual'; recomputeSort=1;
 lmePerceptual = SMS_FullMoon_PM_by_task_log(dataDir, datafile, ResultsDir, task, recomputeSort, saveLME); 
 
 task='Adjusted'; recomputeSort =0;
 lme = SMS_FullMoon_PM_by_task_log(dataDir, datafile, ResultsDir, task, recomputeSort, saveLME); 
-
+%% compare between tasks
 SMS_FullMoon_TaskComparison(dataDir, datafile, ResultsDir, saveLME)
 
 close all; 
