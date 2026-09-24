@@ -41,13 +41,38 @@ if ~isempty(summaryLines)
 end
 
 for i = 1:numel(models)
-    local_write_block(fid, local_get_label(modelLabels, i, sprintf('model_%d', i)), ...
-        local_capture_disp(models{i}));
+    local_write_model_block(fid, ...
+        local_get_label(modelLabels, i, sprintf('model_%d', i)), models{i});
 end
 
 for i = 1:numel(comparisons)
     local_write_block(fid, local_get_label(comparisonLabels, i, sprintf('comparison_%d', i)), ...
         local_capture_disp(comparisons{i}));
+end
+end
+
+function local_write_model_block(fid, labelText, model)
+fprintf(fid, '%s = \n', labelText);
+
+formulaText = local_model_formula(model);
+if ~isempty(formulaText)
+    fprintf(fid, 'Formula: %s\n', formulaText);
+end
+
+fprintf(fid, '\n%s\n\n', local_clean_block(local_capture_disp(model)));
+end
+
+function formulaText = local_model_formula(model)
+formulaText = '';
+if ~isprop(model, 'Formula')
+    return
+end
+
+formulaText = local_clean_block(evalc('disp(model.Formula)'));
+formulaLines = regexp(formulaText, '\n', 'split');
+formulaLines = formulaLines(~cellfun(@(line) isempty(strtrim(line)), formulaLines));
+if ~isempty(formulaLines)
+    formulaText = strtrim(strjoin(formulaLines, ' '));
 end
 end
 

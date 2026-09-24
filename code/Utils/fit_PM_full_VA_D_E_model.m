@@ -22,7 +22,8 @@ function [lme] = fit_PM_full_VA_D_E_model(tbl, tblName, ResultsDir, saveModels, 
 %                  Real_Visual_Angle, Distance, Elevation
 %   tblName    : string/char used for figure titles and output filenames
 %   ResultsDir : output directory for figures/models (set [] or '' to skip saving)
-%   saveModels : logical, if true saves fitted model outputs to .mat
+%   saveModels : logical, if true saves the fitted model to .mat and writes
+%                a formatted LME statistics report to .txt
 %   cmap       : Nx3 colormap (optional). If empty, uses jet.
 %   sorted_idx : ordering for subject colors (optional). If empty, uses 1:N.
 %
@@ -176,6 +177,34 @@ end
 if saveModels && ~isempty(ResultsDir)
     if ~exist(ResultsDir,'dir'); mkdir(ResultsDir); end
     save(fullfile(ResultsDir, [tblName '.mat']), 'lme');
+
+    sourceCsv = local_source_file_label(tbl, tblName);
+    reportFile = fullfile(ResultsDir, [char(string(tblName)) '.txt']);
+
+    reportOpts = struct();
+    reportOpts.ReportTitle = sprintf('Quad PM Full VA/D/E LME Report: %s', ...
+        char(string(tblName)));
+    reportOpts.GeneratedBy = mfilename;
+    reportOpts.SourceFile = sourceCsv;
+    reportOpts.ModelLabel = ...
+        'Log2 perceptual magnification predicted by log2 visual angle, distance, and elevation';
+    reportOpts.SummaryLines = { ...
+        sprintf('Rows in model table: %d', height(tbl)), ...
+        sprintf('Participants in model table: %d', nsubjects), ...
+        'Visual-angle units: degrees', ...
+        'Distance units: meters', ...
+        'Elevation units: degrees', ...
+        sprintf('Elevation transform: %s', ...
+            local_elevation_transform_label(ElevationTransform)), ...
+        sprintf('Formula: %s', formula), ...
+        sprintf('Power-law fit: %s', strtrim(titlestr)), ...
+        sprintf('R-squared: ordinary = %.3f; adjusted = %.3f', ...
+            lme.Rsquared.Ordinary, lme.Rsquared.Adjusted)};
+    reportOpts.Models = {lme};
+    reportOpts.ModelLabels = {['Model: ' formula]};
+    reportOpts.RemoveGroupError = false;
+
+    write_lme_stats_report(lme, reportFile, reportOpts);
 end
 
 end
@@ -235,6 +264,37 @@ if ~ismember('log2elevation', tbl.Properties.VariableNames)
     end
 end
 
+end
+
+function sourceCsv = local_source_file_label(tbl, tblName)
+sourceCsv = char(string(tblName));
+try
+    if isstruct(tbl.Properties.UserData) && ...
+            isfield(tbl.Properties.UserData, 'SourceFile')
+        sourceCsv = char(string(tbl.Properties.UserData.SourceFile));
+    end
+catch
+end
+
+if ~endsWith(string(sourceCsv), ".csv", "IgnoreCase", true)
+    sourceCsv = sprintf('%s.csv (inferred from tblName; function input is a table)', ...
+        sourceCsv);
+end
+end
+
+function label = local_elevation_transform_label(ElevationTransform)
+switch ElevationTransform
+    case 1
+        label = 'log2(1 + E)';
+    case 2
+        label = 'log2(1 + |E|)';
+    case 5
+        label = 'log2(1 + E/90)';
+    case 6
+        label = 'log2(1 + |E|/90)';
+    otherwise
+        label = sprintf('transform %g', ElevationTransform);
+end
 end
 
 function g = local_group_to_numeric(group)

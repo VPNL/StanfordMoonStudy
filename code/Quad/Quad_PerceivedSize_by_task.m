@@ -1,10 +1,10 @@
 function  lme_by_angle=Quad_PerceivedSize_by_task(dataDir,datafile,task,ObserverFlag, ResultsDir, recomputeSort, saveLME)
-% 
+%
 % lme_by_angle=Quad_PercievedSize_by_task(dataDir,datafile,task, ResultsDir,recomputeSort, saveLME)
 % This function visualizes and calculates the relationship between the reported visual angle 
 % and the ground truth (real) visual angle
 % for the Stanford Quad Experiments
-% 
+%
 % dataDir       Directory where the data resides
 % datafile      csv file with subjects data
 % ResultsDir    Directory where the data is output resides,task, recomputeSort, saveLME)
@@ -90,10 +90,9 @@ end
 %%
 
 all_data=readtable(datafile);
-
-
-nameVars=all_data.Properties.VariableNames;
-nVars=length(all_data.Properties.VariableNames);
+%
+% nameVars=all_data.Properties.VariableNames;
+% nVars=length(all_data.Properties.VariableNames);
 uniqueID=unique(all_data.ID);
 uniqueObject=unique(all_data.Measurement);
 nObjects=length(uniqueObject);
@@ -126,6 +125,7 @@ else
     all_data.Elevation=all_data.Ground_Elevation;
 end
 all_data.Distance=all_data.Distance/100;
+
 
 
 %% set colormap
@@ -238,8 +238,8 @@ ylim([0 maxAngle]);
 axis('square');
 ytick=0:2:maxAngle;xtick=ytick;
 set(gca,'XTick',xtick,'YTick',ytick); % make x and y ticks the same
-xlabel ('Physical Visual Angle (degrees)')
-ylabel ('Perceived Visual Angle (degrees)') 
+xlabel ('Physical Visual Angle [degrees]')
+ylabel ('Perceived Angular Size [degrees]')
 set(gca,'FontSize',32,'FontName','Avenir');
 set(gca,'XTickLabelRotation',0)
 titlestr=sprintf('%s \n slope=%-.2f, p=%-.2e n=%d',string(task),mean_slope,pval, nsubjects);

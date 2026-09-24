@@ -7,7 +7,6 @@ function [summaryTbl, displayTbl] = build_quad_ground_truth_disparity_table(matc
 % Required input columns in matchingCsv:
 %   Version
 %   Measurement
-%   Ground_Distance
 %   Real_Visual_Angle
 %   Observer_Distance
 %   Observer_Elevation
@@ -15,7 +14,6 @@ function [summaryTbl, displayTbl] = build_quad_ground_truth_disparity_table(matc
 % Output columns:
 %   Version
 %   Object
-%   Ground_Distance_m
 %   Visual_Angle_degrees
 %   Observer_Distance_m
 %   Observer_Elevation_degrees
@@ -31,7 +29,7 @@ end
 
 matchTbl = readtable(matchingCsv, 'TextType', 'string');
 
-requiredMatchVars = {'Version','Measurement','Ground_Distance','Real_Visual_Angle', ...
+requiredMatchVars = {'Version','Measurement','Real_Visual_Angle', ...
     'Observer_Distance','Observer_Elevation'};
 for iVar = 1:numel(requiredMatchVars)
     if ~ismember(requiredMatchVars{iVar}, matchTbl.Properties.VariableNames)
@@ -39,29 +37,37 @@ for iVar = 1:numel(requiredMatchVars)
     end
 end
 
-matchTbl.Version = str2double(string(matchTbl.Version));
-if any(isnan(matchTbl.Version))
-    error('Version column must contain numeric values.');
+versionValues = str2double(string(matchTbl.Version));
+validVersion = isfinite(versionValues);
+if ~all(validVersion)
+    warning('build_quad_ground_truth_disparity_table:InvalidVersionRows', ...
+        'Ignoring %d row(s) with nonnumeric Version values in %s.', ...
+        sum(~validVersion), matchingCsv);
+    matchTbl = matchTbl(validVersion, :);
+    versionValues = versionValues(validVersion);
 end
+if isempty(matchTbl)
+    error('Version column must contain at least one numeric value.');
+end
+matchTbl.Version = versionValues;
 
 matchTbl.MeasurementBase = local_extract_measurement_base(matchTbl.Measurement);
 matchTbl.MeasurementKey = local_normalize_measurement_key(matchTbl.MeasurementBase);
 
 summaryTbl = groupsummary(matchTbl, {'Version','MeasurementKey'}, 'mean', ...
-    {'Ground_Distance','Real_Visual_Angle','Observer_Distance','Observer_Elevation'});
+    {'Real_Visual_Angle','Observer_Distance','Observer_Elevation'});
 summaryTbl = removevars(summaryTbl, 'GroupCount');
 summaryTbl = renamevars(summaryTbl, ...
-    {'mean_Ground_Distance','mean_Real_Visual_Angle','mean_Observer_Distance','mean_Observer_Elevation'}, ...
-    {'Ground_Distance_source','Visual_Angle_degrees','Observer_Distance_source','Observer_Elevation_degrees'});
+    {'mean_Real_Visual_Angle','mean_Observer_Distance','mean_Observer_Elevation'}, ...
+    {'Visual_Angle_degrees','Observer_Distance_source','Observer_Elevation_degrees'});
 summaryTbl.Object = local_default_object_name(summaryTbl.MeasurementKey);
 
 summaryTbl = sortrows(summaryTbl, {'Version','MeasurementKey'});
 
-summaryTbl.Ground_Distance_m = summaryTbl.Ground_Distance_source ./ 100;
 summaryTbl.Observer_Distance_m = summaryTbl.Observer_Distance_source ./ 100;
 
-displayTbl = summaryTbl(:, {'Version','Object','Ground_Distance_m', ...
-    'Visual_Angle_degrees','Observer_Distance_m','Observer_Elevation_degrees'});
+displayTbl = summaryTbl(:, {'Version','Object','Visual_Angle_degrees', ...
+    'Observer_Distance_m','Observer_Elevation_degrees'});
 
 [outDir,~,outExt] = fileparts(outFile);
 if isempty(outExt)

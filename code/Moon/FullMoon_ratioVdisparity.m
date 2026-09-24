@@ -172,7 +172,7 @@ subjInterceptsR = random_interceptsR + feEfxR(1);  % subject intercept = fixed +
 subjSlopesR = random_slopesR + feEfxR(2); 
 
 
-subplot(1,3,subplotNum)
+subplot(1,2,subplotNum)
 hold on
 % 
 % === Use colormap of disparity vs elevation for the PM plot ===
@@ -215,7 +215,7 @@ scatter(disparity_data.Disparity_VA, disparity_data.Ratio_Visual_Angle, markerSc
 
 
 yline(1,'Color',[.8 .8 .8 ],'LineWidth',3)
-xlabel ('Disparity (degrees)')
+xlabel ('Perceived Interocular Offset (degrees)')
 ylabel ('Perceptual Magnification') 
 ylim([0 maxRatio])
 xlim ([0 15])

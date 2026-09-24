@@ -1,11 +1,12 @@
 function [lme_logPM_by_logDistance, lme_logPM_by_logElevation, ...
-    lme_logPM_by_logDistance_RS, lme_logPM_by_logElevation_RS] = ...
+    lme_logPM_by_logDistance_RS, lme_logPM_by_logElevation_RS, ...
+    lme_logPM_by_logVisualAngle, lme_logPM_by_logVisualAngle_RS] = ...
     Quad_PerceivedDisparity_by_DistanceElevation_single(tbl, tblName, ...
     ResultsDir, saveLME, mycolormap, sorted_idx, modelTransform, ...
     degreeFlag, fullUniqueID, removeOutlierParticipants, colorbarLabel, ...
     secondYAxisColor, plotFixedEffectsRS, colorConfig, runStereoAnalysis)
 % QUAD_PERCEIVEDDISPARITY_BY_DISTANCEELEVATION_SINGLE
-% Fit and plot single-factor distance/elevation perceived-disparity models
+% Fit and plot single-factor visual-angle/distance/elevation perceived-disparity models
 % with random-intercept and random-slope variants.
 
 if nargin < 8 || isempty(degreeFlag)
@@ -36,11 +37,12 @@ if nargin < 15 || isempty(runStereoAnalysis)
     runStereoAnalysis = true;
 end
 
-ResultsDir = fullfile(ResultsDir, 'DistanceElevationModel');
 tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform, removeOutlierParticipants);
 
+lme_logPM_by_logVisualAngle = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2real_visual_angle + (1|ID)');
 lme_logPM_by_logDistance = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2distance + (1|ID)');
 lme_logPM_by_logElevation = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2elevation + (1|ID)');
+lme_logPM_by_logVisualAngle_RS = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2real_visual_angle + (log2real_visual_angle|ID)');
 lme_logPM_by_logDistance_RS = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2distance + (log2distance|ID)');
 lme_logPM_by_logElevation_RS = local_try_fitlme(tbl, 'log2mean_disparity ~ 1 + log2elevation + (log2elevation|ID)');
 
@@ -51,10 +53,15 @@ end
 if saveLME
     savelmefile = fullfile(ResultsDir, [tblName '_distance_elevation_single_RI_RS.txt']);
     diary(savelmefile);
+    local_log_model('log2mean_disparity ~ 1 + log2real_visual_angle + (1|ID)', lme_logPM_by_logVisualAngle)
     local_log_model('log2mean_disparity ~ 1 + log2distance + (1|ID)', lme_logPM_by_logDistance)
     local_log_model('log2mean_disparity ~ 1 + log2elevation + (1|ID)', lme_logPM_by_logElevation)
+    local_log_model('log2mean_disparity ~ 1 + log2real_visual_angle + (log2real_visual_angle|ID)', lme_logPM_by_logVisualAngle_RS)
     local_log_model('log2mean_disparity ~ 1 + log2distance + (log2distance|ID)', lme_logPM_by_logDistance_RS)
     local_log_model('log2mean_disparity ~ 1 + log2elevation + (log2elevation|ID)', lme_logPM_by_logElevation_RS)
+    local_compare_if_available( ...
+        'log2mean_disparity ~ 1 + log2real_visual_angle + (1|ID)', lme_logPM_by_logVisualAngle, ...
+        'log2mean_disparity ~ 1 + log2real_visual_angle + (log2real_visual_angle|ID)', lme_logPM_by_logVisualAngle_RS)
     local_compare_if_available( ...
         'log2mean_disparity ~ 1 + log2distance + (1|ID)', lme_logPM_by_logDistance, ...
         'log2mean_disparity ~ 1 + log2distance + (log2distance|ID)', lme_logPM_by_logDistance_RS)
@@ -102,6 +109,44 @@ local_add_subject_colorbar(figRS, mycolormap, nIDs, colorbarLabel, ...
     colorConfig, axRS2);
 exportgraphics(figRS, fullfile(ResultsDir, [tblName '_RS.png']), 'Resolution', 600);
 close(figRS);
+
+figRIVDE = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 1 .72], 'Name', [tblName '_VA_D_E_RI'], 'Visible', 'off');
+tRIVDE = tiledlayout(1,3,'Padding','compact','TileSpacing','compact');
+tRIVDE.Position = [0.08 0.12 0.75 0.64];
+axRIVA = nexttile;
+local_plot_fixed_only(axRIVA, tbl, subjectcolor, lme_logPM_by_logVisualAngle, ...
+    'A', minDisp, maxDisp, modelTransform, nIDs, true);
+axRID = nexttile;
+local_plot_fixed_only(axRID, tbl, subjectcolor, lme_logPM_by_logDistance, ...
+    'D', minDisp, maxDisp, modelTransform, nIDs, false);
+axRIE = nexttile;
+local_plot_fixed_only(axRIE, tbl, subjectcolor, lme_logPM_by_logElevation, ...
+    'E', minDisp, maxDisp, modelTransform, nIDs, false, secondYAxisColor);
+local_add_subject_colorbar(figRIVDE, mycolormap, nIDs, colorbarLabel, ...
+    colorConfig, axRIE);
+exportgraphics(figRIVDE, fullfile(ResultsDir, [tblName '_VA_D_E_RI.png']), 'Resolution', 600);
+close(figRIVDE);
+
+figRSVDE = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 1 .72], 'Name', [tblName '_VA_D_E_RS'], 'Visible', 'off');
+tRSVDE = tiledlayout(1,3,'Padding','compact','TileSpacing','compact');
+tRSVDE.Position = [0.08 0.12 0.75 0.64];
+axRSVA = nexttile;
+local_plot_random_slopes(axRSVA, tbl, subjectcolor, ...
+    lme_logPM_by_logVisualAngle_RS, 'A', minDisp, maxDisp, modelTransform, ...
+    nIDs, fullUniqueID, mycolormap, sorted_idx, true, [], plotFixedEffectsRS);
+axRSD = nexttile;
+local_plot_random_slopes(axRSD, tbl, subjectcolor, ...
+    lme_logPM_by_logDistance_RS, 'D', minDisp, maxDisp, modelTransform, ...
+    nIDs, fullUniqueID, mycolormap, sorted_idx, false, [], plotFixedEffectsRS);
+axRSE = nexttile;
+local_plot_random_slopes(axRSE, tbl, subjectcolor, ...
+    lme_logPM_by_logElevation_RS, 'E', minDisp, maxDisp, modelTransform, ...
+    nIDs, fullUniqueID, mycolormap, sorted_idx, false, ...
+    secondYAxisColor, plotFixedEffectsRS);
+local_add_subject_colorbar(figRSVDE, mycolormap, nIDs, colorbarLabel, ...
+    colorConfig, axRSE);
+exportgraphics(figRSVDE, fullfile(ResultsDir, [tblName '_VA_D_E_RS.png']), 'Resolution', 600);
+close(figRSVDE);
 
 if runStereoAnalysis
     local_plot_stereo_relationship_figure(tbl, lme_logPM_by_logDistance_RS, ResultsDir, tblName, ...
@@ -196,12 +241,16 @@ else
     uniqueID = string(fullUniqueID(:));
 end
 
-if modeChar == 'D'
-    slopeName = "log2distance";
-    xAll = tbl.log2distance;
-else
-    slopeName = "log2elevation";
-    xAll = tbl.log2elevation;
+switch modeChar
+    case 'A'
+        slopeName = "log2real_visual_angle";
+        xAll = tbl.log2real_visual_angle;
+    case 'D'
+        slopeName = "log2distance";
+        xAll = tbl.log2distance;
+    otherwise
+        slopeName = "log2elevation";
+        xAll = tbl.log2elevation;
 end
 
 for i = 1:numel(uniqueID)
@@ -235,6 +284,12 @@ end
 
 function [x, xlog, xlabelText, tickVals, titleFormula] = local_axis_setup(tbl, modeChar, modelTransform)
 switch modeChar
+    case 'A'
+        x = tbl.Real_Visual_Angle;
+        xlog = tbl.log2real_visual_angle;
+        xlabelText = {'Real VA [deg]','log scale'};
+        tickVals = local_log_ticks(min(x), max(x), false);
+        titleFormula = 'Disparity=%s(VA)^{%s}\n p=%s\n n=%d';
     case 'D'
         x = tbl.Distance;
         xlog = tbl.log2distance;
@@ -458,6 +513,13 @@ if isNormedStereoBar
     stereoTickVals = 0:20:100;
     cb.Ticks = 1 + (stereoTickVals ./ 100) * (nColorLevels - 1);
     cb.TickLabels = string(stereoTickVals);
+elseif isstruct(colorConfig) && isfield(colorConfig, 'Mode') && ...
+        string(colorConfig.Mode) == "id" && ...
+        isfield(colorConfig, 'ColorbarTicks') && ...
+        isfield(colorConfig, 'ColorbarTickLabels') && ...
+        ~isempty(colorConfig.ColorbarTicks)
+    cb.Ticks = max(1, min(nColorLevels, colorConfig.ColorbarTicks(:)'));
+    cb.TickLabels = string(colorConfig.ColorbarTickLabels(:)');
 else
     cb.Ticks = unique(max(1, min(nColorLevels, [1 nColorLevels])));
     cb.TickLabels = string(cb.Ticks);

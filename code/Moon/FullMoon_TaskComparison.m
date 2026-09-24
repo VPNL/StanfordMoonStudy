@@ -11,6 +11,17 @@ if ~exist(ResultsDir, 'dir')
     mkdir(ResultsDir);
 end
 
+% Make Perceptual the explicit reference task for all task coefficients.
+all_data.Task = categorical(string(all_data.Task));
+taskCategories = string(categories(all_data.Task));
+requiredTasks = ["Perceptual", "Adjusted"];
+if ~all(ismember(requiredTasks, taskCategories))
+    error('FullMoon_TaskComparison:MissingTask', ...
+        'Task must contain both Perceptual and Adjusted observations.');
+end
+otherTasks = taskCategories(taskCategories ~= "Perceptual");
+all_data.Task = reordercats(all_data.Task, cellstr(["Perceptual"; otherTasks]));
+
 
 %% test if there is a significant difference across tasks in estimated magnification
 % this model allows different subjects to have different slopes vs real ID
@@ -20,20 +31,30 @@ lme_angle_by_Elevation_and_task = fitlme(all_data,'Reported_Visual_Angle~Elevati
 
 lme_PM_by_Elevation_and_task = fitlme(all_data,'Ratio_Visual_Angle~Elevation*Task  + (1|ID)')
 if saveLME % save stats table
-     savelmefile=fullfile(ResultsDir, [basename '_lme_moon_task_comparison.txt']);
      summaryLines = {
-         'Models test whether elevation effects differ across Perceptual and Adjusted tasks.'
+         'Model tests whether elevation effects differ across Perceptual and Adjusted tasks.'
+         'Reference task: Perceptual'
+         'Task coefficient: Adjusted relative to Perceptual'
          sprintf('Rows: %d', height(all_data))
          sprintf('Subjects: %d', numel(unique(all_data.ID)))
          };
-     coeffCols = {'Name','Estimate','SE','tStat','DF','pValue','Lower','Upper'};
-     angleCoeffTbl = lme_angle_by_Elevation_and_task.Coefficients(:, coeffCols);
-     pmCoeffTbl = lme_PM_by_Elevation_and_task.Coefficients(:, coeffCols);
-     write_moon_lme_report(savelmefile, ...
-         'Moon task comparison models', ...
+
+     angleReportFile = fullfile(ResultsDir, ...
+         [basename '_lme_moon_reported_angle_by_task.txt']);
+     write_moon_lme_report(angleReportFile, ...
+         'Moon reported visual angle by elevation and task', ...
          summaryLines, ...
-         {angleCoeffTbl, pmCoeffTbl}, ...
-         {'lme_angle_by_Elevation_and_task.Coefficients', 'lme_PM_by_Elevation_and_task.Coefficients'}, ...
+         {lme_angle_by_Elevation_and_task}, ...
+         {'Reported visual angle model'}, ...
+         {}, {});
+
+     pmReportFile = fullfile(ResultsDir, ...
+         [basename '_lme_moon_PM_by_task.txt']);
+     write_moon_lme_report(pmReportFile, ...
+         'Moon perceptual magnification by elevation and task', ...
+         summaryLines, ...
+         {lme_PM_by_Elevation_and_task}, ...
+         {'Perceptual magnification model'}, ...
          {}, {});
 end
 
@@ -119,5 +140,4 @@ title(titlestr,'FontSize',20)
 
 filenamePNG=fullfile(ResultsDir,[basename,'_' 'PM_Task_comparison.png']);
 print(figh,filenamePNG,'-dpng','-r600');
-
 

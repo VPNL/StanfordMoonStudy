@@ -31,7 +31,7 @@ end
 cb.Ticks = 0:20:100;
 cb.Label.String = labelText;
 cb.FontName = 'Avenir';
-cb.FontSize = 12;
+cb.FontSize = 16;
 cb.Label.FontName = 'Avenir';
-cb.Label.FontSize = 14;
+cb.Label.FontSize = 20;
 end

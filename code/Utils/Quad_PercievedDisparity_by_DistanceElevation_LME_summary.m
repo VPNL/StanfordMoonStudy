@@ -8,8 +8,7 @@ if nargin < 4 || isempty(outCsvFile)
 else
     saveTable = true;
     [baseDir, baseName, ext] = fileparts(outCsvFile);
-    outDir = fullfile(baseDir, 'DistanceElevationModel');
-    outCsvFile = fullfile(outDir, [baseName ext]);
+    outCsvFile = fullfile(baseDir, [baseName ext]);
 end
 if nargin < 1 || isempty(study)
     study = "";

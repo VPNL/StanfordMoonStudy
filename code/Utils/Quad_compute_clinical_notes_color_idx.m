@@ -59,46 +59,50 @@ end
 function [category, color] = local_classify_clinical_notes(note)
 note = lower(string(note));
 
-cardinalRed = [1, 0, 0] ;
-darkRed =     [0.3, 0, 0];
-purple =      [0.5, 0, 0.7];
-lightBlue =   [0.3, 0.745, 1];
-blue =        [0, 0, 1];
-navy =        [0, 0, 0.3];
+darkGray =    [0.1, 0.1, 0.1];
+darkRed =     [0.5, 0, 0];
+violet =      [.8, 0.2, .8] ;
+purple =      [0.5, 0, 0.8];
 yellow =      [0.9290, 0.6940, 0.1250];
-pink =        [.8, 0.5, 0.5];
+navy =        [0.1, .8, .8];
 gray =        [.7 .7 .7];
-darkGray =    [0.5, 0.5, 0.5];
+pink =        [.8, 0.5, 0.5];
+lightBlue =   [0.3, 0.7, 1];
+blue =        [0, 0, 1];
 
-if contains(note, 'strabismus')
-    category = "Strabismus";
-    color = cardinalRed;
+% if  contains(note, 'ptosis')
+%     category = "Ptosis";
+%     color = [0 0 0];
+    
+if contains(note, 'one functional eye')
+    category = "One functional eye";
+    color = blue;
 elseif contains(note, 'convergence insufficiency')
     category = "Convergence insufficiency";
     color = darkRed;
+elseif  contains(note, 'strabismus')
+    category = "Strabismus";
+    color = violet;
 elseif contains(note, 'amblyopia') || contains(note, 'amplyopia')
     category = "Amblyopia";
     color = purple;
-elseif contains(note, 'nearsighted') || contains(note, 'near sighted')
-    category = "Nearsighted";
-    color = lightBlue;
-elseif contains(note, 'farsighted') || contains(note, 'far sighted')
-    category = "Farsighted";
-    color = blue;
-elseif contains(note, 'astigmatism')
-    category = "Astigmatism";
-    color = navy;
+% elseif contains(note, 'farsighted') || contains(note, 'far sighted')
+%     category = "Farsighted";
+%     color = darkGray;
+% elseif contains(note, 'nearsighted') || contains(note, 'near sighted')
+%     category = "Nearsighted";
+%     color = lightBlue;
+% elseif contains(note, 'astigmatism')
+%     category = "Astigmatism";
+%     color = navy;
 elseif contains(note, 'cataract')
     category = "Cataract";
     color = yellow;
-elseif contains(note, 'ptosis')
-    category = "Ptosis";
-    color = pink;
 elseif strlength(note) == 0
     category = "No clinical note";
     color = gray;
 else
     category = "Other clinical note";
-    color = darkGray;
+    color = navy;
 end
 end

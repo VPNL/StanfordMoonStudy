@@ -25,7 +25,6 @@ if nargin < 12
     colorConfig = [];
 end
 
-ResultsDir = local_distance_elevation_dir(ResultsDir);
 tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform, removeOutlierParticipants);
 
 lme_logPM_by_logDistance = local_try_fitlme(tbl,'log2mean_disparity ~ log2distance + (1|ID)');
@@ -75,10 +74,6 @@ if ~exist(ResultsDir, 'dir')
 end
 exportgraphics(figh, fullfile(ResultsDir, [tblName '.png']), 'Resolution', 600);
 close(figh);
-end
-
-function ResultsDir = local_distance_elevation_dir(ResultsDir)
-     ResultsDir = fullfile(ResultsDir, 'DistanceElevationModel');
 end
 
 function subjectcolor = local_subject_colors(tbl, mycolormap, sorted_idx, fullUniqueID)

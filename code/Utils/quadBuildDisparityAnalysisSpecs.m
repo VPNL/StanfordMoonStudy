@@ -34,7 +34,7 @@ for versionIdx = 1:numel(versionLabels)
         case "Version3Lamp7"
             tableSubset = allQuadData(allQuadData.Version == 3, :);
             measurementText = lower(string(tableSubset.Measurement));
-            tableSubset = tableSubset(contains(measurementText, "lamp7"), :);
+            tableSubset = tableSubset(contains(measurementText, "lamp7disk"), :);
 
         otherwise
             versionNumber = sscanf(char(versionLabel), 'Version%d');
@@ -46,7 +46,7 @@ for versionIdx = 1:numel(versionLabels)
                     keepRows = contains(measurementText, "disk");
                 else
                     keepRows = contains(measurementText, "lamp5disk") | ...
-                        contains(measurementText, "lamp7");
+                        contains(measurementText, "lamp7disk");
                 end
                 tableSubset = tableSubset(keepRows, :);
             end
