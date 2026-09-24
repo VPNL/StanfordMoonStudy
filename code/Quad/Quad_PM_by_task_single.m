@@ -189,7 +189,7 @@ switch modeChar
     case 'A'
         xRaw = tbl.Real_Visual_Angle;
         xLog = tbl.log2real_visual_angle;
-        xlabelText = {'Real Visual Angle [degree]','log scale'};
+        xlabelText = {'Visual Angle [degree]','log scale'};
         titleTemplate = 'PM=%.2fVA^{%.2f}\n p=%s \n n=%d';
     case 'D'
         xRaw = tbl.Distance;
