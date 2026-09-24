@@ -33,7 +33,7 @@ end
 uniqueID=unique(all_quad_data.ID);
 nsubjects=length(uniqueID);
 
-%% extract only the Adjusted data
+%% extract only the Adjusted data and calculate PM for this task
 
 task='Adjusted';
 task_i=find(strcmp(all_quad_data.Task,task));
@@ -60,12 +60,12 @@ end
 
 cmap=brighten(colormap(plasma(nsubjects*1.1)),0);
 
-%% run lme 3 factor model relating log PM to  VA, D, E
+% run lme 3 factor model relating log PM to  VA, D, E
 elevationTransform=2; % 1+abs(elevation);
-
 lme_full = fit_PM_full_VA_D_E_model(all_data_adjusted, [task '_' QuadBasename '_fullmodel_fit'], ResultsDir, saveLME, cmap, sorted_idx, elevationTransform);
  
-% compare model parameters across tasks
+ %% compare perceptual magnification across tasks
+
 OutName = [ 'SupFig_PM_full_VA_D_E_modelbytask_' QuadBasename];
 [lme, interactionStats, modelComparison] = fit_PM_full_VA_D_E_modelbytask( ...
     all_quad_data,  OutName, ResultsDir, 1,cmap, sorted_idx,  elevationTransform);
