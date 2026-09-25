@@ -115,7 +115,7 @@ for transformId = ElevationTransforms
 
         tblName = [QuadBasename '_' char(versionLabel) '_' sfx];
         [lme_logPM_by_logDistance, lme_logPM_by_logElevation, lme_logPM_by_logDistanceNElevation] = ...
-            Quad_PerceivedDisparity_by_DistanceElevation(tblSubset, tblName, VersionResultsDir, saveLME, cmap, sorted_color_idx, transformId, 1, uniqueID, removeOutlierParticipants);
+            Quad_PerceivedOffset_by_DistanceElevation(tblSubset, tblName, VersionResultsDir, saveLME, cmap, sorted_color_idx, transformId, 1, uniqueID);
 
         outCsvFile = fullfile(VersionResultsDir, [tblName '_lme_summary.csv']);
         summaryTbl = Quad_PercievedDisparity_by_DistanceElevation_LME_summary(QuadBasename, ...

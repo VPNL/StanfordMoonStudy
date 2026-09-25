@@ -1,17 +1,17 @@
-function [lme_logDisparity_by_logDistance, lme_logDisparity_by_logElevation, ...
-    lme_logDisparity_by_logDistance_RS, lme_logDisparity_by_logElevation_RS, ...
-    lme_Disparity_by_Distance, lme_Disparity_by_Elevation, ...
-    lme_Disparity_by_Distance_RS, lme_Disparity_by_Elevation_RS, ...
-    lme_logDisparity_by_logDistanceXStereoGroup, ...
+function [lme_logDisparity_by_logInverseDistance, lme_logDisparity_by_logElevation, ...
+    lme_logDisparity_by_logInverseDistance_RS, lme_logDisparity_by_logElevation_RS, ...
+    lme_Disparity_by_InverseDistance, lme_Disparity_by_Elevation, ...
+    lme_Disparity_by_InverseDistance_RS, lme_Disparity_by_Elevation_RS, ...
+    lme_logDisparity_by_logInverseDistanceXStereoGroup, ...
     lme_logDisparity_by_logElevationXStereoGroup, ...
-    lme_Disparity_by_DistanceXStereoGroup, ...
+    lme_Disparity_by_InverseDistanceXStereoGroup, ...
     lme_Disparity_by_ElevationXStereoGroup] = ...
-    Quad_PerceivedPerceived Disparity_by_DistanceElevation_single(tbl, tblName, ...
+    Quad_Disparity_by_inverseDistanceElevation_single(tbl, tblName, ...
     ResultsDir, saveLME, mycolormap, sorted_idx, modelTransform, ...
     degreeFlag, fullUniqueID, colorbarLabel, ...
-    secondYAxisColor, plotFixedEffectsRS, colorConfig, runStereoAnalysis);
-% QUAD_PERCEIVEDPerceived Disparity_BY_DISTANCEELEVATION_SINGLE
-% Fit and plot single-factor distance/elevation perceived-Perceived Disparity models
+    secondYAxisColor, plotFixedEffectsRS, colorConfig, runStereoAnalysis)
+% QUAD_DISPARITY_BY_INVERSEDISTANCEELEVATION_SINGLE
+% Fit and plot single-factor inverse-distance/elevation disparity models
 % with random-intercept and random-slope variants.
 
 if nargin < 8 || isempty(degreeFlag)
@@ -23,7 +23,6 @@ end
 if nargin < 9 || isempty(fullUniqueID)
     fullUniqueID = [];
 end
-
 if nargin < 10 || isempty(colorbarLabel)
     colorbarLabel = 'Participant color order';
 end
@@ -40,44 +39,50 @@ if nargin < 14 || isempty(runStereoAnalysis)
     runStereoAnalysis = true;
 end
 
-
 sourceCsv = local_source_file_label(tbl, tblName);
-outputStem = local_output_stem(tblName);
-
+outputStem = [local_output_stem(tblName) '_inverseDistance'];
+if ~ismember('Distance', tbl.Properties.VariableNames)
+    error('Quad_Disparity_by_inverseDistanceElevation_single:MissingDistance', ...
+        'Input table must contain a Distance column.');
+end
 tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform);
+% Quad_prepare_perceived_disparity_table standardizes Distance to meters.
+% Compute inverse distance afterward so its units are m^{-1}.
+tbl.inverseDistance = 1 ./ tbl.Distance;
+tbl.log2inverseDistance = log2(tbl.inverseDistance);
 [tbl, linearElevationSource] = local_set_linear_elevation(tbl);
 [tbl, stereoGroupSummaryLines, runStereoGroupInteractions] = local_prepare_stereo_group(tbl);
 
-logDistanceRIFormula = 'log2mean_disparity ~ 1 + log2distance + (1|ID)';
+logInverseDistanceRIFormula = 'log2mean_disparity ~ 1 + log2inverseDistance + (1|ID)';
 logElevationRIFormula = 'log2mean_disparity ~ 1 + log2elevation + (1|ID)';
-logDistanceRSFormula = 'log2mean_disparity ~ 1 + log2distance + (log2distance|ID)';
+logInverseDistanceRSFormula = 'log2mean_disparity ~ 1 + log2inverseDistance + (log2inverseDistance|ID)';
 logElevationRSFormula = 'log2mean_disparity ~ 1 + log2elevation + (log2elevation|ID)';
-linearDistanceRIFormula = 'MeanDisparity ~ 1 + Distance + (1|ID)';
+linearDistanceRIFormula = 'MeanDisparity ~ 1 + inverseDistance + (1|ID)';
 linearElevationRIFormula = 'MeanDisparity ~ 1 + Elevation + (1|ID)';
-linearDistanceRSFormula = 'MeanDisparity ~ 1 + Distance + (Distance|ID)';
+linearDistanceRSFormula = 'MeanDisparity ~ 1 + inverseDistance + (inverseDistance|ID)';
 linearElevationRSFormula = 'MeanDisparity ~ 1 + Elevation + (Elevation|ID)';
-logDistanceStereoRIFormula = 'log2mean_disparity ~ 1 + log2distance*StereoGroup + (1|ID)';
+logInverseDistanceStereoRIFormula = 'log2mean_disparity ~ 1 + log2inverseDistance*StereoGroup + (1|ID)';
 logElevationStereoRIFormula = 'log2mean_disparity ~ 1 + log2elevation*StereoGroup + (1|ID)';
-linearDistanceStereoRIFormula = 'MeanDisparity ~ 1 + Distance*StereoGroup + (1|ID)';
+linearDistanceStereoRIFormula = 'MeanDisparity ~ 1 + inverseDistance*StereoGroup + (1|ID)';
 linearElevationStereoRIFormula = 'MeanDisparity ~ 1 + Elevation*StereoGroup + (1|ID)';
 
-lme_logDisparity_by_logDistance = local_try_fitlme(tbl, logDistanceRIFormula);
+lme_logDisparity_by_logInverseDistance = local_try_fitlme(tbl, logInverseDistanceRIFormula);
 lme_logDisparity_by_logElevation = local_try_fitlme(tbl, logElevationRIFormula);
-lme_logDisparity_by_logDistance_RS = local_try_fitlme(tbl, logDistanceRSFormula);
+lme_logDisparity_by_logInverseDistance_RS = local_try_fitlme(tbl, logInverseDistanceRSFormula);
 lme_logDisparity_by_logElevation_RS = local_try_fitlme(tbl, logElevationRSFormula);
-lme_Disparity_by_Distance = local_try_fitlme(tbl, linearDistanceRIFormula);
+lme_Disparity_by_InverseDistance = local_try_fitlme(tbl, linearDistanceRIFormula);
 lme_Disparity_by_Elevation = local_try_fitlme(tbl, linearElevationRIFormula);
-lme_Disparity_by_Distance_RS = local_try_fitlme(tbl, linearDistanceRSFormula);
+lme_Disparity_by_InverseDistance_RS = local_try_fitlme(tbl, linearDistanceRSFormula);
 lme_Disparity_by_Elevation_RS = local_try_fitlme(tbl, linearElevationRSFormula);
 
-lme_logDisparity_by_logDistanceXStereoGroup = [];
+lme_logDisparity_by_logInverseDistanceXStereoGroup = [];
 lme_logDisparity_by_logElevationXStereoGroup = [];
-lme_Disparity_by_DistanceXStereoGroup = [];
+lme_Disparity_by_InverseDistanceXStereoGroup = [];
 lme_Disparity_by_ElevationXStereoGroup = [];
 if runStereoGroupInteractions
-    lme_logDisparity_by_logDistanceXStereoGroup = local_try_fitlme(tbl, logDistanceStereoRIFormula);
+    lme_logDisparity_by_logInverseDistanceXStereoGroup = local_try_fitlme(tbl, logInverseDistanceStereoRIFormula);
     lme_logDisparity_by_logElevationXStereoGroup = local_try_fitlme(tbl, logElevationStereoRIFormula);
-    lme_Disparity_by_DistanceXStereoGroup = local_try_fitlme(tbl, linearDistanceStereoRIFormula);
+    lme_Disparity_by_InverseDistanceXStereoGroup = local_try_fitlme(tbl, linearDistanceStereoRIFormula);
     lme_Disparity_by_ElevationXStereoGroup = local_try_fitlme(tbl, linearElevationStereoRIFormula);
 end
 
@@ -87,23 +92,23 @@ end
 
 if saveLME
     savelmefile = fullfile(ResultsDir, ...
-        [outputStem '_distance_elevation_single_RI_RS.txt']);
+        [outputStem '_elevation_single_RI_RS.txt']);
     local_write_model_report(savelmefile, tbl, tblName, sourceCsv, ...
         modelTransform, linearElevationSource, stereoGroupSummaryLines, ...
         runStereoAnalysis, ...
-        {lme_logDisparity_by_logDistance, lme_logDisparity_by_logElevation, ...
-        lme_logDisparity_by_logDistance_RS, lme_logDisparity_by_logElevation_RS, ...
-        lme_Disparity_by_Distance, lme_Disparity_by_Elevation, ...
-        lme_Disparity_by_Distance_RS, lme_Disparity_by_Elevation_RS, ...
-        lme_logDisparity_by_logDistanceXStereoGroup, ...
+        {lme_logDisparity_by_logInverseDistance, lme_logDisparity_by_logElevation, ...
+        lme_logDisparity_by_logInverseDistance_RS, lme_logDisparity_by_logElevation_RS, ...
+        lme_Disparity_by_InverseDistance, lme_Disparity_by_Elevation, ...
+        lme_Disparity_by_InverseDistance_RS, lme_Disparity_by_Elevation_RS, ...
+        lme_logDisparity_by_logInverseDistanceXStereoGroup, ...
         lme_logDisparity_by_logElevationXStereoGroup, ...
-        lme_Disparity_by_DistanceXStereoGroup, ...
+        lme_Disparity_by_InverseDistanceXStereoGroup, ...
         lme_Disparity_by_ElevationXStereoGroup}, ...
-        {logDistanceRIFormula, logElevationRIFormula, ...
-        logDistanceRSFormula, logElevationRSFormula, ...
+        {logInverseDistanceRIFormula, logElevationRIFormula, ...
+        logInverseDistanceRSFormula, logElevationRSFormula, ...
         linearDistanceRIFormula, linearElevationRIFormula, ...
         linearDistanceRSFormula, linearElevationRSFormula, ...
-        logDistanceStereoRIFormula, logElevationStereoRIFormula, ...
+        logInverseDistanceStereoRIFormula, logElevationStereoRIFormula, ...
         linearDistanceStereoRIFormula, linearElevationStereoRIFormula});
 end
 
@@ -116,7 +121,7 @@ figRI = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 .92 .72
 tRI = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
 tRI.Position = [0.14 0.12 0.65 0.64];
 axRI1 = nexttile;
-local_plot_fixed_only(axRI1, tbl, subjectcolor, lme_logDisparity_by_logDistance, ...
+local_plot_fixed_only(axRI1, tbl, subjectcolor, lme_logDisparity_by_logInverseDistance, ...
     'D', minDisp, maxDisp, modelTransform, nIDs, true);
 axRI2 = nexttile;
 local_plot_fixed_only(axRI2, tbl, subjectcolor, lme_logDisparity_by_logElevation, ...
@@ -131,7 +136,7 @@ tRS = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
 tRS.Position = [0.14 0.12 0.65 0.64];
 axRS1 = nexttile;
 local_plot_random_slopes(axRS1, tbl, subjectcolor, ...
-    lme_logDisparity_by_logDistance_RS, 'D', minDisp, maxDisp, modelTransform, ...
+    lme_logDisparity_by_logInverseDistance_RS, 'D', minDisp, maxDisp, modelTransform, ...
     nIDs, fullUniqueID, mycolormap, sorted_idx, true, [], plotFixedEffectsRS);
 axRS2 = nexttile;
 local_plot_random_slopes(axRS2, tbl, subjectcolor, ...
@@ -148,7 +153,7 @@ tLinearRI = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
 tLinearRI.Position = [0.14 0.12 0.65 0.64];
 axLinearRI1 = nexttile;
 local_plot_linear_fixed_only(axLinearRI1, tbl, subjectcolor, ...
-    lme_Disparity_by_Distance, 'D', minDisp, maxDisp, modelTransform, nIDs, true);
+    lme_Disparity_by_InverseDistance, 'D', minDisp, maxDisp, modelTransform, nIDs, true);
 axLinearRI2 = nexttile;
 local_plot_linear_fixed_only(axLinearRI2, tbl, subjectcolor, ...
     lme_Disparity_by_Elevation, 'E', minDisp, maxDisp, modelTransform, nIDs, ...
@@ -163,7 +168,7 @@ tLinearRS = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
 tLinearRS.Position = [0.14 0.12 0.65 0.64];
 axLinearRS1 = nexttile;
 local_plot_linear_random_slopes(axLinearRS1, tbl, subjectcolor, ...
-    lme_Disparity_by_Distance_RS, 'D', minDisp, maxDisp, modelTransform, nIDs, ...
+    lme_Disparity_by_InverseDistance_RS, 'D', minDisp, maxDisp, modelTransform, nIDs, ...
     fullUniqueID, mycolormap, sorted_idx, true, [], plotFixedEffectsRS);
 axLinearRS2 = nexttile;
 local_plot_linear_random_slopes(axLinearRS2, tbl, subjectcolor, ...
@@ -176,7 +181,7 @@ exportgraphics(figLinearRS, fullfile(ResultsDir, [outputStem '_linear_RS.png']),
 close(figLinearRS);
 
 if runStereoAnalysis
-    local_plot_stereo_relationship_figure(tbl, lme_logDisparity_by_logDistance_RS, ResultsDir, outputStem, ...
+    local_plot_stereo_relationship_figure(tbl, lme_logDisparity_by_logInverseDistance_RS, ResultsDir, outputStem, ...
         fullUniqueID, mycolormap, sorted_idx, colorConfig);
 end
 end
@@ -204,7 +209,8 @@ reportOpts.ReportTitle = sprintf('Quad Perceived Disparity Single-Factor LME Rep
     char(string(tblName)));
 reportOpts.GeneratedBy = mfilename;
 reportOpts.SourceFile = sourceCsv;
-reportOpts.ModelLabel = 'Single-factor Perceived Disparity models by distance and elevation';
+reportOpts.ModelLabel = ['Single-factor interocular offset models by ' ...
+    'inverse distance and elevation'];
 baseSummaryLines = { ...
     sprintf('Experiment: Quad'), ...
     sprintf('Rows in model table: %d', height(tbl)), ...
@@ -214,7 +220,7 @@ baseSummaryLines = { ...
     sprintf('Linear-model Elevation source: %s', linearElevationSource), ...
     sprintf('Fit method: ML'), ...
     sprintf('Log models use transformed elevation through log2elevation.'), ...
-    sprintf('Linear models use MeanDisparity, Distance, and transformed Elevation without log2 or +1 regularization.'), ...
+    sprintf('Linear models use MeanDisparity, inverseDistance, and transformed Elevation without log2 or +1 regularization.'), ...
     sprintf('Log-vs-linear fit-statistic tables are descriptive only; they are not likelihood-ratio tests because the response variable differs.')};
 skippedModelLines = {};
 if any(~validModel)
@@ -305,9 +311,9 @@ end
 [fitStatsTbl, ok] = local_fit_stat_table( ...
     {models{1}, models{5}, models{2}, models{6}, models{3}, models{7}, models{4}, models{8}}, ...
     {formulas{1}, formulas{5}, formulas{2}, formulas{6}, formulas{3}, formulas{7}, formulas{4}, formulas{8}}, ...
-    ["Log distance RI"; "Linear distance RI"; ...
+    ["Log inverse distance RI"; "Linear inverse distance RI"; ...
     "Log elevation RI"; "Linear elevation RI"; ...
-    "Log distance RS"; "Linear distance RS"; ...
+    "Log inverse distance RS"; "Linear inverse distance RS"; ...
     "Log elevation RS"; "Linear elevation RS"], ...
     ["log2mean_disparity"; "MeanDisparity"; ...
     "log2mean_disparity"; "MeanDisparity"; ...
@@ -323,9 +329,9 @@ if hasStereoGroupModels
     [fitStatsTbl, ok] = local_fit_stat_table( ...
         {models{1}, models{9}, models{2}, models{10}, models{5}, models{11}, models{6}, models{12}}, ...
         {formulas{1}, formulas{9}, formulas{2}, formulas{10}, formulas{5}, formulas{11}, formulas{6}, formulas{12}}, ...
-        ["Log distance RI"; "Log distance x StereoGroup RI"; ...
+        ["Log inverse distance RI"; "Log inverse distance x StereoGroup RI"; ...
         "Log elevation RI"; "Log elevation x StereoGroup RI"; ...
-        "Linear distance RI"; "Linear distance x StereoGroup RI"; ...
+        "Linear inverse distance RI"; "Linear inverse distance x StereoGroup RI"; ...
         "Linear elevation RI"; "Linear elevation x StereoGroup RI"], ...
         ["log2mean_disparity"; "log2mean_disparity"; ...
         "log2mean_disparity"; "log2mean_disparity"; ...
@@ -416,7 +422,7 @@ if fid == -1
 end
 cleanupObj = onCleanup(@() fclose(fid));
 
-reportTitle = sprintf('Quad Interocular Perceived Disparity Single-Factor LME Report: %s', ...
+reportTitle = sprintf('Quad Perceived Disparity Single-Factor LME Report: %s', ...
     char(string(tblName)));
 fprintf(fid, '%s\n', reportTitle);
 fprintf(fid, '%s\n\n', repmat('=', 1, numel(reportTitle)));
@@ -593,7 +599,11 @@ end
 scatter_by_measurement(ax, xlog, y, subjectcolor, tbl.Measurement);
 
 local_finish_axes(ax, tickVals, xlabelText, minDisp, maxDisp, x, showYLabel, hiddenYAxisColor);
-titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number(b1), local_format_pvalue(pval), nIDs);
+displayExponent = b1;
+if modeChar == 'D'
+    displayExponent = -b1;
+end
+titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number(displayExponent), local_format_pvalue(pval), nIDs);
 title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
 end
 
@@ -632,7 +642,11 @@ end
 scatter_by_measurement(ax, xlog, y, subjectcolor, tbl.Measurement);
 
 local_finish_axes(ax, tickVals, xlabelText, minDisp, maxDisp, x, showYLabel, hiddenYAxisColor);
-titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number(b1), local_format_pvalue(pval), nIDs);
+displayExponent = b1;
+if modeChar == 'D'
+    displayExponent = -b1;
+end
+titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number(displayExponent), local_format_pvalue(pval), nIDs);
 title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
 end
 
@@ -650,7 +664,8 @@ y = tbl.MeanDisparity;
 
 if isempty(lme)
     scatter_by_measurement(ax, x, y, subjectcolor, tbl.Measurement);
-    local_finish_linear_axes(ax, xlabelText, minDisp, maxDisp, x, showYLabel, hiddenYAxisColor);
+    local_finish_linear_axes(ax, xlabelText, minDisp, maxDisp, x, ...
+        modeChar, showYLabel, hiddenYAxisColor);
     title(ax, {'Linear model unavailable','rank-deficient or singular'}, 'FontSize', 16, 'FontWeight', 'normal');
     return;
 end
@@ -663,7 +678,8 @@ if isfinite(pval) && pval < 0.05
 end
 scatter_by_measurement(ax, x, y, subjectcolor, tbl.Measurement);
 
-local_finish_linear_axes(ax, xlabelText, minDisp, maxDisp, x, showYLabel, hiddenYAxisColor);
+local_finish_linear_axes(ax, xlabelText, minDisp, maxDisp, x, ...
+    modeChar, showYLabel, hiddenYAxisColor);
 titleStr = local_linear_title(lme, predictorSymbol, nIDs);
 title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
 end
@@ -685,7 +701,8 @@ y = tbl.MeanDisparity;
 
 if isempty(lme)
     scatter_by_measurement(ax, x, y, subjectcolor, tbl.Measurement);
-    local_finish_linear_axes(ax, xlabelText, minDisp, maxDisp, x, showYLabel, hiddenYAxisColor);
+    local_finish_linear_axes(ax, xlabelText, minDisp, maxDisp, x, ...
+        modeChar, showYLabel, hiddenYAxisColor);
     title(ax, {'Linear model unavailable','rank-deficient or singular'}, 'FontSize', 16, 'FontWeight', 'normal');
     return;
 end
@@ -699,7 +716,8 @@ end
 
 scatter_by_measurement(ax, x, y, subjectcolor, tbl.Measurement);
 
-local_finish_linear_axes(ax, xlabelText, minDisp, maxDisp, x, showYLabel, hiddenYAxisColor);
+local_finish_linear_axes(ax, xlabelText, minDisp, maxDisp, x, ...
+    modeChar, showYLabel, hiddenYAxisColor);
 titleStr = local_linear_title(lme, predictorSymbol, nIDs);
 title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
 end
@@ -751,8 +769,8 @@ else
 end
 
 if modeChar == 'D'
-    slopeName = "Distance";
-    xAll = tbl.Distance;
+    slopeName = "inverseDistance";
+    xAll = tbl.inverseDistance;
 else
     slopeName = "Elevation";
     xAll = tbl.Elevation;
@@ -793,9 +811,9 @@ end
 function [x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeChar, modelTransform)
 switch modeChar
     case 'D'
-        x = tbl.Distance;
-        xlabelText = {'Distance [m]','linear scale'};
-        predictorSymbol = 'D';
+        x = tbl.inverseDistance;
+        xlabelText = {'1/Distance [m^{-1}]','linear scale'};
+        predictorSymbol = '1/Distance';
     otherwise
         x = tbl.Elevation;
         predictorSymbol = 'E';
@@ -809,11 +827,11 @@ switch modeChar
 end
 end
 
-function local_finish_linear_axes(ax, xlabelText, minDisp, maxDisp, x, showYLabel, hiddenYAxisColor)
-if nargin < 6 || isempty(showYLabel)
+function local_finish_linear_axes(ax, xlabelText, minDisp, maxDisp, x, modeChar, showYLabel, hiddenYAxisColor)
+if nargin < 7 || isempty(showYLabel)
     showYLabel = true;
 end
-if nargin < 7 || isempty(hiddenYAxisColor)
+if nargin < 8 || isempty(hiddenYAxisColor)
     hiddenYAxisColor = 'w';
 end
 
@@ -825,10 +843,46 @@ else
     ylabel(ax, '');
     ax.YColor = hiddenYAxisColor;
 end
-xlim(ax, local_expand_linear_limits(x));
+if modeChar == 'D'
+    [inverseDistanceLimits, inverseDistanceTicks] = ...
+        local_inverse_distance_axis(x);
+    xlim(ax, inverseDistanceLimits);
+    xticks(ax, inverseDistanceTicks);
+else
+    xlim(ax, local_expand_linear_limits(x));
+end
 ylim(ax, local_expand_linear_limits([minDisp maxDisp]));
 box(ax, 'off');
 grid(ax, 'off');
+end
+
+function [limits, ticks] = local_inverse_distance_axis(x)
+x = double(x(:));
+x = x(isfinite(x) & x >= 0);
+if isempty(x) || max(x) <= 0
+    limits = [0 1];
+    ticks = 0:0.2:1;
+    return;
+end
+
+targetStep = max(x) / 4;
+scale = 10.^floor(log10(targetStep));
+normalizedStep = targetStep / scale;
+if normalizedStep <= 1
+    niceStep = 1 * scale;
+elseif normalizedStep <= 2
+    niceStep = 2 * scale;
+elseif normalizedStep <= 2.5
+    niceStep = 2.5 * scale;
+elseif normalizedStep <= 5
+    niceStep = 5 * scale;
+else
+    niceStep = 10 * scale;
+end
+
+upperLimit = ceil(max(x) / niceStep) * niceStep;
+limits = [0 upperLimit];
+ticks = 0:niceStep:upperLimit;
 end
 
 function lims = local_expand_linear_limits(x)
@@ -854,9 +908,19 @@ function titleStr = local_linear_title(lme, predictorSymbol, nIDs)
 b0 = lme.Coefficients.Estimate(1);
 b1 = lme.Coefficients.Estimate(2);
 pval = lme.Coefficients.pValue(2);
-titleStr = sprintf('Perceived Disparity=%s%s%s\n p=%s\n n=%d', ...
-    local_format_number(b0), local_format_signed_slope(b1), ...
-    predictorSymbol, local_format_pvalue(pval), nIDs);
+if strcmp(predictorSymbol, '1/Distance')
+    if b1 < 0
+        termText = [' - ' local_format_number(abs(b1)) '/Distance'];
+    else
+        termText = [' + ' local_format_number(b1) '/Distance'];
+    end
+    titleStr = sprintf('Perceived Disparity=%s%s\n p=%s\n n=%d', ...
+        local_format_number(b0), termText, local_format_pvalue(pval), nIDs);
+else
+    titleStr = sprintf('Perceived Disparity=%s%s%s\n p=%s\n n=%d', ...
+        local_format_number(b0), local_format_signed_slope(b1), ...
+        predictorSymbol, local_format_pvalue(pval), nIDs);
+end
 end
 
 function slopeStr = local_format_signed_slope(val)
@@ -883,8 +947,8 @@ switch modeChar
         slopeName = "log2real_visual_angle";
         xAll = tbl.log2real_visual_angle;
     case 'D'
-        slopeName = "log2distance";
-        xAll = tbl.log2distance;
+        slopeName = "log2inverseDistance";
+        xAll = tbl.log2inverseDistance;
     otherwise
         slopeName = "log2elevation";
         xAll = tbl.log2elevation;
@@ -950,11 +1014,11 @@ switch modeChar
         tickVals = local_visual_angle_ticks(min(x), max(x));
         titleFormula = 'Perceived Disparity=%s(VA)^{%s}\n p=%s\n n=%d';
     case 'D'
-        x = tbl.Distance;
-        xlog = tbl.log2distance;
-        xlabelText = {'Distance [m]','log scale'};
+        x = tbl.inverseDistance;
+        xlog = tbl.log2inverseDistance;
+        xlabelText = {'1/Distance [m^{-1}]','log scale'};
         tickVals = local_log_ticks(min(x), max(x), false);
-        titleFormula = 'Perceived Disparity=%s(D)^{%s}\n p=%s\n n=%d';
+        titleFormula = 'Perceived Disparity=%s(Distance)^{%s}\n p=%s\n n=%d';
     otherwise
         x = tbl.ElevationModel;
         xlog = tbl.log2elevation;
@@ -1210,7 +1274,7 @@ for i = 1:nSubjects
     stereoScore(i) = mean(double(tbl.(stereoVar)(rowMask)), 'omitnan');
 
     idxIntercept = find(levels == subj & names == "(Intercept)", 1, 'first');
-    idxSlope = find(levels == subj & names == "log2distance", 1, 'first');
+    idxSlope = find(levels == subj & names == "log2inverseDistance", 1, 'first');
 
     reIntercept = 0;
     reSlope = 0;

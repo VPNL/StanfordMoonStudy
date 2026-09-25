@@ -246,6 +246,7 @@ rightAx = axesList(3);
 local_plot_pm_panel(rightAx, tbl, subjectcolor, lme_logPM_by_logElevation, ...
     'E', ElevationTransform, nsubjects, uniqueID, subjectColorByID, ...
     subjectLineOrder, groupLineColors, false, minPMLim, maxPMLim, plotFixedEffectsRS, modelComparisons.Elevation.RI);
+local_hide_redundant_y_axes(axesList(2:3));
 local_add_ri_line_legend(axesList(1), tbl, groupLineColors);
 local_add_color_key(rightAx, cmap, nsubjects, colorConfig);
 local_export_png(figRI, fullfile(ResultsDir, [char(string(tblName)) '_single_byStereoGroup_RI.png']), 600);
@@ -265,9 +266,17 @@ rightAx = axesList(3);
 local_plot_pm_panel(rightAx, tbl, subjectcolor, lme_logPM_by_logElevation_RS, ...
     'E', ElevationTransform, nsubjects, uniqueID, subjectColorByID, ...
     subjectLineOrder, [], true, minPMLim, maxPMLim, plotFixedEffectsRS, modelComparisons.Elevation.RS);
+local_hide_redundant_y_axes(axesList(2:3));
 local_add_color_key(rightAx, cmap, nsubjects, colorConfig);
 local_export_png(figRS, fullfile(ResultsDir, [char(string(tblName)) '_single_byStereoGroup_RS.png']), 600);
 close(figRS);
+end
+
+function local_hide_redundant_y_axes(axesList)
+for ax = axesList
+    ylabel(ax, '');
+    ax.YColor = 'w';
+end
 end
 
 function axesList = local_create_three_panel_axes(figHandle)

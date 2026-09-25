@@ -1,5 +1,6 @@
 function [lme, interactionStats, modelComparison] = fit_PM_full_VA_D_E_modelbyStereoGroup( ...
-    tbl, tblName, ResultsDir, saveModels, mycolormap, sorted_idx, ElevationTransform, colorConfig)
+    tbl, tblName, ResultsDir, saveModels, mycolormap, sorted_idx, ...
+    ElevationTransform, colorConfig, plotResults)
 % fit_PM_full_VA_D_E_modelbyStereoGroup
 % Fit the full VA/D/E perceptual magnification model with StereoGroup interactions.
 %
@@ -27,6 +28,8 @@ function [lme, interactionStats, modelComparison] = fit_PM_full_VA_D_E_modelbySt
 %                      5: log2(1+E/90)
 %                      6: log2(1+abs(E)/90)
 %   colorConfig        Optional output from Quad_build_participant_color_config.
+%   plotResults        Optional logical. If false, fit and report the model
+%                      without generating a figure. Default is true.
 %
 % Outputs
 %   lme              Fitted LinearMixedModel with VA/D/E by StereoGroup interactions.
@@ -41,6 +44,7 @@ if nargin < 5; mycolormap = []; end
 if nargin < 6; sorted_idx = []; end
 if nargin < 7 || isempty(ElevationTransform); ElevationTransform = 1; end
 if nargin < 8; colorConfig = []; end
+if nargin < 9 || isempty(plotResults); plotResults = true; end
 
 if ~istable(tbl)
     error('fitPMFullVADEStereoGroup:InvalidInput', 'Input tbl must be a MATLAB table.');
@@ -73,8 +77,10 @@ if saveModels && ~isempty(ResultsDir)
         baseFormula, interactionFormula, sourceCsv);
 end
 
-local_plot_full_model_by_stereo_group(tbl, tblName, ResultsDir, subjectcolor, ...
-    ElevationTransform, lme, interactionStats);
+if plotResults
+    local_plot_full_model_by_stereo_group(tbl, tblName, ResultsDir, subjectcolor, ...
+        ElevationTransform, lme, interactionStats);
+end
 
 if saveModels && ~isempty(ResultsDir)
     if ~exist(ResultsDir, 'dir')

@@ -99,7 +99,7 @@ scatter(ax, taskTbl.Real_Visual_Angle, taskTbl.Reported_Visual_Angle, ...
 xlim(ax, [0 maxAngle]);
 ylim(ax, [0 maxAngle]);
 axis(ax, 'square');
-xlabel(ax, 'Physical Visual Angle [degrees]');
+xlabel(ax, 'Visual Angle [degrees]');
 ylabel(ax, 'Perceived Angular Size [degrees]');
 set(ax, 'FontSize', 26, 'FontName', 'Avenir', 'XTickLabelRotation', 0);
 title(ax, sprintf('%s\nslope=%.2f, p=%s, n=%d', ...
