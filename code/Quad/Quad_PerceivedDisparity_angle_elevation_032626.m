@@ -106,7 +106,7 @@ for transformId = ElevationTransforms
 
         tblName = [QuadBasename '_' char(versionLabel) '_' sfx];
         [lme_logPM_by_logAngle, lme_logPM_by_logElevation, lme_logPM_by_logAngleNElevation] = ...
-            Quad_PerceivedDisparity_by_angleElevation(tblSubset, tblName, VersionResultsDir, saveLME, cmap, sorted_color_idx, transformId, 1, uniqueID, removeOutlierParticipants);
+            Quad_PerceivedOffset_by_VAElevation(tblSubset, tblName, VersionResultsDir, saveLME, cmap, sorted_color_idx, transformId, 1, uniqueID, removeOutlierParticipants);
 
         outCsvFile = fullfile(VersionResultsDir, [tblName '_lme_summary.csv']);
         summaryTbl = Quad_PercievedDisparity_by_angleElevation_LME_summary(QuadBasename, ...

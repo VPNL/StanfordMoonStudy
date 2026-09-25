@@ -238,7 +238,7 @@ ylim([0 maxAngle]);
 axis('square');
 ytick=0:2:maxAngle;xtick=ytick;
 set(gca,'XTick',xtick,'YTick',ytick); % make x and y ticks the same
-xlabel ('Physical Visual Angle [degrees]')
+xlabel ('Visual Angle [degrees]')
 ylabel ('Perceived Angular Size [degrees]')
 set(gca,'FontSize',32,'FontName','Avenir');
 set(gca,'XTickLabelRotation',0)

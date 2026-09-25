@@ -2,7 +2,7 @@ function [lme_logPM_by_logDistance, lme_logPM_by_logElevation, ...
     lme_logPM_by_logDistanceNElevation, lme_PM_by_DistanceNElevation] = ...
     Quad_PerceivedOffset_by_DistanceElevation(tbl, tblName, ResultsDir, ...
     saveLME, mycolormap, sorted_idx, modelTransform, degreeFlag, ...
-    fullUniqueID, removeOutlierParticipants, secondYAxisColor, colorConfig)
+    fullUniqueID, secondYAxisColor, colorConfig)
 
 % QUAD_PERCEIVEDOFFSET_BY_DISTANCEELEVATION
 % Fit interocular-offset distance/elevation LME models and plot RI fits.
@@ -16,18 +16,15 @@ end
 if nargin < 9 || isempty(fullUniqueID)
     fullUniqueID = [];
 end
-if nargin < 10 || isempty(removeOutlierParticipants)
-    removeOutlierParticipants = false;
+
+if nargin < 10 || isempty(secondYAxisColor)
+    secondYAxisColor = 'w';
 end
-if nargin < 11 || isempty(secondYAxisColor)
-    secondYAxisColor = 'k';
-end
-if nargin < 12
+if nargin < 11
     colorConfig = [];
 end
-
 sourceCsv = local_source_file_label(tbl, tblName);
-tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform, removeOutlierParticipants);
+tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform);
 [tbl, linearElevationSource] = local_set_linear_elevation(tbl);
 
 distanceFormula = 'log2mean_disparity ~ log2distance + (1|ID)';
@@ -102,11 +99,11 @@ end
 [comparisons, comparisonLabels] = local_model_comparisons(models, formulas);
 
 reportOpts = struct();
-reportOpts.ReportTitle = sprintf('Quad Interocular Offset Distance/Elevation LME Report: %s', ...
+reportOpts.ReportTitle = sprintf('Quad Horizontal Binocular Disparity Distance/Elevation LME Report: %s', ...
     char(string(tblName)));
 reportOpts.GeneratedBy = mfilename;
 reportOpts.SourceFile = sourceCsv;
-reportOpts.ModelLabel = 'Interocular offset predicted by distance and elevation';
+reportOpts.ModelLabel = 'Quad Horizontal Binocular Disparity predicted by distance and elevation';
 reportOpts.SummaryLines = { ...
     sprintf('Experiment: Quad'), ...
     sprintf('Rows in model table: %d', height(tbl)), ...
@@ -628,7 +625,7 @@ set(ax, 'XTick', tickVals.positions, 'XTickLabel', tickVals.labels, ...
     'FontName', 'Avenir', 'FontSize', 12);
 xlabel(ax, xlabelText, 'FontSize', 15);
 if showYLabel
-    ylabel(ax, {'Perceived Interocular Offset [deg]','log scale'}, 'FontSize', 16);
+    ylabel(ax, {'Perceived Binocular Disparity [deg]','log scale'}, 'FontSize', 16);
 else
     ylabel(ax, '');
     ax.YColor = hiddenYAxisColor;

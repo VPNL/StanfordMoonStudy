@@ -1,13 +1,11 @@
-function tbl = Quad_prepare_perceived_disparity_table(inTbl, modelTransform, removeOutlierParticipants)
+function tbl = Quad_prepare_perceived_disparity_table(inTbl, modelTransform)
 % QUAD_PREPARE_PERCEIVED_DISPARITY_TABLE
 % Prepare the disparity table for LME fitting.
 
 if nargin < 2 || isempty(modelTransform)
     modelTransform = 2;
 end
-if nargin < 3 || isempty(removeOutlierParticipants)
-    removeOutlierParticipants = false;
-end
+
 
 tbl = inTbl;
 
@@ -26,10 +24,7 @@ tbl.Distance = local_distance_to_meters(tbl);
 tbl.Real_Visual_Angle = double(tbl.Real_Visual_Angle);
 tbl.Elevation = double(tbl.Elevation);
 tbl.h_va = double(tbl.h_va);
-if removeOutlierParticipants
-    tbl = tbl(tbl.ID ~= 26, :);
-    fprintf('removed outlier pariticipant ID=%d\n',26)
-end
+
 
 keep = isfinite(tbl.MeanDisparity) & tbl.MeanDisparity > 0 & ...
        isfinite(tbl.Real_Visual_Angle) & tbl.Real_Visual_Angle > 0 & ...
