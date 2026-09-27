@@ -43,7 +43,8 @@ end
 sourceCsv = local_source_file_label(tbl, tblName);
 tbl.h_va = compute_h_va_from_table_geometry(tbl);
 tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform, removeOutlierParticipants);
-[tbl, stereoGroupSummaryLines, runStereoGroupInteractions] = local_prepare_stereo_group(tbl);
+[stereoTbl, stereoGroupSummaryLines, runStereoGroupInteractions] = ...
+    local_prepare_stereo_group(tbl);
 
 logDistanceRIFormula = 'log2mean_disparity ~ 1 + log2distance + (1|ID)';
 logElevationRIFormula = 'log2mean_disparity ~ 1 + log2elevation + (1|ID)';
@@ -67,9 +68,9 @@ lme_logPM_by_logDistanceXStereoGroup = [];
 lme_logPM_by_logElevationXStereoGroup = [];
 lme_logPM_by_logVisualAngleXStereoGroup = [];
 if runStereoGroupInteractions
-    lme_logPM_by_logVisualAngleXStereoGroup = local_try_fitlme(tbl, logVisualAngleStereoRIFormula);
-    lme_logPM_by_logDistanceXStereoGroup = local_try_fitlme(tbl, logDistanceStereoRIFormula);
-    lme_logPM_by_logElevationXStereoGroup = local_try_fitlme(tbl, logElevationStereoRIFormula);
+    lme_logPM_by_logVisualAngleXStereoGroup = local_try_fitlme(stereoTbl, logVisualAngleStereoRIFormula);
+    lme_logPM_by_logDistanceXStereoGroup = local_try_fitlme(stereoTbl, logDistanceStereoRIFormula);
+    lme_logPM_by_logElevationXStereoGroup = local_try_fitlme(stereoTbl, logElevationStereoRIFormula);
 end
 
 if ~exist(ResultsDir, 'dir')

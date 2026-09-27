@@ -34,6 +34,7 @@ switch colorMode
             Quad_compute_mean_stereo_color_idx(tbl, resultsDir, ...
             quadBaseName, recomputeColorIndex, 'normed');
         category = strings(numel(uniqueID), 1);
+        category(~isfinite(stereoScore)) = "Unknown";
         participantColors = colorsByParticipantRank(sortedIdx, rankCmap, numel(uniqueID));
 
     case {"clinicalnotes", "clinical"}

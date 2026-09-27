@@ -49,6 +49,17 @@ else
     [sorted_color_idx, cmap] = local_build_subject_rank_colormap(mean_stereo_by_id, sortMetric);
     save(savefile, 'sorted_color_idx', 'mean_stereo_by_id', 'uniqueID', 'sortMetric', 'cmap');
 end
+
+% Missing stereo scores remain in the participant list and receive the
+% same light-gray color used by the shared colorbar's Unknown category.
+[~, ~, ~, ~, unknownColor] = stereo_score_colormap_with_unknown();
+missingScore = ~isfinite(mean_stereo_by_id);
+for subjectIdx = find(missingScore(:))'
+    rankIdx = find(sorted_color_idx == subjectIdx, 1, 'first');
+    if ~isempty(rankIdx)
+        cmap(rankIdx, :) = unknownColor;
+    end
+end
 end
 
 function [scoreValues, metricLabel] = local_get_stereo_metric(tbl, sortMetric)

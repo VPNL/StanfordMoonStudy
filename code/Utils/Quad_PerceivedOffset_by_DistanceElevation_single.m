@@ -6,12 +6,12 @@ function [lme_logDisparity_by_logDistance, lme_logDisparity_by_logElevation, ...
     lme_logDisparity_by_logElevationXStereoGroup, ...
     lme_Disparity_by_DistanceXStereoGroup, ...
     lme_Disparity_by_ElevationXStereoGroup] = ...
-    Quad_PerceivedPerceived Disparity_by_DistanceElevation_single(tbl, tblName, ...
+    Quad_PerceivedOffset_by_DistanceElevation_single(tbl, tblName, ...
     ResultsDir, saveLME, mycolormap, sorted_idx, modelTransform, ...
     degreeFlag, fullUniqueID, colorbarLabel, ...
     secondYAxisColor, plotFixedEffectsRS, colorConfig, runStereoAnalysis);
-% QUAD_PERCEIVEDPerceived Disparity_BY_DISTANCEELEVATION_SINGLE
-% Fit and plot single-factor distance/elevation perceived-Perceived Disparity models
+% QUAD_PERCEIVEDOFFSET_BY_DISTANCEELEVATION_SINGLE
+% Fit and plot single-factor distance/elevation perceived-disparity models
 % with random-intercept and random-slope variants.
 
 if nargin < 8 || isempty(degreeFlag)
@@ -46,7 +46,8 @@ outputStem = local_output_stem(tblName);
 
 tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform);
 [tbl, linearElevationSource] = local_set_linear_elevation(tbl);
-[tbl, stereoGroupSummaryLines, runStereoGroupInteractions] = local_prepare_stereo_group(tbl);
+[stereoTbl, stereoGroupSummaryLines, runStereoGroupInteractions] = ...
+    local_prepare_stereo_group(tbl);
 
 logDistanceRIFormula = 'log2mean_disparity ~ 1 + log2distance + (1|ID)';
 logElevationRIFormula = 'log2mean_disparity ~ 1 + log2elevation + (1|ID)';
@@ -75,10 +76,10 @@ lme_logDisparity_by_logElevationXStereoGroup = [];
 lme_Disparity_by_DistanceXStereoGroup = [];
 lme_Disparity_by_ElevationXStereoGroup = [];
 if runStereoGroupInteractions
-    lme_logDisparity_by_logDistanceXStereoGroup = local_try_fitlme(tbl, logDistanceStereoRIFormula);
-    lme_logDisparity_by_logElevationXStereoGroup = local_try_fitlme(tbl, logElevationStereoRIFormula);
-    lme_Disparity_by_DistanceXStereoGroup = local_try_fitlme(tbl, linearDistanceStereoRIFormula);
-    lme_Disparity_by_ElevationXStereoGroup = local_try_fitlme(tbl, linearElevationStereoRIFormula);
+    lme_logDisparity_by_logDistanceXStereoGroup = local_try_fitlme(stereoTbl, logDistanceStereoRIFormula);
+    lme_logDisparity_by_logElevationXStereoGroup = local_try_fitlme(stereoTbl, logElevationStereoRIFormula);
+    lme_Disparity_by_DistanceXStereoGroup = local_try_fitlme(stereoTbl, linearDistanceStereoRIFormula);
+    lme_Disparity_by_ElevationXStereoGroup = local_try_fitlme(stereoTbl, linearElevationStereoRIFormula);
 end
 
 if ~exist(ResultsDir, 'dir')
