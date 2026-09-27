@@ -1,6 +1,6 @@
 function cmap = apply_stereo_score_colormap(targetHandles)
 % APPLY_STEREO_SCORE_COLORMAP
-% Apply the StereoScores colormap and the shared 0-100 scale.
+% Apply the StereoScores colormap and the shared 0-100 plus Unknown scale.
 
 if nargin < 1 || isempty(targetHandles)
     error('apply_stereo_score_colormap requires at least one target handle.');
@@ -22,13 +22,13 @@ else
     figHandle = ancestor(axHandles(1), 'figure');
 end
 
-cmap = StereoScores(256);
+[cmap, colorLimits] = stereo_score_colormap_with_unknown();
 colormap(figHandle, cmap);
 
 for i = 1:numel(axHandles)
     ax = axHandles(i);
     if isprop(ax, 'CLim')
-        caxis(ax, [0 100]);
+        caxis(ax, colorLimits);
     end
 end
 end

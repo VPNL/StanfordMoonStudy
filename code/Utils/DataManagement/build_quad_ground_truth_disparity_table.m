@@ -8,6 +8,8 @@ function [summaryTbl, displayTbl] = build_quad_ground_truth_disparity_table(matc
 %   Version
 %   Measurement
 %   Real_Visual_Angle
+%   Ground_Distance
+%   Ground_Elevation
 %   Observer_Distance
 %   Observer_Elevation
 %
@@ -15,6 +17,8 @@ function [summaryTbl, displayTbl] = build_quad_ground_truth_disparity_table(matc
 %   Version
 %   Object
 %   Visual_Angle_degrees
+%   Ground_Distance_m
+%   Ground_Elevation_degrees
 %   Observer_Distance_m
 %   Observer_Elevation_degrees
 
@@ -30,6 +34,7 @@ end
 matchTbl = readtable(matchingCsv, 'TextType', 'string');
 
 requiredMatchVars = {'Version','Measurement','Real_Visual_Angle', ...
+    'Ground_Distance','Ground_Elevation', ...
     'Observer_Distance','Observer_Elevation'};
 for iVar = 1:numel(requiredMatchVars)
     if ~ismember(requiredMatchVars{iVar}, matchTbl.Properties.VariableNames)
@@ -55,18 +60,25 @@ matchTbl.MeasurementBase = local_extract_measurement_base(matchTbl.Measurement);
 matchTbl.MeasurementKey = local_normalize_measurement_key(matchTbl.MeasurementBase);
 
 summaryTbl = groupsummary(matchTbl, {'Version','MeasurementKey'}, 'mean', ...
-    {'Real_Visual_Angle','Observer_Distance','Observer_Elevation'});
+    {'Real_Visual_Angle','Ground_Distance','Ground_Elevation', ...
+    'Observer_Distance','Observer_Elevation'});
 summaryTbl = removevars(summaryTbl, 'GroupCount');
 summaryTbl = renamevars(summaryTbl, ...
-    {'mean_Real_Visual_Angle','mean_Observer_Distance','mean_Observer_Elevation'}, ...
-    {'Visual_Angle_degrees','Observer_Distance_source','Observer_Elevation_degrees'});
+    {'mean_Real_Visual_Angle', ...
+    'mean_Ground_Distance','mean_Ground_Elevation', ...
+    'mean_Observer_Distance','mean_Observer_Elevation'}, ...
+    {'Visual_Angle_degrees', ...
+    'Ground_Distance_source','Ground_Elevation_degrees', ...
+    'Observer_Distance_source','Observer_Elevation_degrees'});
 summaryTbl.Object = local_default_object_name(summaryTbl.MeasurementKey);
 
 summaryTbl = sortrows(summaryTbl, {'Version','MeasurementKey'});
 
 summaryTbl.Observer_Distance_m = summaryTbl.Observer_Distance_source ./ 100;
+summaryTbl.Ground_Distance_m = summaryTbl.Ground_Distance_source ./ 100;
 
 displayTbl = summaryTbl(:, {'Version','Object','Visual_Angle_degrees', ...
+    'Ground_Distance_m','Ground_Elevation_degrees', ...
     'Observer_Distance_m','Observer_Elevation_degrees'});
 
 [outDir,~,outExt] = fileparts(outFile);

@@ -6,14 +6,16 @@ function cmap = StereoScores(nLevels, varargin)
 %   cmap = StereoScores(nLevels, 'CLim', [cmin cmax], 'Axes', ax)
 %   cmap = StereoScores(..., 'Apply', tf)
 %
-% Anchors
-%   0  -> [0.0 0.0 0.0]
-%   40 -> [0.4 0.0 0.1]
-%   60 -> [0.6 0.0 0.6]
-%   80 -> [0.106 0.44 1.0]
-%   90 -> [0.0235 0.7 0.23]
-%   95 -> [0.2 0.87 0.4]
-%   98 -> [0.5 1.0 0.0]
+% 
+%  anchorVals = [0; 40; 60; 80; 90;  100];
+%  ctrl = [
+%     0.9    0.1   0.1;    % 0
+%     0.8    0.0   0.8;    % 40
+%     0.5    0.5   1.0;    % 60
+%     0.65    0.65   1.0;    % 80
+%     0.7    0.7    .7;     % 90
+%     0.7     0.7   0.7];  % 100
+
 
     if nargin < 1 || isempty(nLevels)
         nLevels = 256;
@@ -34,16 +36,6 @@ function cmap = StereoScores(nLevels, varargin)
     if isempty(ax)
         ax = gca;
     end
-
-   % anchorVals = [0; 40; 60; 80; 90; 95; 98];
-    % ctrl = [
-    %     0.0    0.0   0.0;    % 0
-    %     0.4    0.0   0.1;    % 40
-    %     0.7    0.0   0.5;    % 60
-    %     0.106  0.44  1.0;    % 80
-    %     0.0235 0.7   0.23;   % 90
-    %     0.2    0.87  0.4;    % 95
-    %     0.5    1.0   0.0];   % 98
 
     anchorVals = [0; 40; 60; 80; 90;  100];
     ctrl = [

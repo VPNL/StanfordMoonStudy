@@ -1,4 +1,4 @@
-% SMS_SupplementalTable4_090496
+% SMS_SupplementalTable3_092626
 % Generate Quad interocular-offset table
 
 close all; clear all;
