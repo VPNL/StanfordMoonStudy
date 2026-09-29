@@ -104,7 +104,13 @@ logData.logParallax = log2(1 + taskData.PerceivedParallax);
 logData.logElevation = log2(1 + taskData.Elevation);
 logData.logVA = log2(taskData.Real_Visual_Angle);
 
+% Compare log parallax as a function of log elevation.
+models.logParallaxbylogElevationRI = local_fit_lme(logData, ...
+    'logParallax ~ logElevation + (1|ID)', ...
+    'log PM by log perceived parallax RI');
+
 % Compare log PM as a function of log parallax or log elevation.
+
 models.logpmBylogParallaxRI = local_fit_lme(logData, ...
     'logRatio_Visual_Angle ~ logParallax + (1|ID)', ...
     'log PM by log perceived parallax RI');
@@ -125,6 +131,7 @@ if saveLME
     local_write_report(reportFile, models, taskData, dataPath, task);
 end
 
+% 2 panelled figure
 % plot Parallax vs Elevation & PM vs Parallax
 figHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
     'Position', [0 0 .6 .6], ...
@@ -138,15 +145,14 @@ local_plot_parallax_by_elevation(taskData, models.parallaxByElevationRS, subject
 nexttile;
 local_plot_pm_by_parallax(taskData, effectsModel, subjectcolor, markerScale, task);
 
-
 filenamePNG = fullfile(ResultsDir, [basename '_' char(string(task)) '_PMvParallax_' num2str(nsubjectsD) '.png']);
 local_hide_axes_toolbars(figHandle);
 exportgraphics(figHandle, filenamePNG, 'Resolution', 600);
 
-% Plot parallax vs elevation, log PM vs log parallax, and log PM vs elevation.
+%% 3 panel figure:  Plot log parallax vs log elevation, log PM vs log parallax, and log PM vs elevation.
 riFigHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
     'Position', [0 0 .9 .6], ...
-    'Name', [basename '_' char(string(task)) '_ParallaxVsE_logPMvsParallax_logPMvsE']);
+    'Name', [basename '_' char(string(task)) '_Parallax_E_PM']);
 tiledlayout(riFigHandle, 1, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
 
 nexttile;
@@ -154,30 +160,38 @@ local_plot_parallax_by_elevation(taskData, models.parallaxByElevationRI, subject
     sorteduniqueIDD, markerScale, task, false, true); % this is Random intercepts model
 
 nexttile;
-local_plot_logpm_by_logparallax(logData, models.logpmBylogParallaxRI, subjectcolor, markerScale, ...
-    task, true);
-
-% Plot parallax vs elevation, log PM vs log parallax, and log PM vs elevation.
-riFigHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
-    'Position', [0 0 .9 .6], ...
-    'Name', [basename '_' char(string(task)) '_ParallaxVsE_logPMvsParallax_logPMvsE']);
-tiledlayout(riFigHandle, 1, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
-
-nexttile;
-local_plot_parallax_by_elevation(taskData, models.parallaxByElevationRI, subjectcolor, ...
-    sorteduniqueIDD, markerScale, task, false, true); % this is Random intercepts model
-
-nexttile;
-local_plot_logpm_by_logparallax(logData, models.logpmBylogParallaxRI, subjectcolor, markerScale, ...
+local_plot_pm_by_parallax(taskData, models.pmByParallaxRI, subjectcolor, markerScale, ...
     task, true);
 
 nexttile;
-local_plot_logpm_by_logelevation(logData, models.logpmBylogElevationRI, subjectcolor, ...
+local_plot_pm_by_elevation(taskData, models.pmByElevationRI, subjectcolor, ...
     markerScale, task, true);
 
-filenameRIPNG = fullfile(ResultsDir, [basename '_' char(string(task)) '_PMvParallax_RI_3panel_' num2str(nsubjectsD) '.png']);
+filenameRIPNG = fullfile(ResultsDir, [basename '_' char(string(task)) '_log_Parallax_E_PM' num2str(nsubjectsD) '.png']);
 local_hide_axes_toolbars(riFigHandle);
 exportgraphics(riFigHandle, filenameRIPNG, 'Resolution', 600);
+
+logRIFigHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
+    'Position', [0 0 .9 .6], ...
+    'Name', [basename '_' char(string(task)) '_PMvParallax_log_RI_3panel']);
+tiledlayout(logRIFigHandle, 1, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
+
+nexttile;
+local_plot_parallax_by_elevation(taskData, models.parallaxByElevationRI, subjectcolor, ...
+    sorteduniqueIDD, markerScale, task, false, true);
+
+nexttile;
+local_plot_log_pm_by_log_parallax(logData, models.logpmBylogParallaxRI, ...
+    subjectcolor, markerScale, task, true);
+
+nexttile;
+local_plot_log_pm_by_log_elevation(logData, models.logpmBylogElevationRI, ...
+    subjectcolor, markerScale, task, true);
+
+filenameLogRIPNG = fullfile(ResultsDir, [basename '_' char(string(task)) ...
+    '_PMvParallax_log_RI_3panel_' num2str(nsubjectsD) '.png']);
+local_hide_axes_toolbars(logRIFigHandle);
+exportgraphics(logRIFigHandle, filenameLogRIPNG, 'Resolution', 600);
 
 end
 
@@ -390,6 +404,44 @@ set(gca, 'FontSize', 20, 'FontName', 'Avenir');
 title(local_panel_title(task, lme, 'Elevation'), 'FontSize', 16, 'FontName', 'Avenir');
 end
 
+function local_plot_log_pm_by_log_parallax(tbl, lme, subjectcolor, markerScale, task, onlyIfSignificant)
+if nargin < 6 || isempty(onlyIfSignificant)
+    onlyIfSignificant = true;
+end
+hold on;
+
+local_plot_fixed_effect_line_unbounded(tbl, lme, 'logParallax', ...
+    'logRatio_Visual_Angle', true, onlyIfSignificant);
+scatter(tbl.logParallax, tbl.logRatio_Visual_Angle, markerScale, subjectcolor, 'o', 'filled');
+yline(0, 'Color', [.8 .8 .8], 'LineWidth', 3);
+xlim(local_range_with_padding(tbl.logParallax));
+ylim(local_range_with_padding(tbl.logRatio_Visual_Angle));
+xlabel({'Perceived Parallax [deg]', 'log scale'});
+ylabel({'Perceptual Magnification', 'log scale'});
+set(gca, 'FontSize', 20, 'FontName', 'Avenir');
+local_apply_original_unit_log_ticks(gca, true);
+title(local_panel_title(task, lme, 'logParallax'), 'FontSize', 16, 'FontName', 'Avenir');
+end
+
+function local_plot_log_pm_by_log_elevation(tbl, lme, subjectcolor, markerScale, task, onlyIfSignificant)
+if nargin < 6 || isempty(onlyIfSignificant)
+    onlyIfSignificant = true;
+end
+hold on;
+
+local_plot_fixed_effect_line_unbounded(tbl, lme, 'logElevation', ...
+    'logRatio_Visual_Angle', true, onlyIfSignificant);
+scatter(tbl.logElevation, tbl.logRatio_Visual_Angle, markerScale, subjectcolor, 'o', 'filled');
+yline(0, 'Color', [.8 .8 .8], 'LineWidth', 3);
+xlim(local_range_with_padding(tbl.logElevation));
+ylim(local_range_with_padding(tbl.logRatio_Visual_Angle));
+xlabel({'Elevation [deg]', 'log scale'});
+ylabel({'Perceptual Magnification', 'log scale'});
+set(gca, 'FontSize', 20, 'FontName', 'Avenir');
+local_apply_original_unit_log_ticks(gca, true);
+title(local_panel_title(task, lme, 'logElevation'), 'FontSize', 16, 'FontName', 'Avenir');
+end
+
 function local_plot_fixed_effect_line(tbl, lme, xName, yName, showCi, onlyIfSignificant)
 if isempty(lme)
     return;
@@ -430,6 +482,94 @@ plot(xvectoru, yvectoru, 'k-', 'LineWidth', 3);
 
 if nargin >= 4 && ~isempty(yName)
     ylim([0 max(tbl.(yName)) * 1.05]);
+end
+end
+
+function local_plot_fixed_effect_line_unbounded(tbl, lme, xName, yName, showCi, onlyIfSignificant)
+if isempty(lme)
+    return;
+end
+if nargin < 6 || isempty(onlyIfSignificant)
+    onlyIfSignificant = true;
+end
+
+[beta, coefNames, coefStats] = fixedEffects(lme);
+coefText = local_coef_names(coefNames, lme);
+xIdx = find(strcmp(coefText, xName), 1);
+if isempty(xIdx) || xIdx > numel(beta)
+    return;
+end
+
+pValue = coefStats.pValue(xIdx);
+if onlyIfSignificant && pValue >= 0.05
+    return;
+end
+
+interceptIdx = find(strcmp(coefText, '(Intercept)'), 1);
+if isempty(interceptIdx)
+    interceptIdx = 1;
+end
+
+xvectoru = linspace(min(tbl.(xName)), max(tbl.(xName)), 100);
+yvectoru = beta(interceptIdx) + beta(xIdx) .* xvectoru;
+
+if showCi && ismember('Lower', local_table_var_names(coefStats)) && ...
+        ismember('Upper', local_table_var_names(coefStats))
+    xvectord = sort(xvectoru, 'descend');
+    yvector1 = coefStats.Lower(interceptIdx) + coefStats.Lower(xIdx) .* xvectoru;
+    yvector2 = coefStats.Upper(interceptIdx) + coefStats.Upper(xIdx) .* xvectord;
+    fill([xvectoru xvectord], [yvector1 yvector2], [.70 .70 .70], ...
+        'EdgeColor', 'none', 'FaceAlpha', 0.35);
+end
+
+plot(xvectoru, yvectoru, 'k-', 'LineWidth', 3);
+if nargin >= 4 && ~isempty(yName)
+    ylim(local_range_with_padding(tbl.(yName)));
+end
+end
+
+function rangeVals = local_range_with_padding(values)
+values = values(isfinite(values));
+if isempty(values)
+    rangeVals = [0 1];
+    return;
+end
+
+minVal = min(values);
+maxVal = max(values);
+if minVal == maxVal
+    pad = max(abs(minVal) * 0.05, 0.5);
+else
+    pad = 0.05 * (maxVal - minVal);
+end
+rangeVals = [minVal - pad, maxVal + pad];
+end
+
+function local_apply_original_unit_log_ticks(ax, xUsesPlusOne)
+xTickValues = ax.XTick;
+if xUsesPlusOne
+    xLabels = 2 .^ xTickValues - 1;
+else
+    xLabels = 2 .^ xTickValues;
+end
+yLabels = 2 .^ ax.YTick;
+
+ax.XTickLabel = local_numeric_tick_labels(xLabels);
+ax.YTickLabel = local_numeric_tick_labels(yLabels);
+ax.XTickLabelRotation = 0;
+end
+
+function labels = local_numeric_tick_labels(values)
+labels = strings(size(values));
+for iValue = 1:numel(values)
+    value = values(iValue);
+    if abs(value) >= 10
+        labels(iValue) = string(sprintf('%.0f', value));
+    elseif abs(value) >= 1
+        labels(iValue) = string(sprintf('%.1f', value));
+    else
+        labels(iValue) = string(sprintf('%.2f', value));
+    end
 end
 end
 
