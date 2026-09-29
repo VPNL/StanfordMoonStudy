@@ -1,0 +1,12 @@
+Supplemental Fig. 4g participant exclusion audit
+Source: /Users/kalanit/Projects/StanfordMoonStudy/Data/MoonStudy/Disparity_BothElevations_FullMoonDataLong090225.csv
+Criterion: MATLAB isoutlier applied to participant mean adjusted-task PM using the Grubbs method (default alpha = 0.05)
+Excluded participants: 2
+
+ID 5039: mean adjusted-task PM = 7.670681, maximum adjusted-task PM = 8.702751
+ID 6873834: mean adjusted-task PM = 6.342141, maximum adjusted-task PM = 6.899891
+
+Rows before exclusion: 234
+Rows after exclusion: 226
+Participants before exclusion: 58
+Participants after exclusion: 56

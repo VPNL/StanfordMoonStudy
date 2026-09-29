@@ -12,8 +12,8 @@ if nargin < 4 || isempty(ResultsDir), ResultsDir = pwd; end
 if nargin < 5 || isempty(saveLME), saveLME = true; end
 if ~exist(ResultsDir, 'dir'), mkdir(ResultsDir); end
 
-[dataPath, tableName] = local_data_path(dataDir, datafile);
-tablewithParallax = FullMoon_Parallax_prepare_table(dataPath, []);
+[dataSource, dataPath, tableName] = local_data_source(dataDir, datafile);
+tablewithParallax = FullMoon_Parallax_prepare_table(dataSource, []);
 taskData = tablewithParallax(strcmpi(string(tablewithParallax.Task), string(task)), :);
 perceptualData = tablewithParallax(strcmpi(string(tablewithParallax.Task), 'Perceptual'), :);
 adjustedData = tablewithParallax(strcmpi(string(tablewithParallax.Task), 'Adjusted'), :);
@@ -282,9 +282,18 @@ end
 drawnow;
 end
 
-function [dataPath, tableName] = local_data_path(dataDir, datafile)
+function [dataSource, dataPath, tableName] = local_data_source(dataDir, datafile)
+if istable(dataDir)
+    dataSource = dataDir;
+    dataPath = char(string(datafile));
+    if isempty(dataPath), dataPath = 'filtered Full Moon table'; end
+    [~, tableName] = fileparts(dataPath);
+    if isempty(tableName), tableName = 'FullMoonData'; end
+    return;
+end
 if isfile(datafile), dataPath = datafile; else, dataPath = fullfile(dataDir, datafile); end
 if ~isfile(dataPath) && isfile([dataPath '.csv']), dataPath = [dataPath '.csv']; end
 if ~isfile(dataPath), error('Could not find input table: %s', dataPath); end
 [~, tableName] = fileparts(dataPath);
+dataSource = dataPath;
 end
