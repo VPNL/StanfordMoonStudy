@@ -115,7 +115,7 @@ xlim(ax, [0 max(tbl.Elevation) * 1.05]);
 ylim(ax, [0 max(tbl.PerceivedParallax) * 1.05]);
 xlabel(ax, 'Elevation [deg]');
 ylabel(ax, 'Perceived Parallax [deg]');
-title(ax, local_title(task, lme, 'Elevation'), 'FontSize', 16);
+title(ax, local_title('', lme, 'Elevation'), 'FontSize', 16);
 local_style(ax);
 end
 
@@ -186,9 +186,15 @@ function titleText = local_title(taskName, lme, xName)
 names = string(lme.CoefficientNames(:));
 i0 = find(names == "(Intercept)", 1);
 iSlope = find(names == string(xName), 1);
-titleText = sprintf('%s\nintercept=%.2f\nslope=%.2f %s\nn=%d', ...
-    char(string(taskName)), beta(i0), beta(iSlope), ...
-    local_format_p(stats.pValue(iSlope)), numel(unique(lme.Variables.ID)));
+if strlength(string(taskName)) == 0
+    titleText = sprintf('intercept=%.2f\nslope=%.2f %s\nn=%d', ...
+        beta(i0), beta(iSlope), local_format_p(stats.pValue(iSlope)), ...
+        numel(unique(lme.Variables.ID)));
+else
+    titleText = sprintf('%s\nintercept=%.2f\nslope=%.2f %s\nn=%d', ...
+        char(string(taskName)), beta(i0), beta(iSlope), ...
+        local_format_p(stats.pValue(iSlope)), numel(unique(lme.Variables.ID)));
+end
 end
 
 function sortedIDs = local_sort_ids_by_intercept(lme, uniqueIDs, ~)
