@@ -72,6 +72,7 @@ models = struct();
 models.parallaxByElevationRI = local_fit_lme(taskData, ...
     'PerceivedParallax ~ Elevation + (1|ID)', ...
     'perceived parallax by elevation RI');
+
 models.parallaxByElevationRS = local_fit_lme(taskData, ...
     'PerceivedParallax ~ Elevation + (Elevation|ID)', ...
     'perceived parallax by elevation RS');
@@ -85,11 +86,18 @@ models.pmByParallaxRI = local_fit_lme(taskData, ...
 models.pmByParallaxRS = local_fit_lme(taskData, ...
     'Ratio_Visual_Angle ~ PerceivedParallax + (PerceivedParallax|ID)', ...
     'PM by perceived parallax RS');
+models.pmByParallaxComparison = local_compare_lmes( ...
+    models.pmByParallaxRI, models.pmByParallaxRS);
 
 models.pmByElevationRI = local_fit_lme(taskData, ...
     'Ratio_Visual_Angle ~ Elevation + (1|ID)', ...
     'PM by elevation RI');
 
+models.pmByElevationRS = local_fit_lme(taskData, ...
+    'Ratio_Visual_Angle ~ Elevation + (Elevation|ID)', ...
+    'PM by elevation RS');
+models.pmByElevationComparison = local_compare_lmes( ...
+    models.pmByElevationRI, models.pmByElevationRS);
 
 effectsModel = models.pmByParallaxRS;
 if isempty(effectsModel)
@@ -104,14 +112,38 @@ logData.logParallax = log2(1 + taskData.PerceivedParallax);
 logData.logElevation = log2(1 + taskData.Elevation);
 logData.logVA = log2(taskData.Real_Visual_Angle);
 
+% Compare log parallax as a function of log elevation.
+models.logParallaxbylogElevationRI = local_fit_lme(logData, ...
+    'logParallax ~ logElevation + (1|ID)', ...
+    'log PM by log perceived parallax RI');
+
+models.logParallaxbylogElevationRS = local_fit_lme(logData, ...
+    'logParallax ~ logElevation + (logElevation|ID)', ...
+    'log parallax by log elevation RS');
+models.logParallaxbylogElevationComparison = local_compare_lmes( ...
+    models.logParallaxbylogElevationRI, models.logParallaxbylogElevationRS);
+
 % Compare log PM as a function of log parallax or log elevation.
 models.logpmBylogParallaxRI = local_fit_lme(logData, ...
     'logRatio_Visual_Angle ~ logParallax + (1|ID)', ...
     'log PM by log perceived parallax RI');
 
+models.logpmBylogParallaxRS = local_fit_lme(logData, ...
+    'logRatio_Visual_Angle ~ logParallax + (logParallax|ID)', ...
+    'log PM by log perceived parallax RS');
+models.logpmBylogParallaxComparison = local_compare_lmes( ...
+    models.logpmBylogParallaxRI, models.logpmBylogParallaxRS);
+
 models.logpmBylogElevationRI = local_fit_lme(logData, ...
     'logRatio_Visual_Angle ~ logElevation + (1|ID)', ...
     'log PM by log elevation RI');
+
+models.logpmBylogElevationRS = local_fit_lme(logData, ...
+    'logRatio_Visual_Angle ~ logElevation + (logElevation|ID)', ...
+    'log PM by log elevation RS');
+models.logpmBylogElevationComparison = local_compare_lmes( ...
+    models.logpmBylogElevationRI, models.logpmBylogElevationRS);
+
 
 if isempty(sorteduniqueIDD)
     sorteduniqueIDD = local_sorted_ids_from_random_intercepts(models.parallaxByElevationRS, uniqueIDD);
@@ -125,6 +157,7 @@ if saveLME
     local_write_report(reportFile, models, taskData, dataPath, task);
 end
 
+% 2 panelled figure
 % plot Parallax vs Elevation & PM vs Parallax
 figHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
     'Position', [0 0 .6 .6], ...
@@ -142,7 +175,8 @@ filenamePNG = fullfile(ResultsDir, [basename '_' char(string(task)) '_PMvParalla
 local_hide_axes_toolbars(figHandle);
 exportgraphics(figHandle, filenamePNG, 'Resolution', 600);
 
-% Plot parallax vs elevation, log PM vs log parallax, and log PM vs elevation.
+%% 3 panel figure:
+%   Plot log parallax vs elevation, PM vs log parallax, and PM vs elevation.
 riFigHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
     'Position', [0 0 .9 .6], ...
     'Name', [basename '_' char(string(task)) '_Parallax_E_PM']);
@@ -160,9 +194,12 @@ nexttile;
 local_plot_pm_by_elevation(taskData, models.pmByElevationRI, subjectcolor, ...
     markerScale, task, true);
 
-filenameRIPNG = fullfile(ResultsDir, [basename '_' char(string(task)) '_log_Parallax_E_PM' num2str(nsubjectsD) '.png']);
+filenameRIPNG = fullfile(ResultsDir, [basename '_' char(string(task)) '_Parallax_E_PM_RI' num2str(nsubjectsD) '.png']);
 local_hide_axes_toolbars(riFigHandle);
 exportgraphics(riFigHandle, filenameRIPNG, 'Resolution', 600);
+
+%% Three-panel RI figure with all three log-log model panels.
+% Plot log parallax vs log elevation, log PM vs log parallax, and log PM vs log elevation.
 
 logRIFigHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
     'Position', [0 0 .9 .6], ...
@@ -170,8 +207,9 @@ logRIFigHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
 tiledlayout(logRIFigHandle, 1, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
 
 nexttile;
-local_plot_parallax_by_elevation(taskData, models.parallaxByElevationRI, subjectcolor, ...
-    sorteduniqueIDD, markerScale, task, false, true);
+local_plot_log_parallax_by_log_elevation(logData, ...
+    models.logParallaxbylogElevationRI, subjectcolor, markerScale, task, ...
+    false, sorteduniqueIDD, true);
 
 nexttile;
 local_plot_log_pm_by_log_parallax(logData, models.logpmBylogParallaxRI, ...
@@ -182,9 +220,104 @@ local_plot_log_pm_by_log_elevation(logData, models.logpmBylogElevationRI, ...
     subjectcolor, markerScale, task, true);
 
 filenameLogRIPNG = fullfile(ResultsDir, [basename '_' char(string(task)) ...
-    '_PMvParallax_log_RI_3panel_' num2str(nsubjectsD) '.png']);
+    '_logParallax_PM_E_RI' num2str(nsubjectsD) '.png']);
 local_hide_axes_toolbars(logRIFigHandle);
 exportgraphics(logRIFigHandle, filenameLogRIPNG, 'Resolution', 600);
+
+%% Three-panel random-slope sister figure on linear scales.
+rsFigHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
+    'Position', [0 0 .9 .6], ...
+    'Name', [basename '_' char(string(task)) '_Parallax_E_PM_RS']);
+tiledlayout(rsFigHandle, 1, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
+
+nexttile;
+local_plot_parallax_by_elevation(taskData, models.parallaxByElevationRS, ...
+    subjectcolor, sorteduniqueIDD, markerScale, task, true, true);
+
+nexttile;
+local_plot_pm_by_parallax_rs(taskData, models.pmByParallaxRS, subjectcolor, ...
+    sorteduniqueIDD, markerScale, task, true);
+
+nexttile;
+local_plot_pm_by_elevation_rs(taskData, models.pmByElevationRS, subjectcolor, ...
+    sorteduniqueIDD, markerScale, task, true);
+
+filenameRSPNG = fullfile(ResultsDir, [basename '_' char(string(task)) ...
+    '_Parallax_E_PM_RS' num2str(nsubjectsD) '.png']);
+local_hide_axes_toolbars(rsFigHandle);
+exportgraphics(rsFigHandle, filenameRSPNG, 'Resolution', 600);
+
+%% Three-panel random-slope sister figure on log2 scales.
+logRSFigHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
+    'Position', [0 0 .9 .6], ...
+    'Name', [basename '_' char(string(task)) '_PMvParallax_log_RS_3panel']);
+tiledlayout(logRSFigHandle, 1, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
+
+nexttile;
+local_plot_log_parallax_by_log_elevation(logData, ...
+    models.logParallaxbylogElevationRS, subjectcolor, markerScale, task, ...
+    true, sorteduniqueIDD, true);
+
+nexttile;
+local_plot_log_pm_by_log_parallax_rs(logData, models.logpmBylogParallaxRS, ...
+    subjectcolor, sorteduniqueIDD, markerScale, task, true);
+
+nexttile;
+local_plot_log_pm_by_log_elevation_rs(logData, models.logpmBylogElevationRS, ...
+    subjectcolor, sorteduniqueIDD, markerScale, task, true);
+
+filenameLogRSPNG = fullfile(ResultsDir, [basename '_' char(string(task)) ...
+    '_PMvParallax_log_RS_3panel_' num2str(nsubjectsD) '.png']);
+local_hide_axes_toolbars(logRSFigHandle);
+exportgraphics(logRSFigHandle, filenameLogRSPNG, 'Resolution', 600);
+
+%% Mixed-scale three-panel RI figure for Fig4g.
+mixedRIFigHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
+    'Position', [0 0 .9 .6], ...
+    'Name', [char(string(task)) '_Fig4g_PvsE_logPMvlogP_logPMvlogE_' ...
+    num2str(nsubjectsD) '_RI']);
+tiledlayout(mixedRIFigHandle, 1, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
+
+nexttile;
+local_plot_parallax_by_elevation(taskData, models.parallaxByElevationRI, ...
+    subjectcolor, sorteduniqueIDD, markerScale, task, false, true);
+
+nexttile;
+local_plot_log_pm_by_log_parallax(logData, models.logpmBylogParallaxRI, ...
+    subjectcolor, markerScale, task, true);
+
+nexttile;
+local_plot_log_pm_by_log_elevation(logData, models.logpmBylogElevationRI, ...
+    subjectcolor, markerScale, task, true);
+
+filenameMixedRIPNG = fullfile(ResultsDir, [char(string(task)) ...
+    '_Fig4g_PvsE_logPMvlogP_logPMvlogE_' num2str(nsubjectsD) '_RI.png']);
+local_hide_axes_toolbars(mixedRIFigHandle);
+exportgraphics(mixedRIFigHandle, filenameMixedRIPNG, 'Resolution', 600);
+
+%% Mixed-scale three-panel RS figure for Fig4g.
+mixedRSFigHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
+    'Position', [0 0 .9 .6], ...
+    'Name', [char(string(task)) '_Fig4g_PvsE_logPMvlogP_logPMvlogE_' ...
+    num2str(nsubjectsD) '_RS']);
+tiledlayout(mixedRSFigHandle, 1, 3, 'Padding', 'compact', 'TileSpacing', 'compact');
+
+nexttile;
+local_plot_parallax_by_elevation(taskData, models.parallaxByElevationRS, ...
+    subjectcolor, sorteduniqueIDD, markerScale, task, true, true);
+
+nexttile;
+local_plot_log_pm_by_log_parallax_rs(logData, models.logpmBylogParallaxRS, ...
+    subjectcolor, sorteduniqueIDD, markerScale, task, true);
+
+nexttile;
+local_plot_log_pm_by_log_elevation_rs(logData, models.logpmBylogElevationRS, ...
+    subjectcolor, sorteduniqueIDD, markerScale, task, true);
+
+filenameMixedRSPNG = fullfile(ResultsDir, [char(string(task)) ...
+    '_Fig4g_PvsE_logPMvlogP_logPMvlogE_' num2str(nsubjectsD) '_RS.png']);
+local_hide_axes_toolbars(mixedRSFigHandle);
+exportgraphics(mixedRSFigHandle, filenameMixedRSPNG, 'Resolution', 600);
 
 end
 
@@ -281,7 +414,7 @@ summaryLines = {
     sprintf('Participants in task: %d', numel(unique(taskData.ID)))
     sprintf('Rows in task model: %d', height(taskData))
     'Perceived Parallax = Disparity_VA - Real_Visual_Angle'
-    'All models use untransformed linear-scale variables'
+    'Linear models use original units; log models use log2(1 + predictor) and log2(PM)'
     };
 
 reportOpts = struct();
@@ -307,8 +440,13 @@ modelList = {
     models.pmByParallaxRI
     models.pmByParallaxRS
     models.pmByElevationRI
+    models.pmByElevationRS
+    models.logParallaxbylogElevationRI
+    models.logParallaxbylogElevationRS
     models.logpmBylogParallaxRI
+    models.logpmBylogParallaxRS
     models.logpmBylogElevationRI
+    models.logpmBylogElevationRS
     };
 
 
@@ -318,8 +456,13 @@ modelLabels = {
     'Model: Ratio_Visual_Angle ~ PerceivedParallax + (1|ID)'
     'Model: Ratio_Visual_Angle ~ PerceivedParallax + (PerceivedParallax|ID)'
     'Model: Ratio_Visual_Angle ~ Elevation + (1|ID)'
+    'Model: Ratio_Visual_Angle ~ Elevation + (Elevation|ID)'
+    'Model: log2(1 + PerceivedParallax) ~ log2(1 + Elevation) + (1|ID)'
+    'Model: log2(1 + PerceivedParallax) ~ log2(1 + Elevation) + (log2(1 + Elevation)|ID)'
     'Model: log2(Ratio_Visual_Angle) ~ log2(1 + PerceivedParallax) + (1|ID)'
+    'Model: log2(Ratio_Visual_Angle) ~ log2(1 + PerceivedParallax) + (log2(1 + PerceivedParallax)|ID)'
     'Model: log2(Ratio_Visual_Angle) ~ log2(1 + Elevation) + (1|ID)'
+    'Model: log2(Ratio_Visual_Angle) ~ log2(1 + Elevation) + (log2(1 + Elevation)|ID)'
     };
 keep = ~cellfun(@isempty, modelList);
 modelList = modelList(keep);
@@ -329,9 +472,19 @@ end
 function [comparisonList, comparisonLabels] = local_report_comparisons(models)
 comparisonList = {
     models.parallaxByElevationComparison
+    models.pmByParallaxComparison
+    models.pmByElevationComparison
+    models.logParallaxbylogElevationComparison
+    models.logpmBylogParallaxComparison
+    models.logpmBylogElevationComparison
     };
 comparisonLabels = {
     'Model comparison: parallax by elevation RI vs RS'
+    'Model comparison: PM by parallax RI vs RS'
+    'Model comparison: PM by elevation RI vs RS'
+    'Model comparison: log parallax by log elevation RI vs RS'
+    'Model comparison: log PM by log parallax RI vs RS'
+    'Model comparison: log PM by log elevation RI vs RS'
     };
 keep = ~cellfun(@isempty, comparisonList);
 comparisonList = comparisonList(keep);
@@ -348,7 +501,7 @@ end
 hold on;
 
 if plotSubjectLines
-    local_plot_random_subject_lines(tbl, lme, sorteduniqueIDD, 'Elevation', jet(numel(sorteduniqueIDD)));
+    local_plot_random_subject_lines(tbl, lme, sorteduniqueIDD, 'Elevation', purpleVioletBlueTurquoiseColorMap(numel(sorteduniqueIDD)));
 end
 local_plot_fixed_effect_line(tbl, lme, 'Elevation', 'PerceivedParallax', true, onlyIfSignificant);
 
@@ -397,6 +550,45 @@ set(gca, 'FontSize', 20, 'FontName', 'Avenir');
 title(local_panel_title(task, lme, 'Elevation'), 'FontSize', 16, 'FontName', 'Avenir');
 end
 
+function local_plot_pm_by_parallax_rs(tbl, lme, subjectcolor, sorteduniqueIDD, markerScale, task, onlyIfSignificant)
+hold on;
+local_plot_random_subject_lines(tbl, lme, sorteduniqueIDD, ...
+    'PerceivedParallax', purpleVioletBlueTurquoiseColorMap(numel(sorteduniqueIDD)));
+local_plot_pm_by_parallax(tbl, lme, subjectcolor, markerScale, task, onlyIfSignificant);
+end
+
+function local_plot_pm_by_elevation_rs(tbl, lme, subjectcolor, sorteduniqueIDD, markerScale, task, onlyIfSignificant)
+hold on;
+local_plot_random_subject_lines(tbl, lme, sorteduniqueIDD, ...
+    'Elevation', purpleVioletBlueTurquoiseColorMap(numel(sorteduniqueIDD)));
+local_plot_pm_by_elevation(tbl, lme, subjectcolor, markerScale, task, onlyIfSignificant);
+end
+
+function local_plot_log_parallax_by_log_elevation(tbl, lme, subjectcolor, markerScale, task, plotSubjectLines, sorteduniqueIDD, onlyIfSignificant)
+if nargin < 6 || isempty(plotSubjectLines)
+    plotSubjectLines = false;
+end
+if nargin < 8 || isempty(onlyIfSignificant)
+    onlyIfSignificant = true;
+end
+hold on;
+
+if plotSubjectLines
+    local_plot_random_subject_lines(tbl, lme, sorteduniqueIDD, ...
+        'logElevation', purpleVioletBlueTurquoiseColorMap(numel(sorteduniqueIDD)));
+end
+local_plot_fixed_effect_line_unbounded(tbl, lme, 'logElevation', ...
+    'logParallax', true, onlyIfSignificant);
+scatter(tbl.logElevation, tbl.logParallax, markerScale, subjectcolor, 'o', 'filled');
+xlim(local_range_with_padding(tbl.logElevation));
+ylim(local_range_with_padding(tbl.logParallax));
+xlabel({'Elevation [deg]', 'log scale'});
+ylabel({'Perceived Parallax [deg]', 'log scale'});
+set(gca, 'FontSize', 20, 'FontName', 'Avenir');
+local_apply_original_unit_log_ticks(gca, true, true);
+title(local_panel_title(task, lme, 'logElevation'), 'FontSize', 16, 'FontName', 'Avenir');
+end
+
 function local_plot_log_pm_by_log_parallax(tbl, lme, subjectcolor, markerScale, task, onlyIfSignificant)
 if nargin < 6 || isempty(onlyIfSignificant)
     onlyIfSignificant = true;
@@ -412,7 +604,7 @@ ylim(local_range_with_padding(tbl.logRatio_Visual_Angle));
 xlabel({'Perceived Parallax [deg]', 'log scale'});
 ylabel({'Perceptual Magnification', 'log scale'});
 set(gca, 'FontSize', 20, 'FontName', 'Avenir');
-local_apply_original_unit_log_ticks(gca, true);
+local_apply_original_unit_log_ticks(gca, true, false);
 title(local_panel_title(task, lme, 'logParallax'), 'FontSize', 16, 'FontName', 'Avenir');
 end
 
@@ -431,8 +623,22 @@ ylim(local_range_with_padding(tbl.logRatio_Visual_Angle));
 xlabel({'Elevation [deg]', 'log scale'});
 ylabel({'Perceptual Magnification', 'log scale'});
 set(gca, 'FontSize', 20, 'FontName', 'Avenir');
-local_apply_original_unit_log_ticks(gca, true);
+local_apply_original_unit_log_ticks(gca, true, false);
 title(local_panel_title(task, lme, 'logElevation'), 'FontSize', 16, 'FontName', 'Avenir');
+end
+
+function local_plot_log_pm_by_log_parallax_rs(tbl, lme, subjectcolor, sorteduniqueIDD, markerScale, task, onlyIfSignificant)
+hold on;
+local_plot_random_subject_lines(tbl, lme, sorteduniqueIDD, ...
+    'logParallax', purpleVioletBlueTurquoiseColorMap(numel(sorteduniqueIDD)));
+local_plot_log_pm_by_log_parallax(tbl, lme, subjectcolor, markerScale, task, onlyIfSignificant);
+end
+
+function local_plot_log_pm_by_log_elevation_rs(tbl, lme, subjectcolor, sorteduniqueIDD, markerScale, task, onlyIfSignificant)
+hold on;
+local_plot_random_subject_lines(tbl, lme, sorteduniqueIDD, ...
+    'logElevation', purpleVioletBlueTurquoiseColorMap(numel(sorteduniqueIDD)));
+local_plot_log_pm_by_log_elevation(tbl, lme, subjectcolor, markerScale, task, onlyIfSignificant);
 end
 
 function local_plot_fixed_effect_line(tbl, lme, xName, yName, showCi, onlyIfSignificant)
@@ -538,14 +744,21 @@ end
 rangeVals = [minVal - pad, maxVal + pad];
 end
 
-function local_apply_original_unit_log_ticks(ax, xUsesPlusOne)
+function local_apply_original_unit_log_ticks(ax, xUsesPlusOne, yUsesPlusOne)
+if nargin < 3
+    yUsesPlusOne = false;
+end
 xTickValues = ax.XTick;
 if xUsesPlusOne
     xLabels = 2 .^ xTickValues - 1;
 else
     xLabels = 2 .^ xTickValues;
 end
-yLabels = 2 .^ ax.YTick;
+if yUsesPlusOne
+    yLabels = 2 .^ ax.YTick - 1;
+else
+    yLabels = 2 .^ ax.YTick;
+end
 
 ax.XTickLabel = local_numeric_tick_labels(xLabels);
 ax.YTickLabel = local_numeric_tick_labels(yLabels);
@@ -631,7 +844,7 @@ function [subjectcolor, sorted_idx] = local_subject_colors(idValues, sorteduniqu
 idText = string(idValues);
 sortedText = string(sorteduniqueIDD);
 nSubjects = numel(sortedText);
-cmap = jet(nSubjects);
+cmap = purpleVioletBlueTurquoiseColorMap(nSubjects);
 
 subjectcolor = zeros(numel(idText), 3);
 sorted_idx = nan(numel(idText), 1);
