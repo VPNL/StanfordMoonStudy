@@ -2,7 +2,7 @@ function [lme_Parallax_by_InverseDistance, lme_Parallax_by_Elevation, ...
     lme_Parallax_by_InverseDistance_RS, lme_Parallax_by_Elevation_RS, ...
     lme_Parallax_by_InverseDistanceXStereoGroup, ...
     lme_Parallax_by_ElevationXStereoGroup] = ...
-    Quad_Disparity_by_inverseDistanceElevation_single(tbl, tblName, ...
+    Quad_DemeanedParallax_by_inverseDistanceElevation_single(tbl, tblName, ...
     ResultsDir, saveLME, mycolormap, sorted_idx, modelTransform, ...
     degreeFlag, fullUniqueID, colorbarLabel, ...
     secondYAxisColor, plotFixedEffectsRS, colorConfig, runStereoAnalysis, plotRI)
@@ -53,16 +53,23 @@ tbl.inverseDistance = 1 ./ tbl.Distance;
 tbl.log2inverseDistance = log2(tbl.inverseDistance);
 tbl.Elevation = tbl.RawLinearElevation;
 tbl.MeanParallax = tbl.MeanDisparity;
+% Demean each measurement by that observer's mean across all measurements.
+[idGroup, ~] = findgroups(tbl.ID);
+observerMeanParallax = splitapply( ...
+    @(x) mean(x, 'omitnan'), tbl.MeanParallax, idGroup);
+tbl.MeanObserverParallax = observerMeanParallax(idGroup);
+tbl.DemeanedParallax = tbl.MeanParallax - tbl.MeanObserverParallax;
+
 linearElevationSource = 'raw signed Elevation';
 [stereoTbl, stereoGroupSummaryLines, runStereoGroupInteractions] = ...
     local_prepare_stereo_group(tbl);
 
-linearDistanceRIFormula = 'MeanParallax ~ 1 + inverseDistance + (1|ID)';
-linearElevationRIFormula = 'MeanParallax ~ 1 + Elevation + (1|ID)';
-linearDistanceRSFormula = 'MeanParallax ~ 1 + inverseDistance + (inverseDistance|ID)';
-linearElevationRSFormula = 'MeanParallax ~ 1 + Elevation + (Elevation|ID)';
-linearDistanceStereoRIFormula = 'MeanParallax ~ 1 + inverseDistance*StereoGroup + (1|ID)';
-linearElevationStereoRIFormula = 'MeanParallax ~ 1 + Elevation*StereoGroup + (1|ID)';
+linearDistanceRIFormula = 'DemeanedParallax ~ 1 + inverseDistance + (1|ID)';
+linearElevationRIFormula = 'DemeanedParallax ~ 1 + Elevation + (1|ID)';
+linearDistanceRSFormula = 'DemeanedParallax ~ 1 + inverseDistance + (inverseDistance|ID)';
+linearElevationRSFormula = 'DemeanedParallax ~ 1 + Elevation + (Elevation|ID)';
+linearDistanceStereoRIFormula = 'DemeanedParallax ~ 1 + inverseDistance*StereoGroup + (1|ID)';
+linearElevationStereoRIFormula = 'DemeanedParallax ~ 1 + Elevation*StereoGroup + (1|ID)';
 
 lme_Parallax_by_InverseDistance = local_try_fitlme(tbl, linearDistanceRIFormula);
 lme_Parallax_by_Elevation = local_try_fitlme(tbl, linearElevationRIFormula);
@@ -82,7 +89,7 @@ end
 
 if saveLME
     savelmefile = fullfile(ResultsDir, ...
-        [outputStem '_elevation_single_RI_RS.txt']);
+        [outputStem 'demeaned_elevation_single_RI_RS.txt']);
     local_write_model_report(savelmefile, tbl, tblName, sourceCsv, ...
         modelTransform, linearElevationSource, stereoGroupSummaryLines, ...
         runStereoAnalysis, ...
@@ -96,11 +103,12 @@ if saveLME
 end
 
 subjectcolor = local_subject_colors(tbl, mycolormap, sorted_idx, fullUniqueID);
-minParallax = max(0.01, min(tbl.MeanParallax));
-maxParallax = max(tbl.MeanParallax);
+finiteDemeaned = tbl.DemeanedParallax(isfinite(tbl.DemeanedParallax));
+minParallax = min(finiteDemeaned, [], 'omitnan');
+maxParallax = max(finiteDemeaned, [], 'omitnan');
 nIDs = numel(categories(removecats(tbl.ID)));
 
-figLinearRS = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 .72 .72], 'Name', [outputStem '_linear_RS'], 'Visible', 'off');
+figLinearRS = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 .92 .72], 'Name', [outputStem '_linear_RS'], 'Visible', 'off');
 tLinearRS = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
 tLinearRS.Position = [0.14 0.12 0.65 0.64];
 axLinearRS1 = nexttile;
@@ -112,16 +120,14 @@ local_plot_linear_random_slopes(axLinearRS2, tbl, subjectcolor, ...
     lme_Parallax_by_Elevation_RS, 'E', minParallax, maxParallax, modelTransform, nIDs, ...
     fullUniqueID, mycolormap, sorted_idx, false, 'w', ...
     plotFixedEffectsRS);
-Quad_add_participant_colorbar(figLinearRS, mycolormap, nIDs, ...
-    colorbarLabel, colorConfig, axLinearRS2, ...
-    'StereoUnknownLabel', 'U', ...
-    'StereoLabelPosition', [-3.4 0.5 0]);
-exportgraphics(figLinearRS, fullfile(ResultsDir, [outputStem '_linear_RS.png']), 'Resolution', 600);
+local_add_subject_colorbar(figLinearRS, mycolormap, nIDs, colorbarLabel, ...
+    colorConfig, axLinearRS2);
+exportgraphics(figLinearRS, fullfile(ResultsDir, [outputStem 'demeaned_linear_RS.png']), 'Resolution', 600);
 close(figLinearRS);
 
 if plotRI
     figLinearRI = figure('Color', [1 1 1], 'Units', 'normalized', ...
-        'Position', [0 0 .72 .72], 'Name', [outputStem '_linear_RI'], ...
+        'Position', [0 0 .92 .72], 'Name', [outputStem 'demeaned_linear_RI'], ...
         'Visible', 'off');
     tLinearRI = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
     tLinearRI.Position = [0.14 0.12 0.65 0.64];
@@ -133,10 +139,8 @@ if plotRI
     local_plot_linear_fixed_only(axLinearRI2, tbl, subjectcolor, ...
         lme_Parallax_by_Elevation, 'E', minParallax, maxParallax, ...
         modelTransform, nIDs, false, 'w');
-    Quad_add_participant_colorbar(figLinearRI, mycolormap, nIDs, ...
-        colorbarLabel, colorConfig, axLinearRI2, ...
-        'StereoUnknownLabel', 'U', ...
-        'StereoLabelPosition', [-3.4 0.5 0]);
+    local_add_subject_colorbar(figLinearRI, mycolormap, nIDs, colorbarLabel, ...
+        colorConfig, axLinearRI2);
     exportgraphics(figLinearRI, fullfile(ResultsDir, ...
         [outputStem '_linear_RI.png']), 'Resolution', 600);
     close(figLinearRI);
@@ -242,7 +246,7 @@ end
     "Linear inverse distance RS"; "Linear elevation RS"; ...
     "Linear inverse distance x StereoGroup RI"; ...
     "Linear elevation x StereoGroup RI"], ...
-    repmat("MeanParallax", numel(models), 1));
+    repmat("DemeanedParallax", numel(models), 1));
 if ok
     comparisons{end + 1} = fitStatsTbl;
     comparisonLabels{end + 1} = ...
@@ -600,7 +604,7 @@ end
 
 hold(ax, 'on');
 [x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeChar, modelTransform);
-y = tbl.MeanParallax;
+y = tbl.DemeanedParallax;
 
 if isempty(lme)
     scatter_by_measurement(ax, x, y, subjectcolor, tbl.Measurement);
@@ -648,7 +652,7 @@ end
 
 hold(ax, 'on');
 [x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeChar, modelTransform);
-y = tbl.MeanParallax;
+y = tbl.DemeanedParallax;
 
 if isempty(lme)
     scatter_by_measurement(ax, x, y, subjectcolor, tbl.Measurement);
@@ -757,7 +761,7 @@ for orderIdx = 1:numel(plotOrder)
     xgrid = linspace(min(xSub), max(xSub), 50);
     ySubFit = (lme.Coefficients.Estimate(1) + reIntercept) + ...
         (lme.Coefficients.Estimate(2) + reSlope) * xgrid;
-    plot(ax, xgrid, ySubFit, '-', 'Color', thisColor, 'LineWidth', 2);
+    plot(ax, xgrid, ySubFit, '-', 'Color', thisColor, 'LineWidth', 3);
 end
 end
 
@@ -787,20 +791,21 @@ end
 set(ax, 'FontName', 'Avenir', 'FontSize', 18);
 xlabel(ax, xlabelText, 'FontSize', 22);
 if showYLabel
-    ylabel(ax, {'Perceived Parallax [deg]','linear scale'}, 'FontSize', 22);
+    ylabel(ax, {'Demeaned Perceived Parallax [deg]','linear scale'}, ...
+        'FontSize', 22);
 else
     ylabel(ax, '');
     ax.YColor = hiddenYAxisColor;
 end
 if modeChar == 'D'
     [inverseDistanceLimits, inverseDistanceTicks] = ...
-        Quad_inverse_distance_axis(x);
+        local_inverse_distance_axis(x);
     xlim(ax, inverseDistanceLimits);
     xticks(ax, inverseDistanceTicks);
 else
-    xlim(ax, Quad_expand_linear_limits(x));
+    xlim(ax, local_expand_linear_limits(x));
 end
-ylim(ax, Quad_expand_linear_limits([minParallax maxParallax]));
+ylim(ax, local_expand_linear_limits([minParallax maxParallax]));
 box(ax, 'off');
 grid(ax, 'off');
 end
@@ -863,10 +868,10 @@ if strcmp(predictorSymbol, '1/Distance')
     else
         termText = [' + ' local_format_number(b1) '/Distance'];
     end
-    titleStr = sprintf('Perceived Parallax=%s%s\n p=%s\n n=%d', ...
+    titleStr = sprintf('Demeaned Parallax=%s%s\n p=%s\n n=%d', ...
         local_format_number(b0), termText, local_format_pvalue(pval), nIDs);
 else
-    titleStr = sprintf('Perceived Parallax=%s%s%s\n p=%s\n n=%d', ...
+    titleStr = sprintf('Demeaned Parallax=%s%s%s\n p=%s\n n=%d', ...
         local_format_number(b0), local_format_signed_slope(b1), ...
         predictorSymbol, local_format_pvalue(pval), nIDs);
 end
@@ -930,7 +935,7 @@ for orderIdx = 1:numel(plotOrder)
     xSub = xAll(rowMask);
     xgrid = linspace(min(xSub), max(xSub), 50);
     ySubFit = (lme.Coefficients.Estimate(1) + reIntercept) + (lme.Coefficients.Estimate(2) + reSlope) * xgrid;
-    plot(ax, xgrid, ySubFit, '-', 'Color', thisColor, 'LineWidth', 2);
+    plot(ax, xgrid, ySubFit, '-', 'Color', thisColor, 'LineWidth', 3);
 end
 end
 
@@ -1078,7 +1083,7 @@ ax2 = nexttile;
 local_plot_stereo_relationship_panel(ax2, x, stereoTbl.SubjectSlope, stereoTbl.SubjectColor, ...
     xLabel, 'Subject slope', lmSlope);
 
-Quad_add_participant_colorbar(figStereo, mycolormap, numel(stereoTbl.ID), ...
+local_add_subject_colorbar(figStereo, mycolormap, numel(stereoTbl.ID), ...
     xLabel, colorConfig, ax2);
 exportgraphics(figStereo, fullfile(ResultsDir, [tblName figSuffix]), 'Resolution', 600);
 close(figStereo);
@@ -1147,11 +1152,6 @@ if isNormedStereoBar
     cb.FontSize = 18;
     cb.Label.FontName = 'Avenir';
     cb.Label.FontSize = 20;
-    tickLabels = string(cb.TickLabels);
-    tickLabels(strcmpi(tickLabels, "Unknown")) = "U";
-    cb.TickLabels = tickLabels;
-    cb.Label.Units = 'normalized';
-    cb.Label.Position = [-3.4 0.5 0];
     return;
 else
     nColorLevels = min(size(mycolormap, 1), max(1, nIDs));

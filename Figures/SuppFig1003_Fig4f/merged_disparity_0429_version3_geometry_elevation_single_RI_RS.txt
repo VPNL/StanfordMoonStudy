@@ -1,0 +1,709 @@
+Quad raw geometric-parallax/elevation LME report
+Rows: 320
+Participants: 42
+
+GeometricParallax = (360/pi)*atan(tan(pi*VA/360) + 6.5/2*(1/z - 1/D)) - VA
+b = 6.5 cm; z = mean(Caliper1_Distance, Caliper2_Distance); D = raw Distance.
+InfinityParallax_ID = (360/pi)*atan(6.5/(2*meanCaliperDistance_ID)) for VA=0 and D approaching infinity.
+InfinityAdjustedParallax = MeanParallax - InfinityParallax_ID.
+No distance or elevation transform was applied.
+
+Model: MeanParallax ~ 1 + GeometricParallax + (1|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           2
+    Random effects coefficients         42
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    MeanParallax ~ 1 + GeometricParallax + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1155.3    1170.4    -573.64          1147.3  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                         Estimate    SE         tStat      DF 
+    {'(Intercept)'      }        -0.88167    0.61093    -1.4432    318
+    {'GeometricParallax'}          0.9748    0.01796     54.277    318
+
+
+    pValue         Lower      Upper  
+        0.14996    -2.0836    0.32031
+    7.4609e-163    0.93947     1.0101
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        1.8077  
+
+
+    Lower     Upper 
+    1.4413    2.2672
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.2012      1.1054    1.3053
+
+
+
+Model: MeanParallax ~ 1 + Elevation + (1|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           2
+    Random effects coefficients         42
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    MeanParallax ~ 1 + Elevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1781.7    1796.8    -886.87          1773.7  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF     pValue    
+    {'(Intercept)'}         27.627       1.6676    16.567    318    7.0463e-45
+    {'Elevation'  }        0.31888     0.043818    7.2773    318    2.6812e-12
+
+
+    Lower      Upper  
+     24.346     30.908
+    0.23267    0.40509
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        10.735  
+
+
+    Lower     Upper 
+    8.6513    13.322
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        2.8419      2.6152    3.0882
+
+
+
+Model: MeanParallax ~ 1 + GeometricParallax + (GeometricParallax|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           2
+    Random effects coefficients         84
+    Covariance parameters                4
+
+<strong>Formula:</strong>
+    MeanParallax ~ 1 + GeometricParallax + (1 + GeometricParallax | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1155.2    1177.9    -571.62          1143.2  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                         Estimate    SE         tStat       DF 
+    {'(Intercept)'      }        -0.32038    0.61373    -0.52202    318
+    {'GeometricParallax'}         0.95118     0.0224      42.464    318
+
+
+    pValue         Lower      Upper  
+        0.60202    -1.5279     0.8871
+    4.4232e-133    0.90711    0.99525
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                        Name2                        Type        
+    {'(Intercept)'      }        {'(Intercept)'      }        {'std' }    
+    {'GeometricParallax'}        {'(Intercept)'      }        {'corr'}    
+    {'GeometricParallax'}        {'GeometricParallax'}        {'std' }    
+
+
+    Estimate    Lower       Upper  
+      1.4877     0.55924     3.9573
+    -0.31921    -0.93367    0.77179
+    0.062044    0.021701    0.17739
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.1704      1.0706    1.2795
+
+
+
+Model: MeanParallax ~ 1 + Elevation + (Elevation|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           2
+    Random effects coefficients         84
+    Covariance parameters                4
+
+<strong>Formula:</strong>
+    MeanParallax ~ 1 + Elevation + (1 + Elevation | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1760.2    1782.8    -874.11          1748.2  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF     pValue    
+    {'(Intercept)'}         27.624       1.5959     17.31    318    9.2232e-48
+    {'Elevation'  }        0.31896     0.059759    5.3374    318     1.796e-07
+
+
+    Lower      Upper  
+     24.485     30.764
+    0.20139    0.43654
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type            Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std' }         10.279 
+    {'Elevation'  }        {'(Intercept)'}        {'corr'}        0.64866 
+    {'Elevation'  }        {'Elevation'  }        {'std' }        0.28584 
+
+
+    Lower      Upper  
+     8.2778     12.763
+    0.21451    0.86878
+    0.19175     0.4261
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        2.6149      2.3894    2.8617
+
+
+
+Model: MeanParallax ~ 1 + GeometricParallax + Elevation + (1|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           3
+    Random effects coefficients         42
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    MeanParallax ~ 1 + Elevation + GeometricParallax + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1155.6    1174.5    -572.81          1145.6  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                         Estimate    SE          tStat      DF 
+    {'(Intercept)'      }        -0.72485     0.62277    -1.1639    317
+    {'Elevation'        }        0.024973    0.019322     1.2925    317
+    {'GeometricParallax'}         0.96755    0.018793     51.485    317
+
+
+    pValue         Lower        Upper   
+        0.24533      -1.9501     0.50042
+        0.19714    -0.013043    0.062988
+    5.1914e-156      0.93058      1.0045
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        1.8139  
+
+
+    Lower     Upper 
+    1.4453    2.2765
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.197       1.1015    1.3008
+
+
+
+Model: MeanParallax ~ 1 + GeometricParallax + Elevation + (Elevation|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           3
+    Random effects coefficients         84
+    Covariance parameters                4
+
+<strong>Formula:</strong>
+    MeanParallax ~ 1 + Elevation + GeometricParallax + (1 + Elevation | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1156.8    1183.2    -571.41          1142.8  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                         Estimate    SE          tStat      DF 
+    {'(Intercept)'      }        -0.72888     0.62685    -1.1628    317
+    {'Elevation'        }        0.025029     0.01986     1.2603    317
+    {'GeometricParallax'}         0.96766    0.019149     50.533    317
+
+
+    pValue         Lower        Upper   
+         0.2458      -1.9622     0.50442
+        0.20849    -0.014044    0.064102
+    1.0122e-153      0.92998      1.0053
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type            Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std' }          1.7383
+    {'Elevation'  }        {'(Intercept)'}        {'corr'}               1
+    {'Elevation'  }        {'Elevation'  }        {'std' }        0.031414
+
+
+    Lower        Upper  
+       1.3758     2.1963
+          NaN        NaN
+    0.0095864    0.10294
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.1906      1.0956    1.2939
+
+
+
+Model: AdjustedParallax ~ 1 + Elevation + (1|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           2
+    Random effects coefficients         42
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    AdjustedParallax ~ 1 + Elevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1156.6    1171.7    -574.29          1148.6  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat      DF     pValue    
+    {'(Intercept)'}         -1.6752     0.29105    -5.7556    318    2.0316e-08
+    {'Elevation'  }        0.015101    0.018558    0.81374    318        0.4164
+
+
+    Lower        Upper   
+      -2.2478     -1.1026
+    -0.021411    0.051614
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        1.8111  
+
+
+    Lower     Upper 
+    1.4446    2.2706
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.2036      1.1077    1.3079
+
+
+
+Model: AdjustedParallax ~ 1 + Elevation + (Elevation|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           2
+    Random effects coefficients         84
+    Covariance parameters                4
+
+<strong>Formula:</strong>
+    AdjustedParallax ~ 1 + Elevation + (1 + Elevation | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1157.7    1180.3    -572.83          1145.7  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat      DF     pValue   
+    {'(Intercept)'}         -1.6762     0.27943    -5.9987    318    5.407e-09
+    {'Elevation'  }        0.015195    0.019116    0.79492    318      0.42725
+
+
+    Lower        Upper   
+       -2.226     -1.1264
+    -0.022414    0.052804
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type            Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std' }          1.7335
+    {'Elevation'  }        {'(Intercept)'}        {'corr'}               1
+    {'Elevation'  }        {'Elevation'  }        {'std' }        0.032318
+
+
+    Lower       Upper  
+      1.3734     2.1879
+         NaN        NaN
+    0.010119    0.10321
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.1969      1.1014    1.3006
+
+
+
+Model: CaliperDistance ~ 1 + Elevation + (1|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           2
+    Random effects coefficients         42
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    CaliperDistance ~ 1 + Elevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1420.5    1435.5    -706.23          1412.5  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate     SE          tStat      DF     pValue    
+    {'(Intercept)'}             14.5      1.1026     13.151    318    7.7148e-32
+    {'Elevation'  }        -0.097173    0.024354    -3.9901    318    8.2041e-05
+
+
+    Lower       Upper    
+      12.331        16.67
+    -0.14509    -0.049258
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        7.1124  
+
+
+    Lower     Upper 
+    5.7353    8.8201
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.5795      1.4535    1.7164
+
+
+
+Model: CaliperDistance ~ 1 + Distance + (1|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           2
+    Random effects coefficients         42
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    CaliperDistance ~ 1 + Distance + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1431.8    1446.9    -711.92          1423.8  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate      SE            tStat     DF 
+    {'(Intercept)'}            14.032        1.1067    12.679    318
+    {'Distance'   }        0.00011546    5.6692e-05    2.0367    318
+
+
+    pValue        Lower         Upper   
+    4.2924e-30        11.854      16.209
+       0.04251    3.9248e-06    0.000227
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        7.1101  
+
+
+    Lower     Upper 
+    5.7332    8.8178
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.6122      1.4836    1.7519
+
+
+
+Model: InfinityAdjustedParallax ~ 1 + Elevation + (1|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           2
+    Random effects coefficients         42
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    InfinityAdjustedParallax ~ 1 + Elevation + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1634.8    1649.8    -813.38          1626.8  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE          tStat     DF     pValue    
+    {'(Intercept)'}        -2.4777      0.30921    -8.013    318    2.1458e-14
+    {'Elevation'  }        0.31947     0.043791    7.2954    318    2.3902e-12
+
+
+    Lower      Upper  
+     -3.086    -1.8693
+    0.23331    0.40562
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        1.5725  
+
+
+    Lower     Upper 
+    1.1583    2.1348
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        2.8404      2.6141    3.0863
+
+
+
+Model: InfinityAdjustedParallax ~ 1 + Elevation + (Elevation|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           2
+    Random effects coefficients         84
+    Covariance parameters                4
+
+<strong>Formula:</strong>
+    InfinityAdjustedParallax ~ 1 + Elevation + (1 + Elevation | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC     LogLikelihood    Deviance
+    1625.4    1648    -806.7           1613.4  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate    SE         tStat      DF     pValue    
+    {'(Intercept)'}        -2.4784     0.31882    -7.7734    318    1.0684e-13
+    {'Elevation'  }        0.31954     0.05978     5.3453    318    1.7263e-07
+
+
+    Lower      Upper  
+    -3.1056    -1.8511
+    0.20193    0.43715
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type            Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std' }           1.721
+    {'Elevation'  }        {'(Intercept)'}        {'corr'}        -0.34211
+    {'Elevation'  }        {'Elevation'  }        {'std' }         0.28618
+
+
+    Lower      Upper  
+     1.2639     2.3435
+    -0.6839    0.12283
+    0.19211     0.4263
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        2.6134      2.3883    2.8598
+
+
+
+Model: CaliperDistance ~ 1 + Elevation + Distance + (1|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           3
+    Random effects coefficients         42
+    Covariance parameters                2
+
+<strong>Formula:</strong>
+    CaliperDistance ~ 1 + Elevation + Distance + (1 | ID)
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC       LogLikelihood    Deviance
+    1417.5    1436.4    -703.77          1407.5  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate     SE            tStat      DF 
+    {'(Intercept)'}           14.258        1.1075     12.874    317
+    {'Elevation'  }         -0.09893      0.024153    -4.0959    317
+    {'Distance'   }        0.0001228    5.5087e-05     2.2293    317
+
+
+    pValue        Lower         Upper     
+    8.4772e-31        12.079        16.437
+    5.3439e-05      -0.14645     -0.051409
+      0.026496    1.4422e-05    0.00023118
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type           Estimate
+    {'(Intercept)'}        {'(Intercept)'}        {'std'}        7.1098  
+
+
+    Lower     Upper 
+    5.7334    8.8167
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.5657      1.4408    1.7014
+
+
+
+Model: CaliperDistance ~ 1 + Elevation + Distance + (Elevation + Distance|ID)
+
+<strong>Linear mixed-effects model fit by ML</strong>
+
+<strong>Model information:</strong>
+    Number of observations             320
+    Fixed effects coefficients           3
+    Random effects coefficients        126
+    Covariance parameters                7
+
+<strong>Formula:</strong>
+    Linear Mixed Formula with 3 predictors.
+
+<strong>Model fit statistics:</strong>
+    AIC       BIC     LogLikelihood    Deviance
+    1419.4    1457    -699.68          1399.4  
+
+<strong>Fixed effects coefficients (95% CIs):</strong>
+    Name                   Estimate      SE            tStat      DF 
+    {'(Intercept)'}            14.258       0.97981     14.552    317
+    {'Elevation'  }         -0.098839      0.024961    -3.9597    317
+    {'Distance'   }        0.00012196    5.9616e-05     2.0457    317
+
+
+    pValue        Lower         Upper     
+    4.2675e-37         12.33        16.186
+    9.2686e-05      -0.14795     -0.049729
+      0.041611    4.6633e-06    0.00023925
+
+<strong>Random effects covariance parameters (95% CIs):</strong>
+Group: ID (42 Levels)
+    Name1                  Name2                  Type            Estimate  
+    {'(Intercept)'}        {'(Intercept)'}        {'std' }            6.2751
+    {'Elevation'  }        {'(Intercept)'}        {'corr'}           0.97284
+    {'Distance'   }        {'(Intercept)'}        {'corr'}           0.67845
+    {'Elevation'  }        {'Elevation'  }        {'std' }          0.046964
+    {'Distance'   }        {'Elevation'  }        {'corr'}           0.48996
+    {'Distance'   }        {'Distance'   }        {'std' }        0.00015566
+
+
+    Lower         Upper     
+        5.1195        7.6915
+           NaN           NaN
+           NaN           NaN
+      0.017653       0.12494
+           NaN           NaN
+    6.4816e-05    0.00037385
+
+Group: Error
+    Name               Estimate    Lower     Upper 
+    {'Res Std'}        1.5483      1.4209    1.6872
+
+
+
+RI versus RS geometric-parallax comparison
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model     DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue 
+    LME       4     1155.3    1170.4    -573.64                                
+    ALTLME    6     1155.2    1177.9    -571.62    4.0372    2          0.13284
+
+
+RI versus RS elevation comparison
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model     DF    AIC       BIC       LogLik     LRStat    deltaDF
+    LME       4     1781.7    1796.8    -886.87                     
+    ALTLME    6     1760.2    1782.8    -874.11    25.528    2      
+
+
+    pValue    
+              
+    2.8618e-06
+
+
+Geometry-only RI versus geometry-plus-elevation RI comparison
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model     DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue
+    LME       4     1155.3    1170.4    -573.64                               
+    ALTLME    5     1155.6    1174.5    -572.81    1.663     1          0.1972
+
+
+Geometry-plus-elevation RI versus elevation-RS comparison
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model     DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue 
+    LME       5     1155.6    1174.5    -572.81                                
+    ALTLME    7     1156.8    1183.2    -571.41    2.8017    2          0.24639
+
+
+Adjusted-parallax elevation RI versus RS comparison
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model     DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue
+    LME       4     1156.6    1171.7    -574.29                               
+    ALTLME    6     1157.7    1180.3    -572.83    2.9306    2          0.231 
+
+
+Infinity-adjusted parallax elevation RI versus RS comparison
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model     DF    AIC       BIC       LogLik     LRStat    deltaDF
+    LME       4     1634.8    1649.8    -813.38                     
+    ALTLME    6     1625.4      1648     -806.7    13.36     2      
+
+
+    pValue   
+             
+    0.0012558
+
+
+Joint caliper-distance RI versus RS comparison
+
+    <strong>Theoretical Likelihood Ratio Test</strong>
+
+    Model     DF    AIC       BIC       LogLik     LRStat    deltaDF    pValue 
+    LME        5    1417.5    1436.4    -703.77                                
+    ALTLME    10    1419.4      1457    -699.68    8.186     5          0.14628
+
+
