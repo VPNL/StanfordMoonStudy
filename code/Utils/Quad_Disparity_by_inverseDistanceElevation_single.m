@@ -100,7 +100,7 @@ minParallax = max(0.01, min(tbl.MeanParallax));
 maxParallax = max(tbl.MeanParallax);
 nIDs = numel(categories(removecats(tbl.ID)));
 
-figLinearRS = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 .92 .72], 'Name', [outputStem '_linear_RS'], 'Visible', 'off');
+figLinearRS = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 .72 .72], 'Name', [outputStem '_linear_RS'], 'Visible', 'off');
 tLinearRS = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
 tLinearRS.Position = [0.14 0.12 0.65 0.64];
 axLinearRS1 = nexttile;
@@ -112,14 +112,16 @@ local_plot_linear_random_slopes(axLinearRS2, tbl, subjectcolor, ...
     lme_Parallax_by_Elevation_RS, 'E', minParallax, maxParallax, modelTransform, nIDs, ...
     fullUniqueID, mycolormap, sorted_idx, false, 'w', ...
     plotFixedEffectsRS);
-local_add_subject_colorbar(figLinearRS, mycolormap, nIDs, colorbarLabel, ...
-    colorConfig, axLinearRS2);
+Quad_add_participant_colorbar(figLinearRS, mycolormap, nIDs, ...
+    colorbarLabel, colorConfig, axLinearRS2, ...
+    'StereoUnknownLabel', 'U', ...
+    'StereoLabelPosition', [-3.4 0.5 0]);
 exportgraphics(figLinearRS, fullfile(ResultsDir, [outputStem '_linear_RS.png']), 'Resolution', 600);
 close(figLinearRS);
 
 if plotRI
     figLinearRI = figure('Color', [1 1 1], 'Units', 'normalized', ...
-        'Position', [0 0 .92 .72], 'Name', [outputStem '_linear_RI'], ...
+        'Position', [0 0 .72 .72], 'Name', [outputStem '_linear_RI'], ...
         'Visible', 'off');
     tLinearRI = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
     tLinearRI.Position = [0.14 0.12 0.65 0.64];
@@ -131,8 +133,10 @@ if plotRI
     local_plot_linear_fixed_only(axLinearRI2, tbl, subjectcolor, ...
         lme_Parallax_by_Elevation, 'E', minParallax, maxParallax, ...
         modelTransform, nIDs, false, 'w');
-    local_add_subject_colorbar(figLinearRI, mycolormap, nIDs, colorbarLabel, ...
-        colorConfig, axLinearRI2);
+    Quad_add_participant_colorbar(figLinearRI, mycolormap, nIDs, ...
+        colorbarLabel, colorConfig, axLinearRI2, ...
+        'StereoUnknownLabel', 'U', ...
+        'StereoLabelPosition', [-3.4 0.5 0]);
     exportgraphics(figLinearRI, fullfile(ResultsDir, ...
         [outputStem '_linear_RI.png']), 'Resolution', 600);
     close(figLinearRI);
@@ -753,7 +757,7 @@ for orderIdx = 1:numel(plotOrder)
     xgrid = linspace(min(xSub), max(xSub), 50);
     ySubFit = (lme.Coefficients.Estimate(1) + reIntercept) + ...
         (lme.Coefficients.Estimate(2) + reSlope) * xgrid;
-    plot(ax, xgrid, ySubFit, '-', 'Color', thisColor, 'LineWidth', 3);
+    plot(ax, xgrid, ySubFit, '-', 'Color', thisColor, 'LineWidth', 2);
 end
 end
 
@@ -790,13 +794,13 @@ else
 end
 if modeChar == 'D'
     [inverseDistanceLimits, inverseDistanceTicks] = ...
-        local_inverse_distance_axis(x);
+        Quad_inverse_distance_axis(x);
     xlim(ax, inverseDistanceLimits);
     xticks(ax, inverseDistanceTicks);
 else
-    xlim(ax, local_expand_linear_limits(x));
+    xlim(ax, Quad_expand_linear_limits(x));
 end
-ylim(ax, local_expand_linear_limits([minParallax maxParallax]));
+ylim(ax, Quad_expand_linear_limits([minParallax maxParallax]));
 box(ax, 'off');
 grid(ax, 'off');
 end
@@ -926,7 +930,7 @@ for orderIdx = 1:numel(plotOrder)
     xSub = xAll(rowMask);
     xgrid = linspace(min(xSub), max(xSub), 50);
     ySubFit = (lme.Coefficients.Estimate(1) + reIntercept) + (lme.Coefficients.Estimate(2) + reSlope) * xgrid;
-    plot(ax, xgrid, ySubFit, '-', 'Color', thisColor, 'LineWidth', 3);
+    plot(ax, xgrid, ySubFit, '-', 'Color', thisColor, 'LineWidth', 2);
 end
 end
 
@@ -1074,7 +1078,7 @@ ax2 = nexttile;
 local_plot_stereo_relationship_panel(ax2, x, stereoTbl.SubjectSlope, stereoTbl.SubjectColor, ...
     xLabel, 'Subject slope', lmSlope);
 
-local_add_subject_colorbar(figStereo, mycolormap, numel(stereoTbl.ID), ...
+Quad_add_participant_colorbar(figStereo, mycolormap, numel(stereoTbl.ID), ...
     xLabel, colorConfig, ax2);
 exportgraphics(figStereo, fullfile(ResultsDir, [tblName figSuffix]), 'Resolution', 600);
 close(figStereo);
@@ -1143,6 +1147,11 @@ if isNormedStereoBar
     cb.FontSize = 18;
     cb.Label.FontName = 'Avenir';
     cb.Label.FontSize = 20;
+    tickLabels = string(cb.TickLabels);
+    tickLabels(strcmpi(tickLabels, "Unknown")) = "U";
+    cb.TickLabels = tickLabels;
+    cb.Label.Units = 'normalized';
+    cb.Label.Position = [-3.4 0.5 0];
     return;
 else
     nColorLevels = min(size(mycolormap, 1), max(1, nIDs));

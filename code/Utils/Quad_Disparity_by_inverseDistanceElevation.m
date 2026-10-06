@@ -103,23 +103,28 @@ axFullE = nexttile;
 local_plot_linear_model_panel(axFullE, tbl, subjectcolor, ...
     lme_Parallax_by_Elevation, 'E', minParallax, maxParallax, ...
     modelTransform, false, 'w');
-local_add_subject_colorbar(figFull, mycolormap, nIDs, ...
+Quad_add_participant_colorbar(figFull, mycolormap, nIDs, ...
     local_colorbar_label(colorConfig), colorConfig, axFullE);
 exportgraphics(figFull, fullfile(ResultsDir, ...
     [tblName '_inverseDistance_E_RI.png']), ...
     'Resolution', 600);
 
 
-local_plot_linear_interaction_surfaces( ...
-    lme_Parallax_by_InverseDistanceNElevation, tbl, tblName, ...
+local_plot_linear_additive_model( ...
+    lme_Parallax_by_InverseDistancePlusElevation, tbl, subjectcolor, ...
+    tblName, ResultsDir, mycolormap, nIDs, colorConfig, ...
+    minParallax, maxParallax, modelTransform);
+
+local_plot_linear_additive_surfaces( ...
+    lme_Parallax_by_InverseDistancePlusElevation, tbl, tblName, ...
     ResultsDir, nIDs, 'Elevation');
 
 end
 
-function local_plot_linear_interaction_surfaces(lme, tbl, tblName, ...
+function local_plot_linear_additive_surfaces(lme, tbl, tblName, ...
     ResultsDir, nIDs, elevationVariable)
 if isempty(lme)
-    fprintf('Skipping linear interaction surfaces: model is unavailable.\n');
+    fprintf('Skipping linear additive surfaces: model is unavailable.\n');
     return;
 end
 
@@ -138,23 +143,19 @@ parallaxGrid = reshape(predictedParallax, size(distanceGrid));
 distanceMap = turbo(256);
 elevationMap = earthColormap(256, 'Apply', false);
 figSurface = figure('Color', 'w', 'Units', 'normalized', ...
-    'Position', [0.05 0.04 0.90 0.90], ...
-    'Name', [tblName '_inverseDistance_x_Elevation_surfaces'], ...
+    'Position', [0.12 0.04 0.48 0.90], ...
+    'Name', [tblName '_inverseDistance_plus_Elevation_surfaces'], ...
     'Visible', 'off');
-tSurface = tiledlayout(figSurface, 2, 2, ...
+tSurface = tiledlayout(figSurface, 2, 1, ...
     'Padding', 'compact', 'TileSpacing', 'compact');
 
 elevationAxisLabel = 'Elevation [deg]';
 elevationTitleLabel = 'E';
 panelSpecs = { ...
     distanceGrid, elevationGrid, distanceGrid, distanceMap, ...
-        'D [m]', elevationAxisLabel, ['D x ' elevationTitleLabel ', color: D'], 'D [m]'; ...
-    elevationGrid, distanceGrid, distanceGrid, distanceMap, ...
-        elevationAxisLabel, 'D [m]', [elevationTitleLabel ' x D, color: D'], 'D [m]'; ...
+        'D [m]', elevationAxisLabel, ['Axes: D and ' elevationTitleLabel '; color: D'], 'D [m]'; ...
     distanceGrid, elevationGrid, elevationGrid, elevationMap, ...
-        'D [m]', elevationAxisLabel, ['D x ' elevationTitleLabel ', color: ' elevationTitleLabel], elevationAxisLabel; ...
-    elevationGrid, distanceGrid, elevationGrid, elevationMap, ...
-        elevationAxisLabel, 'D [m]', [elevationTitleLabel ' x D, color: ' elevationTitleLabel], elevationAxisLabel};
+        'D [m]', elevationAxisLabel, ['Axes: D and ' elevationTitleLabel '; color: ' elevationTitleLabel], elevationAxisLabel};
 
 for iPanel = 1:size(panelSpecs, 1)
     ax = nexttile(tSurface);
@@ -183,19 +184,87 @@ for iPanel = 1:size(panelSpecs, 1)
     box(ax, 'off');
 end
 
-modelTitleLines = local_linear_interaction_title(lme, nIDs, elevationVariable);
+modelTitleLines = local_linear_additive_title(lme, nIDs, elevationVariable);
 titleHandle = title(tSurface, strjoin(modelTitleLines, newline), ...
     'FontName', 'Avenir', 'FontSize', 11, 'FontWeight', 'bold', ...
     'Interpreter', 'tex');
 titleHandle.HorizontalAlignment = 'center';
 
 exportgraphics(figSurface, fullfile(ResultsDir, ...
-    [tblName '_inverseDistance_x_Elevation_surfaces.png']), ...
+    [tblName '_inverseDistance_plus_Elevation_surfaces.png']), ...
     'Resolution', 600);
-savefig(figSurface, fullfile(ResultsDir, ...
-    [tblName '_inverseDistance_x_Elevation_surfaces.fig']));
 close(figSurface);
 
+end
+
+function local_plot_linear_additive_model(lme, tbl, subjectcolor, ...
+    tblName, ResultsDir, mycolormap, nIDs, colorConfig, ...
+    minParallax, maxParallax, modelTransform)
+if isempty(lme)
+    fprintf('Skipping linear additive-model plot: model is unavailable.\n');
+    return;
+end
+
+fig = figure('Color', 'w', 'Units', 'normalized', ...
+    'Position', [0 0 .92 .80], ...
+    'Name', [tblName '_inverseDistance_plus_E_RI'], ...
+    'Visible', 'off');
+t = tiledlayout(fig, 1, 2, 'Padding', 'compact', ...
+    'TileSpacing', 'loose');
+t.Position = [0.09 0.18 0.70 0.68];
+
+axD = nexttile(t);
+local_plot_additive_effect_panel(axD, tbl, subjectcolor, lme, 'D', ...
+    minParallax, maxParallax, modelTransform, true);
+axE = nexttile(t);
+local_plot_additive_effect_panel(axE, tbl, subjectcolor, lme, 'E', ...
+    minParallax, maxParallax, modelTransform, false, 'w');
+
+title(t, strjoin(local_linear_additive_title(lme, nIDs, 'Elevation'), ...
+    newline), 'FontName', 'Avenir', 'FontSize', 11, ...
+    'FontWeight', 'bold', 'Interpreter', 'tex');
+Quad_add_participant_colorbar(fig, mycolormap, nIDs, ...
+    local_colorbar_label(colorConfig), colorConfig, axE);
+exportgraphics(fig, fullfile(ResultsDir, ...
+    [tblName '_inverseDistance_plus_E_RI.png']), 'Resolution', 600);
+close(fig);
+end
+
+function local_plot_additive_effect_panel(ax, tbl, subjectcolor, lme, ...
+    modeChar, minParallax, maxParallax, modelTransform, showYLabel, ...
+    hiddenYAxisColor)
+if nargin < 10 || isempty(hiddenYAxisColor)
+    hiddenYAxisColor = 'w';
+end
+hold(ax, 'on');
+[x, xlabelText, predictorName] = ...
+    local_linear_axis_setup(tbl, modeChar, modelTransform);
+xGrid = linspace(min(x), max(x), 200)';
+newTbl = tbl(ones(numel(xGrid), 1), :);
+newTbl.(predictorName) = xGrid;
+if modeChar == 'D'
+    newTbl.Elevation(:) = 0;
+else
+    meanInverseDistance = mean(tbl.inverseDistance, 'omitnan');
+    newTbl.inverseDistance(:) = meanInverseDistance;
+    newTbl.Distance(:) = 1 ./ meanInverseDistance;
+end
+[yFit, yCI] = predict(lme, newTbl, 'Conditional', false);
+fill(ax, [xGrid; flipud(xGrid)], [yCI(:, 1); flipud(yCI(:, 2))], ...
+    [0.72 0.72 0.72], 'EdgeColor', 'none', 'FaceAlpha', 0.35);
+plot(ax, xGrid, yFit, 'k-', 'LineWidth', 5);
+scatter_by_measurement(ax, x, tbl.MeanParallax, subjectcolor, ...
+    tbl.Measurement);
+local_finish_linear_axes(ax, x, xlabelText, minParallax, maxParallax, ...
+    modeChar, showYLabel, hiddenYAxisColor);
+if modeChar == 'D'
+    title(ax, 'Effect of 1/Distance at E = 0 deg', 'FontSize', 14, ...
+        'FontWeight', 'normal');
+else
+    title(ax, sprintf('Effect of elevation at mean Distance = %.2f m', ...
+        1 ./ mean(tbl.inverseDistance, 'omitnan')), 'FontSize', 14, ...
+        'FontWeight', 'normal');
+end
 end
 
 function local_write_model_report(reportFile, tbl, tblName, sourceCsv, ...
@@ -627,6 +696,8 @@ if isNormedStereoBar
     cb.FontSize = 18;
     cb.Label.FontName = 'Avenir';
     cb.Label.FontSize = 20;
+    cb.Label.Units = 'normalized';
+    cb.Label.Position = [-1.6 0.5 0];
     return;
 end
 
@@ -775,13 +846,13 @@ else
 end
 set(ax, 'FontName', 'Avenir', 'FontSize', 14);
 if modeChar == 'D'
-    [xLimits, xTicks] = local_inverse_distance_axis(x);
+    [xLimits, xTicks] = Quad_inverse_distance_axis(x);
     xlim(ax, xLimits);
     xticks(ax, xTicks);
 else
-    xlim(ax, local_expand_linear_limits(x, false));
+    xlim(ax, Quad_expand_linear_limits(x, false));
 end
-ylim(ax, local_expand_linear_limits([minParallax maxParallax], false));
+ylim(ax, Quad_expand_linear_limits([minParallax maxParallax], false));
 box(ax, 'off');
 grid(ax, 'off');
 legend(ax, 'Location', 'best', 'Box', 'off', 'FontSize', 11);
@@ -804,6 +875,7 @@ if isempty(lme)
     titleLines = {'Linear interaction RI model', 'Model unavailable'};
     return;
 end
+
 b0 = local_coef_estimate(lme, '(Intercept)');
 bD = local_coef_estimate(lme, 'inverseDistance');
 bE = local_coef_estimate(lme, elevationVariable);
@@ -822,6 +894,25 @@ titleLines = { ...
     sprintf('p_D=%s, p_E=%s, p_{D x E}=%s, n=%d', ...
     local_format_pvalue(pD), local_format_pvalue(pE), ...
     local_format_pvalue(pDE), nIDs)};
+end
+
+function titleLines = local_linear_additive_title(lme, nIDs, elevationVariable)
+if isempty(lme)
+    titleLines = {'Linear additive RI model', 'Model unavailable'};
+    return;
+end
+b0 = local_coef_estimate(lme, '(Intercept)');
+bD = local_coef_estimate(lme, 'inverseDistance');
+bE = local_coef_estimate(lme, elevationVariable);
+pD = local_coef_pvalue(lme, 'inverseDistance');
+pE = local_coef_pvalue(lme, elevationVariable);
+titleLines = { ...
+    'Linear additive RI model: Perceived Parallax = b_0 + b_D/D + b_EE + (1|ID)', ...
+    sprintf('Perceived Parallax = %s %s/D %sE', ...
+    local_format_title_number(b0), local_format_signed_term(bD), ...
+    local_format_signed_term(bE)), ...
+    sprintf('p_D=%s, p_E=%s, n=%d', ...
+    local_format_pvalue(pD), local_format_pvalue(pE), nIDs)};
 end
 
 function estimate = local_coef_estimate_any(lme, candidateNames)
@@ -909,13 +1000,13 @@ else
     ax.YColor = hiddenYAxisColor;
 end
 if modeChar == 'D'
-    [xLimits, xTicks] = local_inverse_distance_axis(x);
+    [xLimits, xTicks] = Quad_inverse_distance_axis(x);
     xlim(ax, xLimits);
     xticks(ax, xTicks);
 else
-    xlim(ax, local_expand_linear_limits(x, false));
+    xlim(ax, Quad_expand_linear_limits(x, false));
 end
-ylim(ax, local_expand_linear_limits([minParallax maxParallax], false));
+ylim(ax, Quad_expand_linear_limits([minParallax maxParallax], false));
 box(ax, 'off');
 grid(ax, 'off');
 end
