@@ -12,7 +12,7 @@ if nargin < 9 || isempty(removeOutlierParticipants)
     removeOutlierParticipants = false;
 end
 
-tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform, removeOutlierParticipants);
+tbl = Quad_prepare_perceived_disparity_table(tbl);
 subjectcolor = local_subject_colors(tbl, mycolormap, sorted_idx, fullUniqueID);
 local_write_full_model_diagnostics(tbl, tblName, ResultsDir);
 

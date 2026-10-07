@@ -29,7 +29,7 @@ end
 sourceCsv = local_source_file_label(tbl, tblName);
 tbl.h_va = compute_h_va_from_table_geometry(tbl);
 
-tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform, removeOutlierParticipants);
+tbl = Quad_prepare_perceived_disparity_table(tbl);
 
 angleFormula = 'log2mean_disparity ~ log2h_va + (1|ID)';
 elevationFormula = 'log2mean_disparity ~ log2elevation + (1|ID)';

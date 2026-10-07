@@ -3,55 +3,48 @@ function [lme_Parallax_by_InverseDistance, lme_Parallax_by_Elevation, ...
     lme_Parallax_by_InverseDistanceXStereoGroup, ...
     lme_Parallax_by_ElevationXStereoGroup] = ...
     Quad_Disparity_by_inverseDistanceElevation_single(tbl, tblName, ...
-    ResultsDir, saveLME, mycolormap, sorted_idx, modelTransform, ...
-    degreeFlag, fullUniqueID, colorbarLabel, ...
+    ResultsDir, saveLME, mycolormap, sorted_idx, degreeFlag, ...
+    fullUniqueID, colorbarLabel, ...
     secondYAxisColor, plotFixedEffectsRS, colorConfig, runStereoAnalysis, plotRI)
 % QUAD_DISPARITY_BY_INVERSEDISTANCEELEVATION_SINGLE
 % Fit linear single-factor 1/Distance/elevation RI and RS models. Only the
 % RS models are plotted; RI plots are produced by the companion RI function.
 
-if nargin < 8 || isempty(degreeFlag)
+if nargin < 7 || isempty(degreeFlag)
     degreeFlag = 1; %#ok<NASGU>
 end
-if nargin < 7 || isempty(modelTransform)
-    modelTransform = 2;
-end
-if nargin < 9 || isempty(fullUniqueID)
+if nargin < 8 || isempty(fullUniqueID)
     fullUniqueID = [];
 end
-if nargin < 10 || isempty(colorbarLabel)
+if nargin < 9 || isempty(colorbarLabel)
     colorbarLabel = 'Participant color order';
 end
-if nargin < 11 || isempty(secondYAxisColor)
+if nargin < 10 || isempty(secondYAxisColor)
     secondYAxisColor = 'w';
 end
-if nargin < 12 || isempty(plotFixedEffectsRS)
+if nargin < 11 || isempty(plotFixedEffectsRS)
     plotFixedEffectsRS = false;
 end
-if nargin < 13
+if nargin < 12
     colorConfig = [];
 end
-if nargin < 14 || isempty(runStereoAnalysis)
+if nargin < 13 || isempty(runStereoAnalysis)
     runStereoAnalysis = true;
 end
-if nargin < 15 || isempty(plotRI)
+if nargin < 14 || isempty(plotRI)
     plotRI = false;
 end
 
 sourceCsv = local_source_file_label(tbl, tblName);
-rawElevation = local_recover_raw_elevation(tbl, modelTransform);
-tbl.RawLinearElevation = rawElevation;
 outputStem = [local_output_stem(tblName) '_inverseDistance'];
 if ~ismember('Distance', tbl.Properties.VariableNames)
     error('Quad_Disparity_by_inverseDistanceElevation_single:MissingDistance', ...
         'Input table must contain a Distance column.');
 end
-tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform);
+tbl = Quad_prepare_perceived_disparity_table(tbl);
 % Quad_prepare_perceived_disparity_table standardizes Distance to meters.
 % Compute inverse distance afterward so its units are m^{-1}.
 tbl.inverseDistance = 1 ./ tbl.Distance;
-tbl.log2inverseDistance = log2(tbl.inverseDistance);
-tbl.Elevation = tbl.RawLinearElevation;
 tbl.MeanParallax = tbl.MeanDisparity;
 linearElevationSource = 'raw signed Elevation';
 [stereoTbl, stereoGroupSummaryLines, runStereoGroupInteractions] = ...
@@ -84,7 +77,7 @@ if saveLME
     savelmefile = fullfile(ResultsDir, ...
         [outputStem '_elevation_single_RI_RS.txt']);
     local_write_model_report(savelmefile, tbl, tblName, sourceCsv, ...
-        modelTransform, linearElevationSource, stereoGroupSummaryLines, ...
+        linearElevationSource, stereoGroupSummaryLines, ...
         runStereoAnalysis, ...
         {lme_Parallax_by_InverseDistance, lme_Parallax_by_Elevation, ...
         lme_Parallax_by_InverseDistance_RS, lme_Parallax_by_Elevation_RS, ...
@@ -105,11 +98,11 @@ tLinearRS = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
 tLinearRS.Position = [0.14 0.12 0.65 0.64];
 axLinearRS1 = nexttile;
 local_plot_linear_random_slopes(axLinearRS1, tbl, subjectcolor, ...
-    lme_Parallax_by_InverseDistance_RS, 'D', minParallax, maxParallax, modelTransform, nIDs, ...
+    lme_Parallax_by_InverseDistance_RS, 'D', minParallax, maxParallax, nIDs, ...
     fullUniqueID, mycolormap, sorted_idx, true, [], plotFixedEffectsRS);
 axLinearRS2 = nexttile;
 local_plot_linear_random_slopes(axLinearRS2, tbl, subjectcolor, ...
-    lme_Parallax_by_Elevation_RS, 'E', minParallax, maxParallax, modelTransform, nIDs, ...
+    lme_Parallax_by_Elevation_RS, 'E', minParallax, maxParallax, nIDs, ...
     fullUniqueID, mycolormap, sorted_idx, false, 'w', ...
     plotFixedEffectsRS);
 Quad_add_participant_colorbar(figLinearRS, mycolormap, nIDs, ...
@@ -128,11 +121,11 @@ if plotRI
     axLinearRI1 = nexttile;
     local_plot_linear_fixed_only(axLinearRI1, tbl, subjectcolor, ...
         lme_Parallax_by_InverseDistance, 'D', minParallax, maxParallax, ...
-        modelTransform, nIDs, true, []);
+        nIDs, true, []);
     axLinearRI2 = nexttile;
     local_plot_linear_fixed_only(axLinearRI2, tbl, subjectcolor, ...
         lme_Parallax_by_Elevation, 'E', minParallax, maxParallax, ...
-        modelTransform, nIDs, false, 'w');
+        nIDs, false, 'w');
     Quad_add_participant_colorbar(figLinearRI, mycolormap, nIDs, ...
         colorbarLabel, colorConfig, axLinearRI2, ...
         'StereoUnknownLabel', 'U', ...
@@ -144,7 +137,7 @@ end
 end
 
 function local_write_model_report(reportFile, tbl, tblName, sourceCsv, ...
-    modelTransform, linearElevationSource, stereoGroupSummaryLines, ...
+    linearElevationSource, stereoGroupSummaryLines, ...
     runStereoAnalysis, models, formulas)
 modelLabels = cellfun(@(f) ['Model: ' f], formulas, 'UniformOutput', false);
 validModel = ~cellfun(@isempty, models);
@@ -173,7 +166,6 @@ baseSummaryLines = { ...
     sprintf('Rows in model table: %d', height(tbl)), ...
     sprintf('Participants in model table: %d', numel(categories(removecats(tbl.ID)))), ...
     sprintf('LMEs fit successfully: %d of %d', nnz(validModel), numel(models)), ...
-    sprintf('Legacy log-model elevation transform input: %s (not used by these linear models)', local_transform_label(modelTransform)), ...
     sprintf('Linear-model Elevation source: %s', linearElevationSource), ...
     sprintf('Fit method: ML'), ...
     sprintf('Elevation models use raw signed Elevation in degrees.'), ...
@@ -590,7 +582,7 @@ titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number
 title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
 end
 
-function local_plot_linear_fixed_only(ax, tbl, subjectcolor, lme, modeChar, minParallax, maxParallax, modelTransform, nIDs, showYLabel, hiddenYAxisColor)
+function local_plot_linear_fixed_only(ax, tbl, subjectcolor, lme, modeChar, minParallax, maxParallax, nIDs, showYLabel, hiddenYAxisColor)
 if nargin < 9 || isempty(showYLabel)
     showYLabel = true;
 end
@@ -599,7 +591,7 @@ if nargin < 11 || isempty(hiddenYAxisColor)
 end
 
 hold(ax, 'on');
-[x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeChar, modelTransform);
+[x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeChar);
 y = tbl.MeanParallax;
 
 if isempty(lme)
@@ -635,7 +627,7 @@ titleStr = local_linear_title(lme, predictorSymbol, nIDs);
 title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
 end
 
-function local_plot_linear_random_slopes(ax, tbl, subjectcolor, lme, modeChar, minParallax, maxParallax, modelTransform, nIDs, fullUniqueID, mycolormap, sorted_idx, showYLabel, hiddenYAxisColor, plotFixedEffectsRS)
+function local_plot_linear_random_slopes(ax, tbl, subjectcolor, lme, modeChar, minParallax, maxParallax, nIDs, fullUniqueID, mycolormap, sorted_idx, showYLabel, hiddenYAxisColor, plotFixedEffectsRS)
 if nargin < 13 || isempty(showYLabel)
     showYLabel = true;
 end
@@ -647,7 +639,7 @@ if nargin < 15 || isempty(plotFixedEffectsRS)
 end
 
 hold(ax, 'on');
-[x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeChar, modelTransform);
+[x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeChar);
 y = tbl.MeanParallax;
 
 if isempty(lme)
@@ -761,7 +753,7 @@ for orderIdx = 1:numel(plotOrder)
 end
 end
 
-function [x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeChar, modelTransform)
+function [x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeChar)
 switch modeChar
     case 'D'
         x = tbl.inverseDistance;

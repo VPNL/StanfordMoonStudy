@@ -1,11 +1,6 @@
-function tbl = Quad_prepare_perceived_disparity_table(inTbl, modelTransform)
+function tbl = Quad_prepare_perceived_disparity_table(inTbl)
 % QUAD_PREPARE_PERCEIVED_DISPARITY_TABLE
 % Prepare the disparity table for LME fitting.
-
-if nargin < 2 || isempty(modelTransform)
-    modelTransform = 2;
-end
-
 
 tbl = inTbl;
 
@@ -38,28 +33,9 @@ tbl.log2mean_disparity = log2(tbl.MeanDisparity);
 tbl.log2real_visual_angle = log2(tbl.Real_Visual_Angle);
 tbl.log2distance = log2(tbl.Distance);
 tbl.log2h_va = log2(tbl.h_va);
-switch modelTransform
-    case 2
-        tbl.ElevationDisplay = tbl.Elevation;
-        tbl.ElevationModel = tbl.Elevation + 1;
-        tbl.ElevationLabel = repmat("absElevation", height(tbl), 1);
-    case 5
-        keep = (1 + tbl.Elevation) > 0;
-        tbl = tbl(keep,:);
-        tbl.ElevationDisplay = 90 * tbl.Elevation;
-        tbl.ElevationModel = 1 + tbl.Elevation;
-        tbl.ElevationLabel = repmat("ElevationD90", height(tbl), 1);
-    case 6
-        keep = (1 + tbl.Elevation) > 0;
-        tbl = tbl(keep,:);
-        tbl.ElevationDisplay = 90 * tbl.Elevation;
-        tbl.ElevationModel = 1 + tbl.Elevation;
-        tbl.ElevationLabel = repmat("absElevationD90", height(tbl), 1);
-    otherwise
-        error('Quad_prepare_perceived_disparity_table:InvalidTransform', ...
-            'Unsupported modelTransform %d.', modelTransform);
-end
-
+tbl.ElevationDisplay = tbl.Elevation;
+tbl.ElevationModel = tbl.Elevation + 1;
+tbl.ElevationLabel = repmat("Elevation", height(tbl), 1);
 tbl.log2elevation = log2(tbl.ElevationModel);
 
 if ~iscategorical(tbl.ID)

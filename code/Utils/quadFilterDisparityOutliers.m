@@ -7,8 +7,7 @@ if ~removeZScoreOutliers
     return;
 end
 
-preparedTable = Quad_prepare_perceived_disparity_table( ...
-    tableSubset, transformId, removeOutlierParticipants);
+preparedTable = Quad_prepare_perceived_disparity_table(tableSubset);
 [outlierIDs, outlierStats] = find_subject_outliers_by_zscore( ...
     preparedTable, 'MeanDisparity', 'ID', zScoreThreshold);
 

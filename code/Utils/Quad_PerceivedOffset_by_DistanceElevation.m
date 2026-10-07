@@ -24,7 +24,7 @@ if nargin < 11
     colorConfig = [];
 end
 sourceCsv = local_source_file_label(tbl, tblName);
-tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform);
+tbl = Quad_prepare_perceived_disparity_table(tbl);
 [tbl, linearElevationSource] = local_set_linear_elevation(tbl);
 
 distanceFormula = 'log2mean_disparity ~ log2distance + (1|ID)';

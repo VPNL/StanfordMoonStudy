@@ -56,7 +56,7 @@ if ~ismember('Distance', all_quad_data.Properties.VariableNames)
 end
 
 [prepBaseTbl, ~] = apply_quad_elevation_transform(all_quad_data, ElevationTransforms(1));
-prepTbl = Quad_prepare_perceived_disparity_table(prepBaseTbl, ElevationTransforms(1), removeOutlierParticipants);
+prepTbl = Quad_prepare_perceived_disparity_table(prepBaseTbl);
 [sorted_color_idx, mean_disparity_by_id, uniqueID, cmap] = ...
     Quad_compute_mean_disparity_color_idx(prepTbl, ResultsDir, QuadBasename, recomputeColorIndex);
 
@@ -77,7 +77,7 @@ for transformId = ElevationTransforms
         versionLabel = analysisSpecs(iVersion).label;
         tblSubset = analysisSpecs(iVersion).tbl;
         [tblSubset, ~] = apply_quad_elevation_transform(tblSubset, transformId);
-        prepSubset = Quad_prepare_perceived_disparity_table(tblSubset, transformId, removeOutlierParticipants);
+        prepSubset = Quad_prepare_perceived_disparity_table(tblSubset);
 
         outlierIDs = strings(0,1);
         outlierStatsTbl = table();
