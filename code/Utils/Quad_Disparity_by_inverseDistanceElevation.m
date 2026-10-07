@@ -2,26 +2,23 @@ function [lme_Parallax_by_InverseDistance, lme_Parallax_by_Elevation, ...
     lme_Parallax_by_InverseDistanceNElevation, ...
     lme_Parallax_by_InverseDistancePlusElevation] = ...
     Quad_Disparity_by_inverseDistanceElevation(tbl, tblName, ResultsDir, ...
-    saveLME, mycolormap, sorted_idx, modelTransform, degreeFlag, ...
+    saveLME, mycolormap, sorted_idx, degreeFlag, ...
     fullUniqueID, secondYAxisColor, colorConfig)
 
 % QUAD_DISPARITY_BY_INVERSEDISTANCEELEVATION
 % Fit linear perceived-parallax inverse-distance/elevation RI models.
 
-if nargin < 8 || isempty(degreeFlag)
+if nargin < 7 || isempty(degreeFlag)
     degreeFlag = 1; %#ok<NASGU>
 end
-if nargin < 7 || isempty(modelTransform)
-    modelTransform = 2;
-end
-if nargin < 9 || isempty(fullUniqueID)
+if nargin < 8 || isempty(fullUniqueID)
     fullUniqueID = [];
 end
 
-if nargin < 10 || isempty(secondYAxisColor)
+if nargin < 9 || isempty(secondYAxisColor)
     secondYAxisColor = 'w';
 end
-if nargin < 11
+if nargin < 10
     colorConfig = [];
 end
 
@@ -30,16 +27,13 @@ if ~ismember('Distance', tbl.Properties.VariableNames)
         'Input table must contain a Distance column.');
 end
 sourceCsv = local_source_file_label(tbl, tblName);
-rawElevation = local_recover_raw_elevation(tbl, modelTransform);
-tbl.RawLinearElevation = rawElevation;
-tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform);
 % Quad_prepare_perceived_disparity_table standardizes Distance to meters.
 % Compute inverse distance afterward so its units are m^{-1}.
+
+tbl = Quad_prepare_perceived_disparity_table(tbl);
 tbl.inverseDistance = 1 ./ tbl.Distance;
-tbl.log2inverseDistance = log2(tbl.inverseDistance);
-tbl.Elevation = tbl.RawLinearElevation;
 tbl.MeanParallax = tbl.MeanDisparity;
-linearElevationSource = 'raw signed Elevation';
+linearElevationSource = 'raw Observer Elevation';
 
 % Linear random-intercept models.  The interaction model includes both
 % main effects, so it is nested with each corresponding single-factor model.
@@ -62,7 +56,7 @@ if saveLME
     savelmefile = fullfile(ResultsDir, ...
         [tblName '_inverseDistance_elevation_RI_models.txt']);
     local_write_model_report(savelmefile, tbl, tblName, sourceCsv, ...
-        modelTransform, linearElevationSource, ...
+        linearElevationSource, ...
         {...
         lme_Parallax_by_InverseDistance,...
         lme_Parallax_by_Elevation,...
@@ -98,11 +92,11 @@ titleHandle.Interpreter = 'tex';
 axFullD = nexttile;
 local_plot_linear_model_panel(axFullD, tbl, subjectcolor, ...
     lme_Parallax_by_InverseDistance, 'D', minParallax, maxParallax, ...
-    modelTransform, true);
+    true);
 axFullE = nexttile;
 local_plot_linear_model_panel(axFullE, tbl, subjectcolor, ...
     lme_Parallax_by_Elevation, 'E', minParallax, maxParallax, ...
-    modelTransform, false, 'w');
+    false, 'w');
 Quad_add_participant_colorbar(figFull, mycolormap, nIDs, ...
     local_colorbar_label(colorConfig), colorConfig, axFullE);
 exportgraphics(figFull, fullfile(ResultsDir, ...
@@ -113,7 +107,7 @@ exportgraphics(figFull, fullfile(ResultsDir, ...
 local_plot_linear_additive_model( ...
     lme_Parallax_by_InverseDistancePlusElevation, tbl, subjectcolor, ...
     tblName, ResultsDir, mycolormap, nIDs, colorConfig, ...
-    minParallax, maxParallax, modelTransform);
+    minParallax, maxParallax);
 
 local_plot_linear_additive_surfaces( ...
     lme_Parallax_by_InverseDistancePlusElevation, tbl, tblName, ...
@@ -199,7 +193,7 @@ end
 
 function local_plot_linear_additive_model(lme, tbl, subjectcolor, ...
     tblName, ResultsDir, mycolormap, nIDs, colorConfig, ...
-    minParallax, maxParallax, modelTransform)
+    minParallax, maxParallax)
 if isempty(lme)
     fprintf('Skipping linear additive-model plot: model is unavailable.\n');
     return;
@@ -215,10 +209,10 @@ t.Position = [0.09 0.18 0.70 0.68];
 
 axD = nexttile(t);
 local_plot_additive_effect_panel(axD, tbl, subjectcolor, lme, 'D', ...
-    minParallax, maxParallax, modelTransform, true);
+    minParallax, maxParallax, true);
 axE = nexttile(t);
 local_plot_additive_effect_panel(axE, tbl, subjectcolor, lme, 'E', ...
-    minParallax, maxParallax, modelTransform, false, 'w');
+    minParallax, maxParallax, false, 'w');
 
 title(t, strjoin(local_linear_additive_title(lme, nIDs, 'Elevation'), ...
     newline), 'FontName', 'Avenir', 'FontSize', 11, ...
@@ -231,14 +225,14 @@ close(fig);
 end
 
 function local_plot_additive_effect_panel(ax, tbl, subjectcolor, lme, ...
-    modeChar, minParallax, maxParallax, modelTransform, showYLabel, ...
+    modeChar, minParallax, maxParallax, showYLabel, ...
     hiddenYAxisColor)
 if nargin < 10 || isempty(hiddenYAxisColor)
     hiddenYAxisColor = 'w';
 end
 hold(ax, 'on');
 [x, xlabelText, predictorName] = ...
-    local_linear_axis_setup(tbl, modeChar, modelTransform);
+    local_linear_axis_setup(tbl, modeChar);
 xGrid = linspace(min(x), max(x), 200)';
 newTbl = tbl(ones(numel(xGrid), 1), :);
 newTbl.(predictorName) = xGrid;
@@ -268,7 +262,7 @@ end
 end
 
 function local_write_model_report(reportFile, tbl, tblName, sourceCsv, ...
-    modelTransform, linearElevationSource, models, formulas)
+    linearElevationSource, models, formulas)
 modelLabels = cellfun(@(f) ['Model: ' f], formulas, 'UniformOutput', false);
 validModel = ~cellfun(@isempty, models);
 if ~any(validModel)
@@ -289,7 +283,6 @@ reportOpts.SummaryLines = { ...
     sprintf('Experiment: Quad'), ...
     sprintf('Rows in model table: %d', height(tbl)), ...
     sprintf('Participants in model table: %d', numel(categories(removecats(tbl.ID)))), ...
-    sprintf('Legacy log-model elevation transform input: %s (not used by these linear models)', local_transform_label(modelTransform)), ...
     sprintf('Linear-model Elevation source: %s', linearElevationSource), ...
     sprintf('Fit method: ML'), ...
     sprintf('All formulas are fit with random intercepts by participant.'), ...
@@ -728,7 +721,7 @@ cb.Label.FontSize = 14;
 end
 
 function local_plot_linear_model_panel(ax, tbl, subjectcolor, lme, modeChar, ...
-    minParallax, maxParallax, modelTransform, showYLabel, hiddenYAxisColor)
+    minParallax, maxParallax, showYLabel, hiddenYAxisColor)
 if nargin < 9 || isempty(showYLabel)
     showYLabel = true;
 end
@@ -738,7 +731,7 @@ end
 
 hold(ax, 'on');
 [x, xlabelText, predictorName, predictorLabel] = ...
-    local_linear_axis_setup(tbl, modeChar, modelTransform);
+    local_linear_axis_setup(tbl, modeChar);
 y = tbl.MeanParallax;
 
 if ~isempty(lme)
@@ -944,7 +937,7 @@ end
 end
 
 function [x, xlabelText, predictorName, predictorLabel] = ...
-    local_linear_axis_setup(tbl, modeChar, modelTransform)
+    local_linear_axis_setup(tbl, modeChar)
 if modeChar == 'D'
     x = tbl.inverseDistance;
     xlabelText = '1/Distance [m^{-1}]';

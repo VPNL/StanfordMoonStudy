@@ -35,7 +35,7 @@ if ~ismember('Distance', tbl.Properties.VariableNames)
         'Input table must contain a Distance column.');
 end
 sourceCsv = local_source_file_label(tbl, tblName);
-tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform);
+tbl = Quad_prepare_perceived_disparity_table(tbl);
 % Quad_prepare_perceived_disparity_table standardizes Distance to meters.
 % Compute inverse distance afterward so its units are m^{-1}.
 tbl.inverseDistance = 1 ./ tbl.Distance;

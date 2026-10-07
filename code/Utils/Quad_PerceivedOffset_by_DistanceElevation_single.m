@@ -44,7 +44,7 @@ end
 sourceCsv = local_source_file_label(tbl, tblName);
 outputStem = local_output_stem(tblName);
 
-tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform);
+tbl = Quad_prepare_perceived_disparity_table(tbl);
 [tbl, linearElevationSource] = local_set_linear_elevation(tbl);
 [stereoTbl, stereoGroupSummaryLines, runStereoGroupInteractions] = ...
     local_prepare_stereo_group(tbl);

@@ -42,7 +42,7 @@ end
 
 sourceCsv = local_source_file_label(tbl, tblName);
 tbl.h_va = compute_h_va_from_table_geometry(tbl);
-tbl = Quad_prepare_perceived_disparity_table(tbl, modelTransform, removeOutlierParticipants);
+tbl = Quad_prepare_perceived_disparity_table(tbl);
 [stereoTbl, stereoGroupSummaryLines, runStereoGroupInteractions] = ...
     local_prepare_stereo_group(tbl);
 
