@@ -147,9 +147,7 @@ elevationAxisLabel = 'Elevation [deg]';
 elevationTitleLabel = 'E';
 panelSpecs = { ...
     distanceGrid, elevationGrid, distanceGrid, distanceMap, ...
-        'D [m]', elevationAxisLabel, ['Axes: D and ' elevationTitleLabel '; color: D'], 'D [m]'; ...
-    distanceGrid, elevationGrid, elevationGrid, elevationMap, ...
-        'D [m]', elevationAxisLabel, ['Axes: D and ' elevationTitleLabel '; color: ' elevationTitleLabel], elevationAxisLabel};
+        'D [m]', elevationAxisLabel, [ ], 'D [m]'};
 
 for iPanel = 1:size(panelSpecs, 1)
     ax = nexttile(tSurface);
@@ -162,17 +160,17 @@ for iPanel = 1:size(panelSpecs, 1)
     cb = colorbar(ax, 'eastoutside');
     cb.Label.String = panelSpecs{iPanel, 8};
     cb.Label.FontName = 'Avenir';
-    cb.Label.FontSize = 11;
+    cb.Label.FontSize = 14;
     cb.FontName = 'Avenir';
     cb.FontSize = 9;
-    xlabel(ax, panelSpecs{iPanel, 5}, 'FontSize', 12);
-    ylabel(ax, panelSpecs{iPanel, 6}, 'FontSize', 12);
+    xlabel(ax, panelSpecs{iPanel, 5}, 'FontSize', 18);
+    ylabel(ax, panelSpecs{iPanel, 6}, 'FontSize', 18);
     if iPanel == 1
-        zlabel(ax, 'Predicted parallax [deg]', 'FontSize', 12);
+        zlabel(ax, 'Predicted parallax [deg]', 'FontSize', 18);
     end
     title(ax, panelSpecs{iPanel, 7}, 'FontSize', 12, ...
         'FontWeight', 'normal');
-    set(ax, 'FontName', 'Avenir', 'FontSize', 9);
+    set(ax, 'FontName', 'Avenir', 'FontSize', 12);
     view(ax, 40, 28);
     grid(ax, 'on');
     box(ax, 'off');
@@ -987,7 +985,7 @@ function local_finish_linear_axes(ax, x, xlabelText, minParallax, maxParallax, .
 set(ax, 'FontName', 'Avenir', 'FontSize', 14);
 xlabel(ax, xlabelText, 'FontSize', 18);
 if showYLabel
-    ylabel(ax, {'Perceived Parallax [deg]','linear scale'}, 'FontSize', 18);
+    ylabel(ax, {'Perceived Parallax [deg]'}, 'FontSize', 18);
 else
     ylabel(ax, '');
     ax.YColor = hiddenYAxisColor;

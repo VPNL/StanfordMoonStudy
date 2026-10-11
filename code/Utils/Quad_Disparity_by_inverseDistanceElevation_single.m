@@ -112,6 +112,48 @@ Quad_add_participant_colorbar(figLinearRS, mycolormap, nIDs, ...
 exportgraphics(figLinearRS, fullfile(ResultsDir, [outputStem '_linear_RS.png']), 'Resolution', 600);
 close(figLinearRS);
 
+% Subtract each participant's fitted 1/Distance-model intercept. This is
+% their conditional parallax estimate at 1/Distance = 0 (infinite distance).
+if ~isempty(lme_Parallax_by_InverseDistance_RS)
+    infinityIntercept = local_subject_infinity_intercept( ...
+        tbl, lme_Parallax_by_InverseDistance_RS);
+    parallaxMinusIntercept = tbl.MeanParallax - infinityIntercept;
+    finiteAdjusted = parallaxMinusIntercept(isfinite(parallaxMinusIntercept));
+    minAdjusted = min(finiteAdjusted);
+    maxAdjusted = max(finiteAdjusted);
+
+    figLinearRSMinusIntercept = figure('Color', [1 1 1], ...
+        'Units', 'normalized', 'Position', [0 0 .72 .72], ...
+        'Name', [outputStem '_linear_RS_minusIntercept'], ...
+        'Visible', 'off');
+    tMinusIntercept = tiledlayout(1, 2, 'Padding', 'compact', ...
+        'TileSpacing', 'compact');
+    tMinusIntercept.Position = [0.14 0.12 0.65 0.64];
+
+    axMinusInterceptD = nexttile;
+    local_plot_minus_infinity_intercept(axMinusInterceptD, tbl, ...
+        subjectcolor, parallaxMinusIntercept, infinityIntercept, ...
+        lme_Parallax_by_InverseDistance_RS, 'D', minAdjusted, ...
+        maxAdjusted, nIDs, fullUniqueID, mycolormap, sorted_idx, ...
+        true, [], plotFixedEffectsRS, ...
+        lme_Parallax_by_InverseDistance_RS);
+
+    axMinusInterceptE = nexttile;
+    local_plot_minus_infinity_intercept(axMinusInterceptE, tbl, ...
+        subjectcolor, parallaxMinusIntercept, infinityIntercept, ...
+        lme_Parallax_by_Elevation_RS, 'E', minAdjusted, maxAdjusted, ...
+        nIDs, fullUniqueID, mycolormap, sorted_idx, false, 'w', ...
+        plotFixedEffectsRS, lme_Parallax_by_InverseDistance_RS);
+
+    Quad_add_participant_colorbar(figLinearRSMinusIntercept, mycolormap, ...
+        nIDs, colorbarLabel, colorConfig, axMinusInterceptE, ...
+        'StereoUnknownLabel', 'U', ...
+        'StereoLabelPosition', [-3.4 0.5 0]);
+    exportgraphics(figLinearRSMinusIntercept, fullfile(ResultsDir, ...
+        [outputStem '_linear_RS_minusIntercept.png']), 'Resolution', 600);
+    close(figLinearRSMinusIntercept);
+end
+
 if plotRI
     figLinearRI = figure('Color', [1 1 1], 'Units', 'normalized', ...
         'Position', [0 0 .72 .72], 'Name', [outputStem '_linear_RI'], ...
@@ -180,8 +222,15 @@ stereoInteractionNote = {};
 if ~isempty(stereoGroupSummaryLines) && strcmp(stereoGroupSummaryLines{1}, 'StereoGroup counts:')
     stereoInteractionNote = {'StereoGroup interaction models are RI models only and are not plotted.'};
 end
+slopeSummaryLines = { ...
+    'Participant conditional slopes (fixed effect + participant random effect):', ...
+    local_positive_slope_summary(models{3}, 'inverseDistance', ...
+        '1/Distance', tbl), ...
+    local_positive_slope_summary(models{4}, 'Elevation', ...
+        'Elevation', tbl)};
 reportOpts.SummaryLines = [ ...
     baseSummaryLines, ...
+    slopeSummaryLines, ...
     stereoInteractionNote, ...
     skippedModelLines, ...
     stereoGroupSummaryLines];
@@ -191,6 +240,46 @@ reportOpts.Comparisons = comparisons;
 reportOpts.ComparisonLabels = comparisonLabels;
 reportOpts.RemoveGroupError = false;
 write_lme_stats_report(models{find(validModel, 1, 'first')}, reportFile, reportOpts);
+end
+
+function summaryLine = local_positive_slope_summary(lme, predictorName, ...
+    predictorLabel, tbl)
+participantID = string(categories(removecats(tbl.ID)));
+nParticipants = numel(participantID);
+if isempty(lme)
+    summaryLine = sprintf(['Positive conditional %s slopes: unavailable ' ...
+        '(RS model was not fit).'], predictorLabel);
+    return;
+end
+
+coefficientNames = string(lme.Coefficients.Name);
+fixedSlopeIndex = find(coefficientNames == string(predictorName), ...
+    1, 'first');
+if isempty(fixedSlopeIndex)
+    summaryLine = sprintf(['Positive conditional %s slopes: unavailable ' ...
+        '(coefficient not found).'], predictorLabel);
+    return;
+end
+
+conditionalSlope = repmat( ...
+    lme.Coefficients.Estimate(fixedSlopeIndex), nParticipants, 1);
+[randomEffect, randomNames] = randomEffects(lme);
+randomLevel = string(randomNames.Level);
+randomName = string(randomNames.Name);
+
+for i = 1:nParticipants
+    slopeIndex = find(randomLevel == participantID(i) & ...
+        randomName == string(predictorName), 1, 'first');
+    if ~isempty(slopeIndex)
+        conditionalSlope(i) = conditionalSlope(i) + randomEffect(slopeIndex);
+    end
+end
+
+nPositive = nnz(conditionalSlope > 0);
+summaryLine = sprintf( ...
+    'Positive conditional %s slopes: %d of %d participants (%.1f%%).', ...
+    predictorLabel, nPositive, nParticipants, ...
+    100 * nPositive / nParticipants);
 end
 
 function [comparisons, comparisonLabels] = local_model_comparisons(models, formulas)
@@ -665,6 +754,124 @@ titleStr = local_linear_title(lme, predictorSymbol, nIDs);
 title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
 end
 
+function infinityIntercept = local_subject_infinity_intercept(tbl, distanceRSModel)
+% Conditional intercept for each participant at inverseDistance = 0.
+infinityIntercept = repmat( ...
+    distanceRSModel.Coefficients.Estimate(1), height(tbl), 1);
+[reEfx, reNames] = randomEffects(distanceRSModel);
+levels = string(reNames.Level);
+names = string(reNames.Name);
+participantID = string(tbl.ID);
+uniqueID = unique(participantID, 'stable');
+
+for i = 1:numel(uniqueID)
+    interceptIndex = find(levels == uniqueID(i) & ...
+        names == "(Intercept)", 1, 'first');
+    if ~isempty(interceptIndex)
+        infinityIntercept(participantID == uniqueID(i)) = ...
+            infinityIntercept(participantID == uniqueID(i)) + ...
+            reEfx(interceptIndex);
+    end
+end
+end
+
+function local_plot_minus_infinity_intercept(ax, tbl, subjectcolor, ...
+    adjustedParallax, infinityIntercept, lme, modeChar, minParallax, ...
+    maxParallax, nIDs, fullUniqueID, mycolormap, sorted_idx, ...
+    showYLabel, hiddenYAxisColor, plotFixedEffectsRS, distanceRSModel)
+hold(ax, 'on');
+yline(ax, 0, 'k-', 'LineWidth', 2);
+[x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeChar);
+
+if ~isempty(lme)
+    local_plot_adjusted_subject_lines(ax, tbl, lme, modeChar, ...
+        infinityIntercept, fullUniqueID, mycolormap, sorted_idx);
+    pval = lme.Coefficients.pValue(2);
+    if plotFixedEffectsRS && isfinite(pval) && pval < 0.05
+        xRange = linspace(min(x), max(x), 200);
+        populationInfinityIntercept = ...
+            distanceRSModel.Coefficients.Estimate(1);
+        adjustedFixedIntercept = lme.Coefficients.Estimate(1) - ...
+            populationInfinityIntercept;
+        plot(ax, xRange, adjustedFixedIntercept + ...
+            lme.Coefficients.Estimate(2) .* xRange, 'k-', ...
+            'LineWidth', 5);
+    end
+else
+    pval = nan;
+end
+
+scatter_by_measurement(ax, x, adjustedParallax, subjectcolor, ...
+    tbl.Measurement);
+local_finish_linear_axes(ax, xlabelText, minParallax, maxParallax, x, ...
+    modeChar, showYLabel, hiddenYAxisColor);
+if showYLabel
+    ylabel(ax, {'Perceived Parallax vs Infinity [deg]'}, ...
+        'FontSize', 22);
+end
+title(ax, {sprintf('%s effect', predictorSymbol), ...
+    'infinity intercept subtracted', ...
+    sprintf('p=%s, n=%d', local_format_pvalue(pval), nIDs)}, ...
+    'FontSize', 13, 'FontWeight', 'normal', 'Units', 'normalized', ...
+    'Position', [0.5 1.01 0]);
+end
+
+function local_plot_adjusted_subject_lines(ax, tbl, lme, modeChar, ...
+    infinityIntercept, fullUniqueID, mycolormap, sorted_idx)
+[reEfx, reNames] = randomEffects(lme);
+levels = string(reNames.Level);
+names = string(reNames.Name);
+
+if isempty(fullUniqueID)
+    uniqueID = string(categories(removecats(tbl.ID)));
+else
+    uniqueID = string(fullUniqueID(:));
+end
+
+if modeChar == 'D'
+    slopeName = "inverseDistance";
+    xAll = tbl.inverseDistance;
+else
+    slopeName = "Elevation";
+    xAll = tbl.Elevation;
+end
+
+plotOrder = local_subject_stereo_score_plot_order(tbl, uniqueID);
+for orderIdx = 1:numel(plotOrder)
+    i = plotOrder(orderIdx);
+    participant = uniqueID(i);
+    rows = string(tbl.ID) == participant;
+    if ~any(rows)
+        continue;
+    end
+
+    interceptIndex = find(levels == participant & ...
+        names == "(Intercept)", 1, 'first');
+    slopeIndex = find(levels == participant & names == slopeName, ...
+        1, 'first');
+    randomIntercept = 0;
+    randomSlope = 0;
+    if ~isempty(interceptIndex)
+        randomIntercept = reEfx(interceptIndex);
+    end
+    if ~isempty(slopeIndex)
+        randomSlope = reEfx(slopeIndex);
+    end
+
+    xGrid = linspace(min(xAll(rows)), max(xAll(rows)), 50);
+    participantInfinityIntercept = infinityIntercept(find(rows, 1));
+    yGrid = lme.Coefficients.Estimate(1) + randomIntercept - ...
+        participantInfinityIntercept + ...
+        (lme.Coefficients.Estimate(2) + randomSlope) .* xGrid;
+
+    colorIndex = find(strcmp(uniqueID, participant), 1, 'first');
+    colorRow = local_lookup_color_row(sorted_idx, colorIndex, ...
+        numel(uniqueID), size(mycolormap, 1));
+    plot(ax, xGrid, yGrid, '-', 'Color', mycolormap(colorRow, :), ...
+        'LineWidth', 2);
+end
+end
+
 function outputStem = local_output_stem(tblName)
 outputStem = regexprep(char(string(tblName)), ...
     '(?i)([_-]?version[_-]?\d+|[_-]?version)', '');
@@ -757,12 +964,12 @@ function [x, xlabelText, predictorSymbol] = local_linear_axis_setup(tbl, modeCha
 switch modeChar
     case 'D'
         x = tbl.inverseDistance;
-        xlabelText = {'1/Distance [m^{-1}]','linear scale'};
+        xlabelText = {'1/Distance [m^{-1}]'};
         predictorSymbol = '1/Distance';
     case 'E'
         x = tbl.Elevation;
         predictorSymbol = 'E';
-        xlabelText = {'Elevation [deg]','linear scale'};
+        xlabelText = {'Elevation [deg]'};
     otherwise
         error('Unsupported linear plotting mode "%s".', modeChar);
 end
@@ -777,9 +984,10 @@ if nargin < 8 || isempty(hiddenYAxisColor)
 end
 
 set(ax, 'FontName', 'Avenir', 'FontSize', 18);
-xlabel(ax, xlabelText, 'FontSize', 22);
+xlabel(ax, xlabelText, 'FontSize', 22, 'FontWeight', 'normal');
 if showYLabel
-    ylabel(ax, {'Perceived Parallax [deg]','linear scale'}, 'FontSize', 22);
+    ylabel(ax, {'Perceived Parallax [deg]'}, 'FontSize', 22, ...
+        'FontWeight', 'normal');
 else
     ylabel(ax, '');
     ax.YColor = hiddenYAxisColor;

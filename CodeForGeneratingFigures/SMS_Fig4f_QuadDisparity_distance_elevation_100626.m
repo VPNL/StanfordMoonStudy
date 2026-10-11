@@ -8,7 +8,7 @@ expDir = '/Users/kalanit/Projects/StanfordMoonStudy/Data/BinocularParallax/';
 
 
 %% Run configuration
-quadFileName = 'Quad_merged_disparity_0429_version3.csv';
+quadFileName = 'QuadProcessedParallaxandStereoData1008.csv';
 quadFile = fullfile(expDir, quadFileName);
 [~, quadBasename] = fileparts(quadFileName);
 distanceTransform=true; %use 1/D for disparity analysis
@@ -104,6 +104,8 @@ uniqueID = colorConfig.ID;
     allQuadData, quadBasename, resultsDir, saveLME, cmap, ...
     sortedIdx, 1, uniqueID, ...
     secondYAxisColor, colorConfig);
+
+
 
 %% write supplemental table that contains information about real_visual_angle, observer_distance, and observer information for each measurement of tablesubset
 geometryCsv = fullfile(resultsDir, ...

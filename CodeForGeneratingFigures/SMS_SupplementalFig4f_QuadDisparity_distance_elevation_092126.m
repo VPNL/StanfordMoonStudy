@@ -4,11 +4,11 @@
 
 close all; clear all;
 SMS_setCodePath;
-expDir = '/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+expDir = '/Users/kalanit/Projects/StanfordMoonStudy/Data/BinocularParallax/';
 
 
 %% Run configuration
-quadFileName = 'merged_disparity_0429_version3.csv';
+quadFileName = 'Quad_merged_disparity_0429_version3.csv';
 quadFile = fullfile(expDir, quadFileName);
 [~, quadBasename] = fileparts(quadFileName);
 transformId = 2; % abs(Elevation);
@@ -112,7 +112,7 @@ geometryResultsDir = ...
     true, true, colorConfig);
 
 
-
+%%
 
 [lme_Parallax_by_InverseDistance, lme_Parallax_by_Elevation, ...
     lme_Parallax_by_InverseDistanceNElevation, ...
