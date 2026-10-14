@@ -1,4 +1,4 @@
-function [lme_PM_by_Elevation, lme_PM_by_AbsElevation, lme_logPM_by_logabsElevation, lme_logPM_by_logElevationD90, lme_logPM_by_logabsElevationD90, lme_logPM_by_logabsElevationRAD, lme_logPM_by_logElevationRADPiHalf, leaderboardTbl] = ...
+function [lme_PM_by_Elevation, lme_PM_by_AbsElevation, lme_logPM_by_logabsElevation, lme_logPM_by_logElevationD90, lme_logPM_by_logabsElevationD90, lme_logPM_by_logabsElevationRAD, lme_logPM_by_logElevationRADPiHalf] = ...
     Quad_PM_by_task_simple_elevationModelTest(tbl, tblName, ResultsDir, saveLME, cmap, sorted_idx)
 % Quad_PM_by_task_elevationModelTest
 %
@@ -30,7 +30,6 @@ function [lme_PM_by_Elevation, lme_PM_by_AbsElevation, lme_logPM_by_logabsElevat
 %   lme_PM_by_Elevation
 %   lme_PM_by_AbsElevation
 %   lme_logPM_by_logabsElevation
-%   leaderboardTbl
 % KGS Nov 2025, rewritten
 
 %% checks
@@ -107,7 +106,6 @@ lme_PM_by_AbsElevation = fitlme(tbl, ...
 lme_logPM_by_logabsElevation = fitlme(tbl, ...
     'Log2_Ratio_Visual_Angle ~ Log2_1plusAbsElevation + (1|ID)');
 
-
 lme_PM_by_Elevation_RS = fitlme(tbl, ...
     'Ratio_Visual_Angle ~ Elevation + (Elevation|ID)');
 
@@ -117,20 +115,6 @@ lme_PM_by_AbsElevation_RS = fitlme(tbl, ...
 lme_logPM_by_logabsElevation_RS = fitlme(tbl, ...
     'Log2_Ratio_Visual_Angle ~ Log2_1plusAbsElevation + (Log2_1plusAbsElevation|ID)');
 
-
-modelNames = { ...
-    'Elevation', ...
-    'AbsElevation', ...
-    'LogAbsElevation'};
-modelFormulas = { ...
-    'PM ~ Elevation + (1|ID)', ...
-    'PM ~ abs(Elevation) + (1|ID)', ...
-    'log2(PM) ~ log2(1+abs(Elevation)) + (1|ID)'};
-modelList = { ...
-    lme_PM_by_Elevation, ...
-    lme_PM_by_AbsElevation, ...
-    lme_logPM_by_logabsElevation};
-leaderboardTbl = local_build_leaderboard(modelNames, modelFormulas, modelList);
 
 %% write text report
 if saveLME
@@ -148,23 +132,19 @@ if saveLME
     fprintf(fid, 'N observations: %d\n\n', height(tbl));
 
     writeModelToFile(fid, 'Model 1: PM ~ Elevation + (1|ID)', lme_PM_by_Elevation);
-    writeModelToFile(fid, 'Model 1 RS: PM ~ Elevation + (Elevation|ID)', lme_PM_by_Elevation_RS);
     writeModelToFile(fid, 'Model 2: PM ~ abs(Elevation) + (1|ID)', lme_PM_by_AbsElevation);
-    writeModelToFile(fid, 'Model 2 RS: PM ~ abs(Elevation) + (AbsElevation|ID)', lme_PM_by_AbsElevation_RS);
     writeModelToFile(fid, 'Model 3: log2(PM) ~ log2(1+abs(Elevation)) + (1|ID)', lme_logPM_by_logabsElevation);
+    writeModelToFile(fid, 'Model 1 RS: PM ~ Elevation + (Elevation|ID)', lme_PM_by_Elevation_RS);
+    writeModelToFile(fid, 'Model 2 RS: PM ~ abs(Elevation) + (AbsElevation|ID)', lme_PM_by_AbsElevation_RS);
     writeModelToFile(fid, 'Model 3 RS: log2(PM) ~ log2(1+abs(Elevation)) + (Log2_1plusAbsElevation|ID)', lme_logPM_by_logabsElevation_RS);
 
-    fprintf(fid, 'Model comparisons\n');
-    fprintf(fid, '=================\n\n');
-
-    fprintf(fid, 'Model 1 vs Model 2\n');
-    fprintf(fid, '%s\n', clean_matlab_display_text(evalc('compare(lme_PM_by_Elevation, lme_PM_by_AbsElevation)')));
-
-    fprintf(fid, 'Model 2 vs Model 3\n');
-    fprintf(fid, '%s\n', clean_matlab_display_text(evalc('compare(lme_PM_by_AbsElevation,lme_logPM_by_logabsElevation)')));
-
-    fprintf(fid, 'Model 1 vs Model 3\n');
-    fprintf(fid, '%s\n', clean_matlab_display_text(evalc('compare(lme_PM_by_Elevation,lme_logPM_by_logabsElevation)')));
+    writeOriginalScalePerformance(fid, tbl.Ratio_Visual_Angle, ...
+        {'Elevation RI', 'Abs elevation RI', 'Log-log RI', ...
+         'Elevation RS', 'Abs elevation RS', 'Log-log RS'}, ...
+        {lme_PM_by_Elevation, lme_PM_by_AbsElevation, ...
+         lme_logPM_by_logabsElevation, lme_PM_by_Elevation_RS, ...
+         lme_PM_by_AbsElevation_RS, lme_logPM_by_logabsElevation_RS}, ...
+        [false false true false false true]);
 
     fprintf(fid, 'Random-intercept vs random-slope comparisons\n');
     fprintf(fid, '===========================================\n\n');
@@ -174,13 +154,7 @@ if saveLME
     fprintf(fid, '%s\n', clean_matlab_display_text(evalc('compare(lme_PM_by_AbsElevation,lme_PM_by_AbsElevation_RS)')));
     fprintf(fid, 'Model 3 RI vs RS\n');
     fprintf(fid, '%s\n', clean_matlab_display_text(evalc('compare(lme_logPM_by_logabsElevation,lme_logPM_by_logabsElevation_RS)')));
-    fprintf(fid, 'Leaderboard (sorted by AIC)\n');
-    fprintf(fid, '==========================\n\n');
-    write_plain_text_table(fid, leaderboardTbl);
-
     fclose(fid);
-
-    writetable(leaderboardTbl, fullfile(ResultsDir, [tblName '_ElevationModels_leaderboard.csv']));
 end
 
 %% subject colors
@@ -233,10 +207,10 @@ set(gca,'FontName','Avenir','FontSize',18);
 xlabel('Elevation [deg]','FontSize',18);
 ylabel('Perceptual Magnification','FontSize',18);
 if p1<0.001
-    title(sprintf('PM=%.2f+%.3fE\n p=%.2e, n=%d', ...
+    title(sprintf('PM=%.2f%+.3fE\n p=%.2e, n=%d', ...
         b0, b1, p1, nsubjects), 'FontSize',18,'FontWeight','normal');
 else
-      title(sprintf('PM=%.2f+%.3fE\n p=%.3f, n=%d', ...
+      title(sprintf('PM=%.2f%+.3fE\n p=%.3f, n=%d', ...
         b0, b1, p1, nsubjects), 'FontSize',18,'FontWeight','normal');
 end
 
@@ -274,10 +248,10 @@ ylabel('Perceptual Magnification','FontSize',18);
 ax = gca;
 ax.YColor = 'w';
 if p2<0.001
-    title(sprintf('PM=%.2f+%.3f|E|\n p=%.2e, n=%d', ...
+    title(sprintf('PM=%.2f%+.3f|E|\n p=%.2e, n=%d', ...
       b0, b1, p2, nsubjects), 'FontSize',18,'FontWeight','normal');
 else
-    title(sprintf('PM=%.2f+%.3f|E|\n p=%.3f, n=%d', ...
+    title(sprintf('PM=%.2f%+.3f|E|\n p=%.3f, n=%d', ...
       b0, b1, p2, nsubjects), 'FontSize',18,'FontWeight','normal');
 end
 
@@ -338,7 +312,6 @@ end
 if saveLME
     filenamePNG = fullfile(ResultsDir, [tblName '_ElevationModels.png']);
     exportgraphics(figh, filenamePNG, 'Resolution', 600);
-    local_plot_leaderboard_figure(leaderboardTbl, ResultsDir, tblName);
 end
 
 %% random-slope figure
@@ -350,7 +323,7 @@ plot_panel_with_subject_lines(gca, tbl.Elevation, tbl.Ratio_Visual_Angle, subjec
     lme_PM_by_Elevation_RS, uniqueID, cmap, sorted_idx, tbl.ID, 'Elevation', ...
     [minElevation*1.05 - 0.05*max(abs([minElevation maxElevation])), maxElevation*1.05], ...
     [minPMLim ceil(maxPMLim)], 'Elevation [deg]', 'Perceptual Magnification', ...
-    sprintf('PM=%.2f+%.3fE\n p=%.2e, n=%d', ...
+    sprintf('PM=%.2f%+.3fE\n p=%.2e, n=%d', ...
     lme_PM_by_Elevation_RS.Coefficients.Estimate(1), lme_PM_by_Elevation_RS.Coefficients.Estimate(2), ...
     lme_PM_by_Elevation_RS.Coefficients.pValue(2), nsubjects), false, [], []);
 
@@ -359,7 +332,7 @@ plot_panel_with_subject_lines(gca, tbl.AbsElevation, tbl.Ratio_Visual_Angle, sub
     lme_PM_by_AbsElevation_RS, uniqueID, cmap, sorted_idx, tbl.ID, 'AbsElevation', ...
     [.8*minAbsElevation maxAbsElevation*1.05 + eps], ...
     [minPMLim ceil(maxPMLim)], '|Elevation| [deg]', 'Perceptual Magnification', ...
-    sprintf('PM=%.2f+%.3f|E|\n p=%.2e, n=%d', ...
+    sprintf('PM=%.2f%+.3f|E|\n p=%.2e, n=%d', ...
     lme_PM_by_AbsElevation_RS.Coefficients.Estimate(1), lme_PM_by_AbsElevation_RS.Coefficients.Estimate(2), ...
     lme_PM_by_AbsElevation_RS.Coefficients.pValue(2), nsubjects), false, [], []);
 ax = gca; ax.YColor = 'w';
@@ -402,58 +375,30 @@ fprintf(fid, '\nANOVA:\n%s\n', clean_matlab_display_text(evalc('anova(lme)')));
 fprintf(fid, '\n');
 end
 
-function leaderboardTbl = local_build_leaderboard(modelNames, modelFormulas, modelList)
-nModels = numel(modelList);
-aicVals = nan(nModels,1);
-bicVals = nan(nModels,1);
-for i = 1:nModels
-    aicVals(i) = modelList{i}.ModelCriterion.AIC;
-    bicVals(i) = modelList{i}.ModelCriterion.BIC;
+function writeOriginalScalePerformance(fid, yActual, labels, models, isLog2)
+fprintf(fid, 'Original-scale predictive performance\n');
+fprintf(fid, '=====================================\n');
+fprintf(fid, 'Predictions include fitted random effects. Log2 predictions are back-transformed with 2.^prediction.\n\n');
+fprintf(fid, 'Adjusted R2 uses p = fixed predictors + fitted participant random-effect coefficients.\n\n');
+fprintf(fid, '%-20s %14s %14s %10s %14s\n', 'Model', 'R2 (corr^2)', 'Adjusted R2', 'p', 'RMSE');
+for iModel = 1:numel(models)
+    yPredicted = predict(models{iModel});
+    if isLog2(iModel)
+        yPredicted = 2.^yPredicted;
+    end
+    valid = isfinite(yActual) & isfinite(yPredicted);
+    rValue = corr(yActual(valid), yPredicted(valid));
+    rSquared = rValue.^2;
+    n = nnz(valid);
+    p = max(0, numel(fixedEffects(models{iModel})) - 1) + numel(randomEffects(models{iModel}));
+    if n > p + 1
+        adjustedRSquared = 1 - (1 - rSquared) * (n - 1) / (n - p - 1);
+    else
+        adjustedRSquared = NaN;
+    end
+    rmse = sqrt(mean((yActual(valid) - yPredicted(valid)).^2));
+    fprintf(fid, '%-20s %14.6f %14.6f %10d %14.6f\n', ...
+        labels{iModel}, rSquared, adjustedRSquared, p, rmse);
 end
-
-[sortedAIC, orderAIC] = sort(aicVals, 'ascend');
-[sortedBIC, orderBIC] = sort(bicVals, 'ascend');
-rankAIC = zeros(nModels,1);
-rankBIC = zeros(nModels,1);
-rankAIC(orderAIC) = 1:nModels;
-rankBIC(orderBIC) = 1:nModels;
-
-leaderboardTbl = table( ...
-    string(modelNames(:)), ...
-    string(modelFormulas(:)), ...
-    aicVals, ...
-    bicVals, ...
-    aicVals - min(sortedAIC), ...
-    bicVals - min(sortedBIC), ...
-    rankAIC, ...
-    rankBIC, ...
-    'VariableNames', {'Model','Formula','AIC','BIC','DeltaAIC','DeltaBIC','RankAIC','RankBIC'});
-leaderboardTbl = sortrows(leaderboardTbl, {'RankAIC','RankBIC'}, {'ascend','ascend'});
-end
-
-function local_plot_leaderboard_figure(leaderboardTbl, ResultsDir, tblName)
-fh = figure('Color', [1 1 1], 'Units', 'normalized', ...
-    'Position', [0.2 0.2 0.42 0.5], 'Name', [tblName '_ElevationModelsLeaderboard']);
-tiledlayout(1,2, 'Padding', 'compact', 'TileSpacing', 'compact');
-
-nexttile;
-barh(leaderboardTbl.AIC, 'FaceColor', [0.25 0.45 0.75], 'EdgeColor', 'none');
-set(gca, 'YDir', 'reverse', 'YTick', 1:height(leaderboardTbl), ...
-    'YTickLabel', cellstr(leaderboardTbl.Model), 'FontName', 'Avenir', 'FontSize', 14);
-xlabel('AIC');
-title('AIC leaderboard', 'FontWeight', 'normal');
-box off;
-grid off;
-
-nexttile;
-barh(leaderboardTbl.BIC, 'FaceColor', [0.85 0.55 0.30], 'EdgeColor', 'none');
-set(gca, 'YDir', 'reverse', 'YTick', 1:height(leaderboardTbl), ...
-    'YTickLabel', cellstr(leaderboardTbl.Model), 'FontName', 'Avenir', 'FontSize', 14);
-xlabel('BIC');
-title('BIC leaderboard', 'FontWeight', 'normal');
-box off;
-grid off;
-
-exportgraphics(fh, fullfile(ResultsDir, [tblName '_ElevationModels_leaderboard.png']), 'Resolution', 600);
-close(fh);
+fprintf(fid, '\n');
 end

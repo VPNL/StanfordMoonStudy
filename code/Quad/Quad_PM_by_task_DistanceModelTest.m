@@ -1,4 +1,4 @@
-function [lme_PM_by_D, lme_logPM_by_logD, leaderboardTbl] = ...
+function [lme_PM_by_D, lme_logPM_by_logD] = ...
     Quad_PM_by_task_DistanceModelTest(tbl, tblName, ResultsDir, saveLME, cmap, sorted_idx)
 % Quad_PM_by_task_DModelTest
 %
@@ -19,7 +19,6 @@ function [lme_PM_by_D, lme_logPM_by_logD, leaderboardTbl] = ...
 % OUTPUTS
 %   lme_PM_by_D
 %   lme_logPM_by_logD
-%   leaderboardTbl
 % KGS July 2026
 
 %% checks
@@ -90,25 +89,12 @@ lme_PM_by_D = fitlme(tbl, ...
 lme_logPM_by_logD = fitlme(tbl, ...
     'Log2_Ratio_Visual_Angle ~ Log2_D + (1|ID)');
 
-
 lme_PM_by_D_RS = fitlme(tbl, ...
     'Ratio_Visual_Angle ~ Distance+ (Distance|ID)');
-
 
 lme_logPM_by_logD_RS = fitlme(tbl, ...
     'Log2_Ratio_Visual_Angle ~ Log2_D + (Log2_D|ID)');
 
-
-modelNames = { ...
-    'D', ...
-    'logD'};
-modelFormulas = { ...
-    'PM ~ D + (1|ID)', ...
-    'log2(PM) ~ log2(D) + (1|ID)'};
-modelList = { ...
-    lme_PM_by_D, ...
-    lme_logPM_by_logD};
-leaderboardTbl = local_build_leaderboard(modelNames, modelFormulas, modelList);
 
 %% write text report
 if saveLME
@@ -126,15 +112,15 @@ if saveLME
     fprintf(fid, 'N observations: %d\n\n', height(tbl));
 
     writeModelToFile(fid, 'Model 1: PM ~ D + (1|ID)', lme_PM_by_D);
-    writeModelToFile(fid, 'Model 1 RS: PM ~ D + (VA|ID)', lme_PM_by_D_RS);
     writeModelToFile(fid, 'Model 2: log2(PM) ~ log2(D) + (1|ID)', lme_logPM_by_logD);
+    writeModelToFile(fid, 'Model 1 RS: PM ~ D + (D|ID)', lme_PM_by_D_RS);
     writeModelToFile(fid, 'Model 2 RS: log2(PM) ~ log2(D) + (Log2_D|ID)', lme_logPM_by_logD_RS);
 
-    fprintf(fid, 'Model comparisons\n');
-    fprintf(fid, '=================\n\n');
-
-    fprintf(fid, 'Model 1 vs Model 2\n');
-    fprintf(fid, '%s\n', clean_matlab_display_text(evalc('compare(lme_PM_by_D, lme_logPM_by_logD)')));
+    writeOriginalScalePerformance(fid, tbl.Ratio_Visual_Angle, ...
+        {'Linear RI', 'Log-log RI', 'Linear RS', 'Log-log RS'}, ...
+        {lme_PM_by_D, lme_logPM_by_logD, ...
+         lme_PM_by_D_RS, lme_logPM_by_logD_RS}, ...
+        [false true false true]);
 
     fprintf(fid, 'Random-intercept vs random-slope comparisons\n');
     fprintf(fid, '===========================================\n\n');
@@ -142,13 +128,7 @@ if saveLME
     fprintf(fid, '%s\n', clean_matlab_display_text(evalc('compare(lme_PM_by_D,lme_PM_by_D_RS)')));
     fprintf(fid, 'Model 2 RI vs RS\n');
     fprintf(fid, '%s\n', clean_matlab_display_text(evalc('compare(lme_logPM_by_logD,lme_logPM_by_logD_RS)')));
-    fprintf(fid, 'Leaderboard (sorted by AIC)\n');
-    fprintf(fid, '==========================\n\n');
-    write_plain_text_table(fid, leaderboardTbl);
-
     fclose(fid);
-
-    writetable(leaderboardTbl, fullfile(ResultsDir, [tblName '_DModels_leaderboard.csv']));
 end
 
 %% subject colors
@@ -201,10 +181,10 @@ set(gca,'FontName','Avenir','FontSize',18);
 xlabel('Distance [m]','FontSize',18);
 ylabel('Perceptual Magnification','FontSize',18);
 if p1<0.001
-    title(sprintf('PM=%.2f+%.3fD\n p=%.2e, n=%d', ...
+    title(sprintf('PM=%.2f%+.3fD\n p=%.2e, n=%d', ...
         b0, b1, p1, nsubjects), 'FontSize',18,'FontWeight','normal');
 else
-      title(sprintf('PM=%.2f+%.3fD\n p=%.3f, n=%d', ...
+      title(sprintf('PM=%.2f%+.3fD\n p=%.3f, n=%d', ...
         b0, b1, p1, nsubjects), 'FontSize',18,'FontWeight','normal');
 end
 
@@ -265,7 +245,6 @@ end
 if saveLME
     filenamePNG = fullfile(ResultsDir, [tblName '_DModels.png']);
     exportgraphics(figh, filenamePNG, 'Resolution', 600);
-    local_plot_leaderboard_figure(leaderboardTbl, ResultsDir, tblName);
 end
 
 %% random-slope figure
@@ -277,7 +256,7 @@ plot_panel_with_subject_lines(gca, tbl.Distance, tbl.Ratio_Visual_Angle, subject
     lme_PM_by_D_RS, uniqueID, cmap, sorted_idx, tbl.ID, 'VA', ...
     [minD*1.05 - 0.05*max(abs([minD maxD])), maxD*1.05], ...
     [minPMLim ceil(maxPMLim)], 'Distance [m]', 'Perceptual Magnification', ...
-    sprintf('PM=%.2f+%.3fD\n p=%.2e, n=%d', ...
+    sprintf('PM=%.2f%+.3fD\n p=%.2e, n=%d', ...
     lme_PM_by_D_RS.Coefficients.Estimate(1), lme_PM_by_D_RS.Coefficients.Estimate(2), ...
     lme_PM_by_D_RS.Coefficients.pValue(2), nsubjects), false, [], []);
 
@@ -320,58 +299,30 @@ fprintf(fid, '\nANOVA:\n%s\n', clean_matlab_display_text(evalc('anova(lme)')));
 fprintf(fid, '\n');
 end
 
-function leaderboardTbl = local_build_leaderboard(modelNames, modelFormulas, modelList)
-nModels = numel(modelList);
-aicVals = nan(nModels,1);
-bicVals = nan(nModels,1);
-for i = 1:nModels
-    aicVals(i) = modelList{i}.ModelCriterion.AIC;
-    bicVals(i) = modelList{i}.ModelCriterion.BIC;
+function writeOriginalScalePerformance(fid, yActual, labels, models, isLog2)
+fprintf(fid, 'Original-scale predictive performance\n');
+fprintf(fid, '=====================================\n');
+fprintf(fid, 'Predictions include fitted random effects. Log2 predictions are back-transformed with 2.^prediction.\n\n');
+fprintf(fid, 'Adjusted R2 uses p = fixed predictors + fitted participant random-effect coefficients.\n\n');
+fprintf(fid, '%-16s %14s %14s %10s %14s\n', 'Model', 'R2 (corr^2)', 'Adjusted R2', 'p', 'RMSE');
+for iModel = 1:numel(models)
+    yPredicted = predict(models{iModel});
+    if isLog2(iModel)
+        yPredicted = 2.^yPredicted;
+    end
+    valid = isfinite(yActual) & isfinite(yPredicted);
+    rValue = corr(yActual(valid), yPredicted(valid));
+    rSquared = rValue.^2;
+    n = nnz(valid);
+    p = max(0, numel(fixedEffects(models{iModel})) - 1) + numel(randomEffects(models{iModel}));
+    if n > p + 1
+        adjustedRSquared = 1 - (1 - rSquared) * (n - 1) / (n - p - 1);
+    else
+        adjustedRSquared = NaN;
+    end
+    rmse = sqrt(mean((yActual(valid) - yPredicted(valid)).^2));
+    fprintf(fid, '%-16s %14.6f %14.6f %10d %14.6f\n', ...
+        labels{iModel}, rSquared, adjustedRSquared, p, rmse);
 end
-
-[sortedAIC, orderAIC] = sort(aicVals, 'ascend');
-[sortedBIC, orderBIC] = sort(bicVals, 'ascend');
-rankAIC = zeros(nModels,1);
-rankBIC = zeros(nModels,1);
-rankAIC(orderAIC) = 1:nModels;
-rankBIC(orderBIC) = 1:nModels;
-
-leaderboardTbl = table( ...
-    string(modelNames(:)), ...
-    string(modelFormulas(:)), ...
-    aicVals, ...
-    bicVals, ...
-    aicVals - min(sortedAIC), ...
-    bicVals - min(sortedBIC), ...
-    rankAIC, ...
-    rankBIC, ...
-    'VariableNames', {'Model','Formula','AIC','BIC','DeltaAIC','DeltaBIC','RankAIC','RankBIC'});
-leaderboardTbl = sortrows(leaderboardTbl, {'RankAIC','RankBIC'}, {'ascend','ascend'});
-end
-
-function local_plot_leaderboard_figure(leaderboardTbl, ResultsDir, tblName)
-fh = figure('Color', [1 1 1], 'Units', 'normalized', ...
-    'Position', [0.2 0.2 0.42 0.5], 'Name', [tblName '_DModelsLeaderboard']);
-tiledlayout(1,2, 'Padding', 'compact', 'TileSpacing', 'compact');
-
-nexttile;
-barh(leaderboardTbl.AIC, 'FaceColor', [0.25 0.45 0.75], 'EdgeColor', 'none');
-set(gca, 'YDir', 'reverse', 'YTick', 1:height(leaderboardTbl), ...
-    'YTickLabel', cellstr(leaderboardTbl.Model), 'FontName', 'Avenir', 'FontSize', 10);
-xlabel('AIC');
-title('AIC leaderboard', 'FontWeight', 'normal');
-box off;
-grid off;
-
-nexttile;
-barh(leaderboardTbl.BIC, 'FaceColor', [0.85 0.55 0.30], 'EdgeColor', 'none');
-set(gca, 'YDir', 'reverse', 'YTick', 1:height(leaderboardTbl), ...
-    'YTickLabel', cellstr(leaderboardTbl.Model), 'FontName', 'Avenir', 'FontSize', 10);
-xlabel('BIC');
-title('BIC leaderboard', 'FontWeight', 'normal');
-box off;
-grid off;
-
-exportgraphics(fh, fullfile(ResultsDir, [tblName '_DModels_leaderboard.png']), 'Resolution', 600);
-close(fh);
+fprintf(fid, '\n');
 end

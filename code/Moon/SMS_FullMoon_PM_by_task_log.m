@@ -1,4 +1,3 @@
-
 function [lme_by_logRatio_by_Elevation, ...
     lme_by_logRatio_by_Elevation_RS, all_data] = ...
     SMS_FullMoon_PM_by_task_log(dataDir,datafile,ResultsDir,task, recomputeSort,saveLME)
@@ -157,7 +156,7 @@ end
 % AIC comparison also suggests that the log-log model is a better fit than
 % linear model
 
-[reEfx_log,reNames_log,reStats_log] = randomEffects(lme_by_logRatio_by_Elevation_RS);
+[reEfx_log,reNames_log,reStats_log] =randomEffects(lme_by_logRatio_by_Elevation_RS);
 [feEfx_log,feNames_log,festats_log] =fixedEffects(lme_by_logRatio_by_Elevation); % we are going to plot the fixed effect model in the second plot
 
 ID=all_data.ID;
@@ -203,7 +202,6 @@ end
 %% plot random slopes model on a log-log scale and fixed effect model on a linear scale
 figh=figure('Color',[1 1 1],'Units','normalized','Position',[0 0 .8 .6],'Name',[basename 'Perceptual Magnification vs Elevation RS log scale RI linear scale'])
 subplot(1,2,2); hold on 
-
 
 interceptL=feEfx_log(1);
 slopeL=feEfx_log(2);
@@ -261,8 +259,11 @@ ylabel ('Perceptual Magnification, log scale')
 set(gca,'FontSize',20, 'FontName','Avenir')
 title(titlestr,'FontSize',16,'FontName','Avenir')
 
-% put tick labels numbers rather than log numbers
-xticks=get(gca,'Xtick');set(gca,'XTickLabel', round(2.^xticks,1));
+% Show original elevation values at powers of two on the log2(1+E) axis.
+elevationTicks = [2 4 8 16 32];
+xlim(log2(1 + [2 maxElevation]));
+set(gca, 'XTick', log2(1 + elevationTicks), ...
+    'XTickLabel', string(elevationTicks));
 yticks=get(gca,'Ytick');set(gca,'YTickLabel', round(2.^yticks,1));
 
 % estimate function PM= 2^interceptL*elevation^slopeL
@@ -293,9 +294,9 @@ ylabel ('Perceptual Magnification')
 ylim([0 maxRatio])
 set(gca,'YTick', [0:1:maxRatio],'YtickLabel', [0:1:maxRatio], 'FontSize',20,'FontName','Avenir')
 if pvalL < 0.001
-        titlestr=sprintf('%s Matching\n PM=%.1f(1+Elevation)^{%.2f}  \n p=%5.2e\n n=%d',task, round(2^interceptL,1),slopeL,festats_log.pValue(2), nsubjects);
+        titlestr=sprintf('%s Matching\n PM=%.1f(1+E)^{%.2f}  \n p=%5.2e\n n=%d',task, round(2^interceptL,1),slopeL,festats_log.pValue(2), nsubjects);
     else
-        titlestr=sprintf('%s Matching\n PM=%.1f(1+Elevation)^{%.2f}\n p=%.4f\n n=%d',task, round(2^interceptL,1),slopeL,festats_log.pValue(2), nsubjects);
+        titlestr=sprintf('%s Matching\n PM=%.1f(1+E)^{%.2f}\n p=%.4f\n n=%d',task, round(2^interceptL,1),slopeL,festats_log.pValue(2), nsubjects);
 end 
 title(titlestr,'FontSize',16,'FontName','Avenir')
 
@@ -304,16 +305,17 @@ filenamePNG=fullfile(ResultsDir,['Fig1_' basename,'_' task ,'_', num2str(nsubjec
 %print(figh,filenamePNG,'-dpng','-r600');
 exportgraphics(figh, filenamePNG, 'Resolution', 600)
 
-filenameEPS=fullfile(ResultsDir,['Fig1_' basename,'_' task ,'_', num2str(nsubjects),'.eps']);
-print(figh,filenameEPS,'-depsc','-r600');
+FullMoon_plot_PM_powerlaw_subject_ranges(figh, all_data, ...
+    lme_by_logRatio_by_Elevation_RS, task, ResultsDir, basename, ...
+    sorted_idx_log);
 
 %%
-% Supplemental figure comparing the RS linear and RS log-log models
+% Supplemental figure 
 figh=figure('Color',[1 1 1],'Units','normalized','Position',[0 0 .8 .6],'Name',[basename 'Perceptual Magnification vs Elevation'])
 subplot(1,2,2); hold on 
 % get the stats from the Random Effects models as this is what we are
 % plotting the RS model
-[reEfx_log,reNames_log,reStats_log] = randomEffects(lme_by_logRatio_by_Elevation_RS);
+[reEfx_log,reNames_log,reStats_log] =randomEffects(lme_by_logRatio_by_Elevation_RS);
 [feEfx_log,feNames_log,festats_log] =fixedEffects(lme_by_logRatio_by_Elevation_RS);
 
 
@@ -356,12 +358,12 @@ if pvalL < 0.05
     fill(xvector, yvector, 1,'facecolor', 'k', 'edgecolor', 'none', 'facealpha', 0.1);
     plot(xvectoru, y_fit, 'k-','LineWidth',5);
     if pvalL < 0.001
-        titlestr=sprintf('%s Matching\n intercept=%3.2f slope=%5.3f \n p=%5.2e\n n=%d',task, 2^interceptL,slopeL,festats_log.pValue(2), nsubjects);
+        titlestr=sprintf('%s Matching log-log\n intercept=%3.2f slope=%5.3f \n p=%5.2e\n n=%d',task, 2^interceptL,slopeL,festats_log.pValue(2), nsubjects);
     else
-        titlestr=sprintf('%s Matching\n intercept=%3.2f slope=%.4f \n p=%.4f\n n=%d',task, 2^interceptL,slopeL,festats_log.pValue(2), nsubjects);
+        titlestr=sprintf('%s Matching log-log\n intercept=%3.2f slope=%.4f \n p=%.4f\n n=%d',task, 2^interceptL,slopeL,festats_log.pValue(2), nsubjects);
     end 
 else
-    titlestr=sprintf('%s Matching\n intercept=%3.2f slope=%5.3f \n p=%.4f\n n=%d',task, 2^interceptL,slopeL,festats_log.pValue(2), nsubjects);
+    titlestr=sprintf('%s Matching log-log \n intercept=%3.2f slope=%5.3f \n p=%.4f\n n=%d',task, 2^interceptL,slopeL,festats_log.pValue(2), nsubjects);
 end
 
 % plot scatter plot of individual data
@@ -373,8 +375,11 @@ ylabel ('Perceptual Magnification, log scale')
 set(gca,'FontSize',20, 'FontName','Avenir')
 title(titlestr,'FontSize',16,'FontName','Avenir')
 
-% put tick labels numbers rather than log numbers
-xticks=get(gca,'Xtick');set(gca,'XTickLabel', round(2.^xticks,1));
+% Show original elevation values at powers of two on the log2(1+E) axis.
+elevationTicks = [2 4 8 16 32];
+xlim(log2(1 + [2 maxElevation]));
+set(gca, 'XTick', log2(1 + elevationTicks), ...
+    'XTickLabel', string(elevationTicks));
 yticks=get(gca,'Ytick');set(gca,'YTickLabel', round(2.^yticks,1));
 
 % estimate function PM= 2^interceptL*elevation^slopeL
@@ -396,7 +401,6 @@ lme_ratio_by_Elevation_RS = fitlme(all_data,'Ratio_Visual_Angle~Elevation + (Ele
 % compare models
 model_comp=compare(lme_ratio_by_Elevation,lme_ratio_by_Elevation_RS); % compare RS and random intercepts models
 
-
 %
 [reEfx,reNames,reStats] = randomEffects(lme_ratio_by_Elevation_RS);
 [feEfx,feNames,festats] =fixedEffects(lme_ratio_by_Elevation_RS);
@@ -414,8 +418,6 @@ yvector2=upper_slopeR*xvectord+interceptR;
 xvector=[xvectoru xvectord];
 yvector=[yvector1 yvector2];
 
-
-
 % plot ratio vs Elevation
 subplot(1,2,1); hold on 
 scatter(all_data.Elevation,all_data.Ratio_Visual_Angle,markerScale,subjectcolor,'o','filled');
@@ -427,7 +429,6 @@ set(gca,'YTick', [0:1:maxRatio],'YtickLabel', [0:1:maxRatio], 'FontSize',20,'Fon
 title(titlestr,'FontSize',16,'FontName','Avenir')
 
 % plot line fit only if significant
-
 if pvalR<0.05
     % plot individual subjects slopes
     individualIntercepts = zeros(nsubjects,1);
@@ -456,13 +457,13 @@ if pvalR<0.05
     end
     plot (xvectoru, yvectoru,'k-','LineWidth',3);
     fill(xvector, yvector, 1,'facecolor', 'k', 'edgecolor', 'none', 'facealpha', 0.1);
-    if pvalR<0.001
-        titlestr=sprintf('%s Matching\n PM=%3.2f + (%3.3f)*Elevation \n p=%5.2e \n n=%d',task,interceptR,slopeR,pvalR,nsubjects);
+    if pvalR<0.001    
+       titlestr=sprintf('%s Matching linear\n intercept=%.3f slope=%.3f \n p=%5.2e \n n=%d',task,interceptR,slopeR,pvalR,nsubjects);
     else
-       titlestr=sprintf('%s Matching\n PM=%3.2f + (%3.3f)*Elevation \n p=%.4f \n n=%d',task,interceptR,slopeR,pvalR,nsubjects);
+       titlestr=sprintf('%s Matching linear\n intercept=%.3f slope=%.3f \n p=%.4f \n n=%d',task,interceptR,slopeR,pvalR,nsubjects);
     end
 else
-   titlestr=sprintf('%s Matching \n \n p=%.2f \n n=%d',task,pvalR,nsubjects);
+   titlestr=sprintf('%s Matchinglinear\n \n p=%.2f \n n=%d',task,pvalR,nsubjects);
 end
 scatter(all_data.Elevation,all_data.Ratio_Visual_Angle,markerScale,subjectcolor,'o','filled');
 plot([0 maxElevation], [1 1],'Color',[.8 .8 .8 ],'LineWidth',3)
@@ -473,10 +474,18 @@ set(gca,'YTick', [0:1:maxRatio],'YtickLabel', [0:1:maxRatio], 'FontSize',20,'Fon
 title(titlestr,'FontSize',16,'FontName','Avenir')
 
 % save figure 
-filenamePNG=fullfile(ResultsDir,['SuppFig_LogLinModelComps_' basename,'_' task ,'_', num2str(nsubjects),'.png']);
+filenamePNG=fullfile(ResultsDir,['Supplemental_FigS1_LogLinModelComps_' basename,'_' task ,'_', num2str(nsubjects),'.png']);
 exportgraphics(figh, filenamePNG, 'Resolution', 600)
-filenameEPS=fullfile(ResultsDir,['SuppFig_LogLinModelComps_' basename,'_' task ,'_', num2str(nsubjects),'.eps']);
-print(figh,filenameEPS,'-depsc','-r600');
+
+% Companion visualization: restrict conditional model fits to each
+% participant's observed elevation range.
+FullMoon_plot_PM_model_fits_subject_ranges(figh, all_data, ...
+    lme_ratio_by_Elevation_RS, lme_by_logRatio_by_Elevation_RS, ...
+    task, ResultsDir, basename, sorted_idx_log);
+
+FullMoon_plot_PM_log_vs_linear_original_scale(all_data, ...
+    lme_by_logRatio_by_Elevation, lme_ratio_by_Elevation, ...
+    subjectcolor, task, ResultsDir, basename, nsubjects);
 
 ncount=length(find(individualSlopes<0));
 if saveLME
@@ -522,7 +531,6 @@ end
 
 %% visualize illusion at the horizon and at 40 degrees
 realVA=mean(all_data.Real_Visual_Angle);
-
 
 distance_mm=500; % simulate illusion at arms-length distance of ~50cm=500mm;
 
@@ -585,10 +593,3 @@ disp(PM);
 % save figure 
 filenamePNG=fullfile(ResultsDir,['Fig1_MoonIllusion_' basename,'_' task ,'_', num2str(nsubjects),'.png']);
 print(figMoonIllusion,filenamePNG,'-dpng','-r600');
-filenameEPS=fullfile(ResultsDir,['Fig1_MoonIllusion_' basename,'_' task ,'_', num2str(nsubjects),'.eps']);
-print(figMoonIllusion,filenameEPS,'-depsc','-r600');
-
-
-
-
-
