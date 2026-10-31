@@ -12,7 +12,9 @@ expDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
 
 
 %% Run configuration
-quadFile = fullfile(expDir, 'merged_matching_0429.csv');
+%quadFile = fullfile(expDir, 'merged_matching_0429.csv');
+csvFile='QuadProcessedMatchingandStereoData.csv';
+quadFile = fullfile(expDir,csvFile);
 
 stereoTypicalThreshold = 85;
 stereoBlindThreshold = 20;
@@ -45,8 +47,9 @@ switch lower(colorMode)
         error('Paper2Matching:InvalidColorMode', ...
             'colorMode must be "stereoscore" or "clinicalnotes".');
 end
-resultsRoot = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/', 'SupplementalFigS8_forFig4d', colorResultsFolder);
+%resultsRoot = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/', 'SupplementalFigS8_forFig4d', colorResultsFolder);
 
+resultsRoot = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/', 'SupplementalFigS6_forFig4d', colorResultsFolder);
 
 %% Load Perceptual-task data
 allQuadDataBase = readtable(quadFile);

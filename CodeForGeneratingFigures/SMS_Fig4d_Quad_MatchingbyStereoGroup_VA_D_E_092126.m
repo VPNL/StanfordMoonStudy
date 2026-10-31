@@ -3,6 +3,7 @@
 % one participant-color mode selected in the configuration block below.
 
 clx
+SMS_setCodePath;
 
 expDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
 
@@ -25,14 +26,17 @@ switch lower(colorMode)
             'colorMode must be "stereoscore" or "clinicalnotes".');
 end
 
-resultsDir = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/', 'Fig4d', colorResultsFolder);
+%resultsDir = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/', 'Fig4d', colorResultsFolder);
+resultsDir = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/', 'Fig4d_1029', colorResultsFolder);
 
 if ~exist(resultsDir, 'dir')
     mkdir(resultsDir);
 end
 
 %% Load data
-quadFile = fullfile(expDir, 'merged_matching_0429.csv');
+%quadFile = fullfile(expDir, 'merged_matching_0429.csv');
+csvFile='QuadProcessedMatchingandStereoData.csv';
+quadFile = fullfile(expDir,csvFile);
 
 allQuadData = readtable(quadFile);
 [~, quadBasename] = fileparts(quadFile);

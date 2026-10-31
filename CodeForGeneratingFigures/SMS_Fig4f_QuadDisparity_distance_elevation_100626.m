@@ -8,7 +8,8 @@ expDir = '/Users/kalanit/Projects/StanfordMoonStudy/Data/BinocularParallax/';
 
 
 %% Run configuration
-quadFileName = 'QuadProcessedParallaxandStereoData1008.csv';
+%quadFileName = 'QuadProcessedParallaxandStereoData1008.csv';
+quadFileName = 'QuadProcessedParallaxandStereoData.csv';
 quadFile = fullfile(expDir, quadFileName);
 [~, quadBasename] = fileparts(quadFileName);
 distanceTransform=true; %use 1/D for disparity analysis
@@ -30,8 +31,9 @@ switch colorMode
             'colorMode must be "stereoscore", "clinicalnotes", or "id".');
 end
 
-resultsDir = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/Fig4f');
+%resultsDir = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/Fig4f');
 
+resultsDir = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/Fig4f_1029');
 if ~exist(resultsDir, 'dir')
     mkdir(resultsDir);
 end
@@ -43,6 +45,11 @@ if ismember('ClinicalNotes', importOptions.VariableNames)
     importOptions = setvartype(importOptions, 'ClinicalNotes', 'string');
 end
 allQuadData = readtable(quadFile, importOptions);
+% %% remove subject 7012 who is an outlier because did not follow the
+% instructions in the adjusted task
+
+ ii=find(allQuadData.ID~=7012); 
+ allQuadData=allQuadData(ii,:);  
 
 
 % Use observer-referenced distance and elevation for this analysis. The
@@ -92,7 +99,7 @@ uniqueID = colorConfig.ID;
     allQuadData, quadBasename, resultsDir, saveLME, cmap, ...
     sortedIdx, 0, uniqueID, ...
     colorbarLabel, secondYAxisColor, ...
-    false, colorConfig, includeStereo, true);
+    false, colorConfig, includeStereo, false);
 
 
 %% Linear RI models for 1/Distance, elevation, their additive model, and interaction
@@ -103,7 +110,7 @@ uniqueID = colorConfig.ID;
     Quad_Disparity_by_inverseDistanceElevation( ...
     allQuadData, quadBasename, resultsDir, saveLME, cmap, ...
     sortedIdx, 1, uniqueID, ...
-    secondYAxisColor, colorConfig);
+    secondYAxisColor, colorConfig,false);
 
 
 
