@@ -95,7 +95,7 @@ tiledlayout(1,3,'Padding','compact','TileSpacing','compact');
 local_plot_pm_panel(nexttile, tbl, subjectcolor, lme_logPM_by_logAngle_RS, 'A', ElevationTransform, nsubjects, uniqueID, cmap, sorted_idx, true, minPMLim, maxPMLim, plotFixedEffectsRS);
 local_plot_pm_panel(nexttile, tbl, subjectcolor, lme_logPM_by_logDistance_RS, 'D', ElevationTransform, nsubjects, uniqueID, cmap, sorted_idx, true, minPMLim, maxPMLim, plotFixedEffectsRS);
 local_plot_pm_panel(nexttile, tbl, subjectcolor, lme_logPM_by_logElevation_RS, 'E', ElevationTransform, nsubjects, uniqueID, cmap, sorted_idx, true, minPMLim, maxPMLim, plotFixedEffectsRS);
-local_export_png(figRS, fullfile(ResultsDir, [tblName '_single_RS.png']), 600);
+Quad_export_png(figRS, fullfile(ResultsDir, [tblName '_single_RS.png']), 600);
 close(figRS);
 end
 
@@ -266,14 +266,6 @@ for i = 1:numel(uniqueID)
     yFit = (lme.Coefficients.Estimate(1) + reIntercept) + (lme.Coefficients.Estimate(2) + reSlope) * xGrid;
     plot(ax, xGrid, yFit, '-', 'Color', thisColor, 'LineWidth', 3);
 end
-end
-
-function local_export_png(figHandle, outFile, dpi)
-if nargin < 3 || isempty(dpi)
-    dpi = 600;
-end
-set(figHandle, 'PaperPositionMode', 'auto');
-print(figHandle, outFile, '-dpng', sprintf('-r%d', dpi));
 end
 
 function [xTickVals, xTickLabels] = local_oldstyle_ticks(xRaw, modeChar, ElevationTransform)

@@ -1,6 +1,7 @@
 function [lme_Parallax_by_InverseDistance, lme_Parallax_by_Elevation, ...
     lme_Parallax_by_InverseDistanceNElevation, ...
-    lme_Parallax_by_InverseDistancePlusElevation] = ...
+    lme_Parallax_by_InverseDistancePlusElevation, ...
+    lme_Parallax_by_InverseDistancePlusElevationXStereoGroup] = ...
     Quad_Disparity_by_inverseDistanceElevation(tbl, tblName, ResultsDir, ...
     saveLME, mycolormap, sorted_idx, degreeFlag, ...
     fullUniqueID, secondYAxisColor, colorConfig, plotFlag)
@@ -29,7 +30,7 @@ if ~ismember('Distance', tbl.Properties.VariableNames)
     error('Quad_Disparity_by_inverseDistanceElevation:MissingDistance', ...
         'Input table must contain a Distance column.');
 end
-sourceCsv = local_source_file_label(tbl, tblName);
+sourceCsv = Quad_source_file_label(tbl, tblName);
 % Quad_prepare_perceived_disparity_table standardizes Distance to meters.
 % Compute inverse distance afterward so its units are m^{-1}.
 
@@ -45,12 +46,23 @@ elevationFormula = 'MeanParallax ~ Elevation + (1|ID)';
 linearDistancePlusElevationFormula = ...
     'MeanParallax ~ inverseDistance + Elevation + (1|ID)';
 linearDistanceElevationFormula = 'MeanParallax ~ inverseDistance * Elevation + (1|ID)';
+linearDistancePlusElevationStereoFormula = ...
+    'MeanParallax ~ (inverseDistance + Elevation)*StereoGroup + (1|ID)';
 
 lme_Parallax_by_InverseDistance = local_try_fitlme(tbl, inverseDistanceFormula);
 lme_Parallax_by_Elevation = local_try_fitlme(tbl, elevationFormula);
 lme_Parallax_by_InverseDistanceNElevation = local_try_fitlme(tbl, linearDistanceElevationFormula);
 lme_Parallax_by_InverseDistancePlusElevation = ...
     local_try_fitlme(tbl, linearDistancePlusElevationFormula);
+[stereoTbl, stereoSummaryLines] = local_prepare_stereo_group_table(tbl);
+lme_Parallax_by_InverseDistancePlusElevationXStereoGroup = [];
+if ~isempty(stereoTbl)
+    lme_Parallax_by_InverseDistancePlusElevationXStereoGroup = ...
+        local_try_fitlme(stereoTbl, linearDistancePlusElevationStereoFormula);
+    stereoSummaryLines = [stereoSummaryLines, ...
+        local_stereo_interaction_test_lines( ...
+        lme_Parallax_by_InverseDistancePlusElevationXStereoGroup)];
+end
 
 if saveLME
     if ~exist(ResultsDir, 'dir')
@@ -59,16 +71,18 @@ if saveLME
     savelmefile = fullfile(ResultsDir, ...
         [tblName '_inverseDistance_elevation_RI_models.txt']);
     local_write_model_report(savelmefile, tbl, tblName, sourceCsv, ...
-        linearElevationSource, ...
+        linearElevationSource, stereoSummaryLines, ...
         {...
         lme_Parallax_by_InverseDistance,...
         lme_Parallax_by_Elevation,...
         lme_Parallax_by_InverseDistancePlusElevation, ...
-        lme_Parallax_by_InverseDistanceNElevation}, ...
+        lme_Parallax_by_InverseDistanceNElevation, ...
+        lme_Parallax_by_InverseDistancePlusElevationXStereoGroup}, ...
         {inverseDistanceFormula, ...
         elevationFormula, ...
         linearDistancePlusElevationFormula, ...
-        linearDistanceElevationFormula});
+        linearDistanceElevationFormula, ...
+        linearDistancePlusElevationStereoFormula});
 end
 
 subjectcolor = local_subject_colors(tbl, mycolormap, sorted_idx, fullUniqueID);
@@ -264,8 +278,87 @@ else
 end
 end
 
+function [stereoTbl, summaryLines] = local_prepare_stereo_group_table(tbl)
+summaryLines = {'StereoGroup two-factor model: skipped (StereoGroup variable not found).'};
+stereoTbl = table();
+if ~ismember('StereoGroup', tbl.Properties.VariableNames)
+    return;
+end
+
+stereoTbl = tbl;
+stereoTbl.StereoGroup = Quad_stereo_group_categorical(stereoTbl.StereoGroup);
+stereoTbl = stereoTbl(~isundefined(stereoTbl.StereoGroup), :);
+stereoTbl.StereoGroup = removecats(stereoTbl.StereoGroup);
+groupNames = string(categories(stereoTbl.StereoGroup));
+if numel(groupNames) < 2
+    summaryLines = { ...
+        'StereoGroup two-factor model: skipped (fewer than two valid groups).'};
+    stereoTbl = table();
+    return;
+end
+
+summaryLines = [{sprintf( ...
+    'StereoGroup two-factor model: %d rows, %d participants, %d groups.', ...
+    height(stereoTbl), numel(categories(removecats(stereoTbl.ID))), ...
+    numel(groupNames))}, Quad_stereo_group_summary_lines(stereoTbl)];
+end
+
+function summaryLines = local_stereo_interaction_test_lines(lme)
+if isempty(lme)
+    summaryLines = {'StereoGroup joint parameter tests: unavailable (model was not fit).'};
+    return;
+end
+
+coefficientNames = string(lme.Coefficients.Name);
+isStereoTerm = contains(coefficientNames, "StereoGroup");
+isInteraction = contains(coefficientNames, ":");
+mainGroupTerms = isStereoTerm & ~isInteraction;
+distanceGroupTerms = isStereoTerm & isInteraction & ...
+    contains(coefficientNames, "inverseDistance");
+elevationGroupTerms = isStereoTerm & isInteraction & ...
+    contains(coefficientNames, "Elevation");
+allSlopeTerms = distanceGroupTerms | elevationGroupTerms;
+allGroupTerms = mainGroupTerms | allSlopeTerms;
+
+summaryLines = { ...
+    'Joint Wald tests for the two-factor StereoGroup model:', ...
+    local_joint_test_line(lme, allGroupTerms, ...
+        'Any model parameter differs across StereoGroups'), ...
+    local_joint_test_line(lme, mainGroupTerms, ...
+        'Intercept differs across StereoGroups'), ...
+    local_joint_test_line(lme, distanceGroupTerms, ...
+        '1/Distance slope differs across StereoGroups'), ...
+    local_joint_test_line(lme, elevationGroupTerms, ...
+        'Elevation slope differs across StereoGroups'), ...
+    local_joint_test_line(lme, allSlopeTerms, ...
+        'Either 1/Distance or Elevation slope differs across StereoGroups')};
+end
+
+function summaryLine = local_joint_test_line(lme, termMask, labelText)
+termIndex = find(termMask);
+if isempty(termIndex)
+    summaryLine = sprintf('  %s: unavailable (terms not found).', labelText);
+    return;
+end
+
+hypothesisMatrix = zeros(numel(termIndex), height(lme.Coefficients));
+for iTerm = 1:numel(termIndex)
+    hypothesisMatrix(iTerm, termIndex(iTerm)) = 1;
+end
+
+try
+    [pValue, fStatistic, numeratorDF, denominatorDF] = ...
+        coefTest(lme, hypothesisMatrix);
+    summaryLine = sprintf('  %s: F(%g,%g)=%.4g, p=%s.', ...
+        labelText, numeratorDF, denominatorDF, fStatistic, ...
+        Quad_format_pvalue(pValue));
+catch ME
+    summaryLine = sprintf('  %s: test failed (%s).', labelText, ME.message);
+end
+end
+
 function local_write_model_report(reportFile, tbl, tblName, sourceCsv, ...
-    linearElevationSource, models, formulas)
+    linearElevationSource, stereoSummaryLines, models, formulas)
 modelLabels = cellfun(@(f) ['Model: ' f], formulas, 'UniformOutput', false);
 validModel = ~cellfun(@isempty, models);
 if ~any(validModel)
@@ -282,7 +375,7 @@ reportOpts.GeneratedBy = mfilename;
 reportOpts.SourceFile = sourceCsv;
 reportOpts.ModelLabel = ['Quad Horizontal Binocular Parallax predicted by ' ...
     'inverse distance and elevation'];
-reportOpts.SummaryLines = { ...
+reportOpts.SummaryLines = [{ ...
     sprintf('Experiment: Quad'), ...
     sprintf('Rows in model table: %d', height(tbl)), ...
     sprintf('Participants in model table: %d', numel(categories(removecats(tbl.ID)))), ...
@@ -290,7 +383,8 @@ reportOpts.SummaryLines = { ...
     sprintf('Fit method: ML'), ...
     sprintf('All formulas are fit with random intercepts by participant.'), ...
     sprintf('Elevation models use raw signed Elevation in degrees.'), ...
-    sprintf('No elevation transform or +1 regularization is used by any model in this report.')};
+    sprintf('No elevation transform or +1 regularization is used by any model in this report.')}, ...
+    stereoSummaryLines];
 reportOpts.Models = models(validModel);
 reportOpts.ModelLabels = modelLabels(validModel);
 reportOpts.Comparisons = comparisons;
@@ -303,21 +397,21 @@ function [comparisons, comparisonLabels] = local_model_comparisons(models, formu
 comparisons = {};
 comparisonLabels = {};
 
-[comparisonTbl, ok] = local_try_compare(models{1}, models{3});
+[comparisonTbl, ok] = Quad_try_compare_lme(models{1}, models{3});
 if ok
     comparisons{end + 1} = comparisonTbl;
     comparisonLabels{end + 1} = sprintf('Model comparison: %s vs %s', ...
         formulas{1}, formulas{3});
 end
 
-[comparisonTbl, ok] = local_try_compare(models{2}, models{3});
+[comparisonTbl, ok] = Quad_try_compare_lme(models{2}, models{3});
 if ok
     comparisons{end + 1} = comparisonTbl;
     comparisonLabels{end + 1} = sprintf('Model comparison: %s vs %s', ...
         formulas{2}, formulas{3});
 end
 
-[comparisonTbl, ok] = local_try_compare(models{3}, models{4});
+[comparisonTbl, ok] = Quad_try_compare_lme(models{3}, models{4});
 if ok
     comparisons{end + 1} = comparisonTbl;
     comparisonLabels{end + 1} = sprintf( ...
@@ -329,61 +423,13 @@ fitStatLabels = ["Linear: 1/Distance"; ...
     "Linear: 1/Distance + Elevation"; ...
     "Linear: 1/Distance*Elevation"];
 responseScales = repmat("MeanParallax", 4, 1);
-[fitStatsTbl, ok] = local_fit_stat_table( ...
-    models, formulas, fitStatLabels, responseScales);
+[fitStatsTbl, ok] = Quad_lme_fit_stat_table( ...
+    models(1:4), formulas(1:4), fitStatLabels, responseScales);
 if ok
     comparisons{end + 1} = fitStatsTbl;
     comparisonLabels{end + 1} = ...
         'AIC/BIC summary: linear 1/Distance/elevation models';
 end
-end
-
-function [comparisonTbl, ok] = local_try_compare(lme1, lme2)
-comparisonTbl = [];
-ok = false;
-if isempty(lme1) || isempty(lme2)
-    return;
-end
-
-try
-    comparisonTbl = compare(lme1, lme2);
-    ok = true;
-catch ME
-    fprintf('Skipping model comparison: %s\n', ME.message);
-end
-end
-
-function [fitStatsTbl, ok] = local_fit_stat_table(models, formulas, labels, responseScales)
-valid = ~cellfun(@isempty, models);
-models = models(valid);
-formulas = formulas(valid);
-labels = labels(valid);
-responseScales = responseScales(valid);
-ok = ~isempty(models);
-
-if ~ok
-    fitStatsTbl = table();
-    return;
-end
-
-nModels = numel(models);
-nObs = nan(nModels, 1);
-logLikelihood = nan(nModels, 1);
-aic = nan(nModels, 1);
-bic = nan(nModels, 1);
-deviance = nan(nModels, 1);
-
-for iModel = 1:nModels
-    nObs(iModel) = models{iModel}.NumObservations;
-    logLikelihood(iModel) = models{iModel}.LogLikelihood;
-    aic(iModel) = models{iModel}.ModelCriterion.AIC;
-    bic(iModel) = models{iModel}.ModelCriterion.BIC;
-    deviance(iModel) = -2 * models{iModel}.LogLikelihood;
-end
-
-fitStatsTbl = table(labels(:), string(formulas(:)), responseScales(:), ...
-    nObs, logLikelihood, aic, bic, deviance, ...
-    'VariableNames', {'Model','Formula','Response','N','LogLikelihood','AIC','BIC','Deviance'});
 end
 
 function local_write_empty_report(reportFile, tblName, sourceCsv, formulas)
@@ -411,133 +457,6 @@ for iFormula = 1:numel(formulas)
 end
 end
 
-function sourceCsv = local_source_file_label(tbl, tblName)
-sourceCsv = char(string(tblName));
-try
-    if isstruct(tbl.Properties.UserData) && isfield(tbl.Properties.UserData, 'SourceFile')
-        sourceCsv = char(string(tbl.Properties.UserData.SourceFile));
-    end
-catch
-end
-
-if ~endsWith(string(sourceCsv), ".csv", "IgnoreCase", true)
-    sourceCsv = sprintf('%s.csv (inferred from tblName; function input is a table)', sourceCsv);
-end
-end
-
-function rawElevation = local_recover_raw_elevation(tbl, modelTransform)
-currentElevation = double(tbl.Elevation);
-candidates = {'RawElevation', 'Observer_Elevation', 'Ground_Elevation'};
-for iCandidate = 1:numel(candidates)
-    varName = candidates{iCandidate};
-    if ~ismember(varName, tbl.Properties.VariableNames)
-        continue;
-    end
-    candidate = double(tbl.(varName));
-    transformedCandidate = local_apply_elevation_transform(candidate, modelTransform);
-    finiteRows = isfinite(currentElevation) & isfinite(transformedCandidate);
-    if any(finiteRows) && max(abs(currentElevation(finiteRows) - ...
-            transformedCandidate(finiteRows))) < 1e-8
-        rawElevation = candidate;
-        return;
-    end
-end
-
-if any(modelTransform == [2 4 6])
-    error('Quad_Disparity_by_inverseDistanceElevation:MissingRawElevation', ...
-        ['Signed elevation cannot be recovered from an absolute-elevation input. ' ...
-        'Retain Observer_Elevation, Ground_Elevation, or RawElevation in the table.']);
-end
-rawElevation = currentElevation;
-end
-
-function transformedElevation = local_apply_elevation_transform(elevation, modelTransform)
-switch modelTransform
-    case 1
-        transformedElevation = elevation;
-    case 2
-        transformedElevation = abs(elevation);
-    case 3
-        transformedElevation = pi * elevation / 180;
-    case 4
-        transformedElevation = pi * abs(elevation) / 180;
-    case 5
-        transformedElevation = elevation / 90;
-    case 6
-        transformedElevation = abs(elevation / 90);
-    otherwise
-        transformedElevation = elevation;
-end
-end
-
-function transformLabel = local_transform_label(modelTransform)
-switch modelTransform
-    case 1
-        transformLabel = 'Elevation';
-    case 2
-        transformLabel = 'absElevation';
-    case 5
-        transformLabel = 'ElevationD90';
-    case 6
-        transformLabel = 'absElevationD90';
-    otherwise
-        transformLabel = sprintf('modelTransform %d', modelTransform);
-end
-end
-
-function titleLines = local_full_model_title(lme, modelTransform, includeVisualAngle, nIDs)
-if nargin < 3
-    includeVisualAngle = false;
-end
-if nargin < 4
-    nIDs = nan;
-end
-if isempty(lme)
-    titleLines = {'Full RI model', 'Model unavailable'};
-    return;
-end
-
-b0 = local_coef_estimate(lme, '(Intercept)');
-bD = local_coef_estimate(lme, 'log2inverseDistance');
-bE = local_coef_estimate(lme, 'log2elevation');
-p0 = local_coef_pvalue(lme, '(Intercept)');
-pD = local_coef_pvalue(lme, 'log2inverseDistance');
-pE = local_coef_pvalue(lme, 'log2elevation');
-scale = 2.^b0;
-elevationTerm = local_elevation_equation_term(modelTransform);
-elevationLogTerm = local_elevation_log_formula_term(modelTransform);
-nText = local_format_count(nIDs);
-
-if includeVisualAngle
-    bVA = local_coef_estimate(lme, 'log2real_visual_angle');
-    pVA = local_coef_pvalue(lme, 'log2real_visual_angle');
-    modelLine = sprintf(['Full RI model: log_2(Perceived Parallax) = b_0 + ' ...
-        'b_{VA} log_2(VA) + b_D ' ...
-        'log_2(Distance) + b_E %s + (1|ID)'], ...
-        elevationLogTerm);
-    equationLine = sprintf(['Perceived Parallax = %s VA^{%s} ' ...
-        'Distance^{%s} %s^{%s}'], ...
-        local_format_title_number(scale), local_format_title_number(bVA), ...
-        local_format_title_number(-bD), elevationTerm, local_format_title_number(bE));
-    statsLine = sprintf('p_{VA}=%s, p_D=%s, p_E=%s', ...
-        local_format_pvalue(pVA), local_format_pvalue(pD), ...
-        local_format_pvalue(pE));
-    interceptLine = sprintf('p_0=%s, n=%s', local_format_pvalue(p0), nText);
-else
-    modelLine = sprintf(['Full RI model: log_2(Perceived Parallax) = b_0 + ' ...
-        'b_D log_2(Distance) + b_E %s + (1|ID)'], ...
-        elevationLogTerm);
-    equationLine = sprintf('Perceived Parallax = %s Distance^{%s} %s^{%s}', ...
-        local_format_title_number(scale), local_format_title_number(-bD), ...
-        elevationTerm, local_format_title_number(bE));
-    statsLine = sprintf('p_D=%s, p_E=%s', ...
-        local_format_pvalue(pD), local_format_pvalue(pE));
-    interceptLine = sprintf('p_0=%s, n=%s', local_format_pvalue(p0), nText);
-end
-
-titleLines = {modelLine, equationLine, statsLine, interceptLine};
-end
-
 function estimate = local_coef_estimate(lme, coefName)
 estimate = nan;
 coefNames = string(lme.Coefficients.Name);
@@ -556,28 +475,6 @@ if ~isempty(idx)
 end
 end
 
-function elevationTerm = local_elevation_equation_term(modelTransform)
-switch modelTransform
-    case 2
-        elevationTerm = '(1+|E|)';
-    case 6
-        elevationTerm = '(1+|E|/90)';
-    otherwise
-        elevationTerm = '(1+E/90)';
-end
-end
-
-function elevationLogTerm = local_elevation_log_formula_term(modelTransform)
-switch modelTransform
-    case 2
-        elevationLogTerm = 'log_2(1+|E|)';
-    case 6
-        elevationLogTerm = 'log_2(1+|E|/90)';
-    otherwise
-        elevationLogTerm = 'log_2(1+E/90)';
-end
-end
-
 function numberText = local_format_title_number(value)
 if ~isfinite(value)
     numberText = 'n/a';
@@ -585,14 +482,6 @@ elseif abs(value) >= 100
     numberText = sprintf('%.1f', value);
 else
     numberText = sprintf('%.2f', value);
-end
-end
-
-function countText = local_format_count(value)
-if ~isfinite(value)
-    countText = 'n/a';
-else
-    countText = sprintf('%d', round(value));
 end
 end
 
@@ -654,76 +543,6 @@ switch string(colorConfig.Mode)
 end
 end
 
-function local_add_subject_colorbar(figHandle, mycolormap, nIDs, ...
-    labelText, colorConfig, legendAxes)
-if nargin < 4 || isempty(labelText)
-    labelText = 'Participant color order';
-end
-if nargin < 5
-    colorConfig = [];
-end
-if nargin < 6 || isempty(legendAxes)
-    legendAxes = findobj(figHandle, 'Type', 'axes', '-not', 'Tag', 'Colorbar');
-    legendAxes = legendAxes(1);
-end
-
-if isstruct(colorConfig) && isfield(colorConfig, 'Mode') && ...
-        string(colorConfig.Mode) == "clinicalnotes"
-    legendHandle = Quad_add_clinical_notes_legend(legendAxes, colorConfig);
-    legendHandle.FontSize = 11;
-    return;
-end
-
-if isempty(mycolormap)
-    return;
-end
-
-labelLower = lower(string(labelText));
-isNormedStereoBar = contains(labelLower, 'normed stereo score') || ...
-    contains(labelLower, 'normedscore') || ...
-    contains(labelLower, 'normedstereoscore');
-if isNormedStereoBar
-    plotAxes = findall(figHandle, 'Type', 'axes');
-    plotAxes = plotAxes(~arrayfun(@(ax) isa(ax, 'matlab.graphics.illustration.ColorBar'), plotAxes));
-    if ~isempty(plotAxes)
-        apply_stereo_score_colormap(plotAxes);
-    end
-    cb = add_stereo_score_colorbar(figHandle, labelText, [0.885 0.22 0.012 0.52]);
-    cb.FontName = 'Avenir';
-    cb.FontSize = 18;
-    cb.Label.FontName = 'Avenir';
-    cb.Label.FontSize = 20;
-    cb.Label.Units = 'normalized';
-    cb.Label.Position = [-1.6 0.5 0];
-    return;
-end
-
-nColorLevels = min(size(mycolormap, 1), max(1, nIDs));
-displayCmap = mycolormap(1:nColorLevels, :);
-cbAx = axes('Parent', figHandle, 'Position', [0.86 0.22 0.010 0.52]);
-set(cbAx, 'Visible', 'off', 'YDir', 'normal', 'CLim', [1 nColorLevels], ...
-    'Color', 'none', 'XColor', 'none', 'YColor', 'none');
-colormap(cbAx, displayCmap);
-
-cb = colorbar(cbAx, 'Position', [0.885 0.22 0.012 0.52]);
-cb.FontName = 'Avenir';
-cb.FontSize = 12;
-if isstruct(colorConfig) && isfield(colorConfig, 'Mode') && ...
-        string(colorConfig.Mode) == "id" && ...
-        isfield(colorConfig, 'ColorbarTicks') && ...
-        isfield(colorConfig, 'ColorbarTickLabels') && ...
-        ~isempty(colorConfig.ColorbarTicks)
-    cb.Ticks = max(1, min(nColorLevels, colorConfig.ColorbarTicks(:)'));
-    cb.TickLabels = string(colorConfig.ColorbarTickLabels(:)');
-else
-    cb.Ticks = unique(max(1, min(nColorLevels, [1 nColorLevels])));
-    cb.TickLabels = string(cb.Ticks);
-end
-cb.Label.String = labelText;
-cb.Label.FontName = 'Avenir';
-cb.Label.FontSize = 14;
-end
-
 function local_plot_linear_model_panel(ax, tbl, subjectcolor, lme, modeChar, ...
     minParallax, maxParallax, showYLabel, hiddenYAxisColor)
 if nargin < 9 || isempty(showYLabel)
@@ -767,94 +586,6 @@ title(ax, titleText, ...
     'FontSize', 15, 'FontWeight', 'normal');
 end
 
-function local_plot_linear_interaction_panel(ax, tbl, lme, modeChar, ...
-    minParallax, maxParallax, showYLabel)
-hold(ax, 'on');
-markerSize = 32;
-
-if modeChar == 'D'
-    x = tbl.inverseDistance;
-    scatterModerator = tbl.Elevation;
-    xName = 'inverseDistance';
-    moderatorName = 'Elevation';
-    moderatorDisplayName = 'Elevation';
-    % LampBulb7 disk elevations from Supplemental Table 3. This analysis
-    % uses absolute elevation, so the negative value enters as |E|.
-    representativeValues = sort(abs([...
-        -0.87375, 1.84810262, 2.84908696]));
-    representativeDisplayValues = representativeValues;
-    xlabelText = '1/Distance [m^{-1}]';
-    colorbarText = '|Elevation| [deg]';
-    panelMap = earthColormap(256, 'Apply', false);
-else
-    x = tbl.Elevation;
-    scatterModerator = tbl.Distance;
-    xName = 'Elevation';
-    moderatorName = 'inverseDistance';
-    moderatorDisplayName = 'Distance [m]';
-    % Approximate mean distance of the Lamp5 disks.
-    representativeDisplayValues = 12.6;
-    representativeValues = 1 ./ representativeDisplayValues;
-    xlabelText = '|Elevation| [deg]';
-    colorbarText = 'Distance [m]';
-    panelMap = plasma(256);
-end
-colorLimits = [min(scatterModerator) max(scatterModerator)];
-lineMap = local_colors_from_colormap(panelMap, colorLimits, ...
-    representativeDisplayValues);
-
-scatter(ax, x, tbl.MeanParallax, markerSize, scatterModerator, 'filled', ...
-    'MarkerFaceAlpha', 0.45, 'MarkerEdgeColor', 'none', ...
-    'HandleVisibility', 'off');
-colormap(ax, panelMap);
-if colorLimits(1) < colorLimits(2)
-    clim(ax, colorLimits);
-end
-cb = colorbar(ax, 'eastoutside');
-cb.Label.String = colorbarText;
-cb.Label.FontName = 'Avenir';
-cb.Label.FontSize = 14;
-cb.FontName = 'Avenir';
-cb.FontSize = 12;
-
-xGrid = linspace(min(x), max(x), 200)';
-for iValue = 1:numel(representativeValues)
-    newTbl = tbl(ones(numel(xGrid), 1), :);
-    newTbl.(xName) = xGrid;
-    newTbl.(moderatorName) = repmat(representativeValues(iValue), ...
-        numel(xGrid), 1);
-    try
-        yFit = predict(lme, newTbl, 'Conditional', false);
-        plot(ax, xGrid, yFit, '-', 'Color', lineMap(iValue,:), ...
-            'LineWidth', 4, 'DisplayName', ...
-            sprintf('%s = %.3g', moderatorDisplayName, ...
-            representativeDisplayValues(iValue)));
-    catch ME
-        fprintf('Skipping interaction prediction line: %s\n', ME.message);
-    end
-end
-
-xlabel(ax, xlabelText, 'FontName', 'Avenir', 'FontSize', 18);
-if showYLabel
-    ylabel(ax, 'Perceived Parallax [deg]', 'FontName', 'Avenir', 'FontSize', 18);
-else
-    ylabel(ax, '');
-    ax.YColor = 'w';
-end
-set(ax, 'FontName', 'Avenir', 'FontSize', 14);
-if modeChar == 'D'
-    [xLimits, xTicks] = Quad_inverse_distance_axis(x);
-    xlim(ax, xLimits);
-    xticks(ax, xTicks);
-else
-    xlim(ax, Quad_expand_linear_limits(x, false));
-end
-ylim(ax, Quad_expand_linear_limits([minParallax maxParallax], false));
-box(ax, 'off');
-grid(ax, 'off');
-legend(ax, 'Location', 'best', 'Box', 'off', 'FontSize', 11);
-end
-
 function colors = local_colors_from_colormap(colorMap, colorLimits, values)
 values = double(values(:));
 if colorLimits(1) == colorLimits(2)
@@ -865,32 +596,6 @@ end
 mapPositions = linspace(colorLimits(1), colorLimits(2), size(colorMap, 1));
 clippedValues = min(max(values, colorLimits(1)), colorLimits(2));
 colors = interp1(mapPositions, colorMap, clippedValues, 'linear');
-end
-
-function titleLines = local_linear_interaction_title(lme, nIDs, elevationVariable)
-if isempty(lme)
-    titleLines = {'Linear interaction RI model', 'Model unavailable'};
-    return;
-end
-
-b0 = local_coef_estimate(lme, '(Intercept)');
-bD = local_coef_estimate(lme, 'inverseDistance');
-bE = local_coef_estimate(lme, elevationVariable);
-bDE = local_coef_estimate_any(lme, ...
-    {['inverseDistance:' elevationVariable], [elevationVariable ':inverseDistance']});
-pD = local_coef_pvalue(lme, 'inverseDistance');
-pE = local_coef_pvalue(lme, elevationVariable);
-pDE = local_coef_pvalue_any(lme, ...
-    {['inverseDistance:' elevationVariable], [elevationVariable ':inverseDistance']});
-eSymbol = 'E';
-titleLines = { ...
-    sprintf('Linear interaction RI model: Perceived Parallax = b_0 + b_D/D + b_E%s + b_{DE}%s/D + (1|ID)', eSymbol, eSymbol), ...
-    sprintf('Perceived Parallax = %s %s/D %s%s %s%s/D', ...
-    local_format_title_number(b0), local_format_signed_term(bD), ...
-    local_format_signed_term(bE), eSymbol, local_format_signed_term(bDE), eSymbol), ...
-    sprintf('p_D=%s, p_E=%s, p_{D x E}=%s, n=%d', ...
-    local_format_pvalue(pD), local_format_pvalue(pE), ...
-    local_format_pvalue(pDE), nIDs)};
 end
 
 function titleLines = local_linear_additive_title(lme, nIDs, elevationVariable)
@@ -1006,81 +711,6 @@ end
 ylim(ax, Quad_expand_linear_limits([minParallax maxParallax], false));
 box(ax, 'off');
 grid(ax, 'off');
-end
-
-function [limits, ticks] = local_inverse_distance_axis(x)
-x = double(x(:));
-x = x(isfinite(x) & x >= 0);
-if isempty(x) || max(x) <= 0
-    limits = [0 1];
-    ticks = 0:0.2:1;
-    return;
-end
-targetStep = max(x) / 4;
-scale = 10.^floor(log10(targetStep));
-candidates = [1 2 2.5 5 10] * scale;
-niceStep = candidates(find(candidates >= targetStep, 1, 'first'));
-upperLimit = ceil(max(x) / niceStep) * niceStep;
-limits = [0 upperLimit];
-ticks = 0:niceStep:upperLimit;
-end
-
-function limits = local_expand_linear_limits(x, includeZero)
-if nargin < 2
-    includeZero = false;
-end
-x = double(x(:));
-x = x(isfinite(x));
-if isempty(x)
-    limits = [0 1];
-    return;
-end
-xmin = min(x);
-xmax = max(x);
-span = xmax - xmin;
-pad = max(0.04 * span, eps(max(abs([xmin xmax]))));
-limits = [xmin - pad xmax + pad];
-if includeZero
-    limits(1) = min(0, limits(1));
-end
-end
-
-function local_plot_full_model_panel(ax, tbl, subjectcolor, lme, modeChar, ...
-    minParallax, maxParallax, modelTransform, showYLabel, hiddenYAxisColor)
-if nargin < 9 || isempty(showYLabel)
-    showYLabel = true;
-end
-if nargin < 10 || isempty(hiddenYAxisColor)
-    hiddenYAxisColor = 'w';
-end
-
-hold(ax, 'on');
-[x, xlog, xlabelText, tickVals, predictorName, ~] = ...
-    local_log_axis_setup(tbl, modeChar, modelTransform);
-y = tbl.log2mean_parallax;
-
-if isempty(lme)
-    scatter_by_measurement(ax, xlog, y, subjectcolor, tbl.Measurement);
-    local_finish_log_axes(ax, tickVals, xlabelText, minParallax, maxParallax, x, ...
-        showYLabel, hiddenYAxisColor);
-    return;
-end
-
-pval = local_fixed_effect_pvalue(lme, predictorName);
-if isfinite(pval) && pval < 0.05
-    xlinerange = linspace(min(xlog), max(xlog), 200)';
-    [yFit, yCI, ok] = local_full_model_prediction(lme, tbl, modeChar, xlinerange);
-    if ok
-        fill(ax, [xlinerange; flipud(xlinerange)], ...
-            [yCI(:,1); flipud(yCI(:,2))], 'k', ...
-            'EdgeColor', 'none', 'FaceAlpha', 0.22);
-        plot(ax, xlinerange, yFit, 'k-', 'LineWidth', 5);
-    end
-end
-
-scatter_by_measurement(ax, xlog, y, subjectcolor, tbl.Measurement);
-local_finish_log_axes(ax, tickVals, xlabelText, minParallax, maxParallax, x, ...
-    showYLabel, hiddenYAxisColor);
 end
 
 function [yFit, yCI, ok] = local_full_model_prediction(lme, tbl, modeChar, xlinerange)

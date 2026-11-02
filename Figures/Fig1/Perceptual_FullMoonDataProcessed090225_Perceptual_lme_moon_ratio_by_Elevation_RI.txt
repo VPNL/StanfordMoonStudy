@@ -1,7 +1,7 @@
 write_moon_lme_report.m: Moon perceptual magnification by elevation: Perceptual_FullMoonDataProcessed090225.csv Perceptual - random-intercept model
 ==========================================================================================================================
 
-Generated: 2026-10-13 16:34:48
+Generated: 2026-11-01 17:04:02
 
 Task: Perceptual
 Median PM: 2.39
@@ -28,14 +28,23 @@ Model fit statistics:
     880.33    895.37    -436.17          872.33
 
 Fixed effects coefficients (95% CIs):
-    Name         Estimate     SE           tStat      DF     pValue        Lower        Upper
-    Intercept    3.5382       0.11682      30.287     315    2.5842e-95    3.3083       3.768
-    Elevation    -0.046713    0.0045435    -10.281    315    1.4304e-21    -0.055653    -0.037774
+    Name         Estimate     SE           tStat      DF
+    Intercept    3.5382       0.11682      30.287     315
+    Elevation    -0.046713    0.0045435    -10.281    315
+
+
+    pValue        Lower        Upper
+    2.5842e-95    3.3083       3.768
+    1.4304e-21    -0.055653    -0.037774
 
 Random effects covariance parameters (95% CIs):
 Group: ID (157 Levels)
-    Name1        Name2        Type    Estimate    Lower      Upper
-    Intercept    Intercept    std     0.82499     0.70731    0.96225
+    Name1        Name2        Type    Estimate
+    Intercept    Intercept    std     0.82499
+
+
+    Lower      Upper
+    0.70731    0.96225
 
 Group: Error
     Name       Estimate    Lower      Upper

@@ -5,7 +5,7 @@ function [lme_Parallax_by_InverseDistance, lme_Parallax_by_Elevation, ...
     Quad_Disparity_by_inverseDistanceElevation_single(tbl, tblName, ...
     ResultsDir, saveLME, mycolormap, sorted_idx, degreeFlag, ...
     fullUniqueID, colorbarLabel, ...
-    secondYAxisColor, plotFixedEffectsRS, colorConfig, runStereoAnalysis, plotRI)
+    secondYAxisColor, plotFixedEffectsRS, colorConfig, ~, plotRI)
 % QUAD_DISPARITY_BY_INVERSEDISTANCEELEVATION_SINGLE
 % Fit linear single-factor 1/Distance/elevation RI and RS models. Only the
 % RS models are plotted; RI plots are produced by the companion RI function.
@@ -28,14 +28,11 @@ end
 if nargin < 12
     colorConfig = [];
 end
-if nargin < 13 || isempty(runStereoAnalysis)
-    runStereoAnalysis = true;
-end
 if nargin < 14 || isempty(plotRI)
     plotRI = false;
 end
 
-sourceCsv = local_source_file_label(tbl, tblName);
+sourceCsv = Quad_source_file_label(tbl, tblName);
 outputStem = [local_output_stem(tblName) '_inverseDistance'];
 if ~ismember('Distance', tbl.Properties.VariableNames)
     error('Quad_Disparity_by_inverseDistanceElevation_single:MissingDistance', ...
@@ -78,7 +75,6 @@ if saveLME
         [outputStem '_elevation_single_RI_RS.txt']);
     local_write_model_report(savelmefile, tbl, tblName, sourceCsv, ...
         linearElevationSource, stereoGroupSummaryLines, ...
-        runStereoAnalysis, ...
         {lme_Parallax_by_InverseDistance, lme_Parallax_by_Elevation, ...
         lme_Parallax_by_InverseDistance_RS, lme_Parallax_by_Elevation_RS, ...
         lme_Parallax_by_InverseDistanceXStereoGroup, ...
@@ -138,20 +134,12 @@ end
 
 function local_write_model_report(reportFile, tbl, tblName, sourceCsv, ...
     linearElevationSource, stereoGroupSummaryLines, ...
-    runStereoAnalysis, models, formulas)
+    models, formulas)
 modelLabels = cellfun(@(f) ['Model: ' f], formulas, 'UniformOutput', false);
 validModel = ~cellfun(@isempty, models);
 if ~any(validModel)
     local_write_empty_report(reportFile, tblName, sourceCsv, formulas);
     return;
-end
-
-[comparisons, comparisonLabels] = local_model_comparisons(models, formulas);
-if runStereoAnalysis
-    [stereoComparisons, stereoLabels] = ...
-        local_stereo_relationship_models(tbl, models{3});
-    comparisons = [comparisons stereoComparisons];
-    comparisonLabels = [comparisonLabels stereoLabels];
 end
 
 reportOpts = struct();
@@ -194,8 +182,6 @@ reportOpts.SummaryLines = [ ...
     stereoGroupSummaryLines];
 reportOpts.Models = models(validModel);
 reportOpts.ModelLabels = modelLabels(validModel);
-reportOpts.Comparisons = comparisons;
-reportOpts.ComparisonLabels = comparisonLabels;
 reportOpts.RemoveGroupError = false;
 write_lme_stats_report(models{find(validModel, 1, 'first')}, reportFile, reportOpts);
 end
@@ -240,121 +226,6 @@ summaryLine = sprintf( ...
     100 * nPositive / nParticipants);
 end
 
-function [comparisons, comparisonLabels] = local_model_comparisons(models, formulas)
-comparisons = {};
-comparisonLabels = {};
-hasStereoGroupModels = numel(models) >= 6 && any(~cellfun(@isempty, models(5:6)));
-
-[comparisonTbl, ok] = local_try_compare(models{1}, models{3});
-if ok
-    comparisons{end + 1} = comparisonTbl;
-    comparisonLabels{end + 1} = sprintf('Model comparison: %s vs %s', ...
-        formulas{1}, formulas{3});
-end
-
-[comparisonTbl, ok] = local_try_compare(models{2}, models{4});
-if ok
-    comparisons{end + 1} = comparisonTbl;
-    comparisonLabels{end + 1} = sprintf('Model comparison: %s vs %s', ...
-        formulas{2}, formulas{4});
-end
-
-if hasStereoGroupModels
-    [comparisonTbl, ok] = local_try_compare(models{1}, models{5});
-    if ok
-        comparisons{end + 1} = comparisonTbl;
-        comparisonLabels{end + 1} = sprintf('StereoGroup RI interaction comparison: %s vs %s', ...
-            formulas{1}, formulas{5});
-    end
-
-    [comparisonTbl, ok] = local_try_compare(models{2}, models{6});
-    if ok
-        comparisons{end + 1} = comparisonTbl;
-        comparisonLabels{end + 1} = sprintf('StereoGroup RI interaction comparison: %s vs %s', ...
-            formulas{2}, formulas{6});
-    end
-end
-
-[fitStatsTbl, ok] = local_fit_stat_table( ...
-    models, formulas, ...
-    ["Linear inverse distance RI"; "Linear elevation RI"; ...
-    "Linear inverse distance RS"; "Linear elevation RS"; ...
-    "Linear inverse distance x StereoGroup RI"; ...
-    "Linear elevation x StereoGroup RI"], ...
-    repmat("MeanParallax", numel(models), 1));
-if ok
-    comparisons{end + 1} = fitStatsTbl;
-    comparisonLabels{end + 1} = ...
-        'AIC/BIC summary: linear single-factor models';
-end
-end
-
-function [comparisonTbl, ok] = local_try_compare(lme1, lme2)
-comparisonTbl = [];
-ok = false;
-if isempty(lme1) || isempty(lme2)
-    return;
-end
-
-try
-    comparisonTbl = compare(lme1, lme2);
-    ok = true;
-catch ME
-    fprintf('Skipping model comparison: %s\n', ME.message);
-end
-end
-
-function [fitStatsTbl, ok] = local_fit_stat_table(models, formulas, labels, responseScales)
-valid = ~cellfun(@isempty, models);
-models = models(valid);
-formulas = formulas(valid);
-labels = labels(valid);
-responseScales = responseScales(valid);
-ok = ~isempty(models);
-
-if ~ok
-    fitStatsTbl = table();
-    return;
-end
-
-nModels = numel(models);
-nObs = nan(nModels, 1);
-logLikelihood = nan(nModels, 1);
-aic = nan(nModels, 1);
-bic = nan(nModels, 1);
-deviance = nan(nModels, 1);
-
-for iModel = 1:nModels
-    nObs(iModel) = models{iModel}.NumObservations;
-    logLikelihood(iModel) = models{iModel}.LogLikelihood;
-    aic(iModel) = models{iModel}.ModelCriterion.AIC;
-    bic(iModel) = models{iModel}.ModelCriterion.BIC;
-    deviance(iModel) = -2 * models{iModel}.LogLikelihood;
-end
-
-fitStatsTbl = table(labels(:), string(formulas(:)), responseScales(:), ...
-    nObs, logLikelihood, aic, bic, deviance, ...
-    'VariableNames', {'Model','Formula','Response','N','LogLikelihood','AIC','BIC','Deviance'});
-end
-
-function [stereoComparisons, stereoLabels] = local_stereo_relationship_models(tbl, lmeDistanceRS)
-stereoComparisons = {};
-stereoLabels = {};
-stereoTbl = local_subject_distance_rs_table(tbl, lmeDistanceRS, [], [], []);
-if isempty(stereoTbl)
-    return;
-end
-
-scoreVarLabel = stereoTbl.Properties.UserData.StereoScoreVarName;
-lmInterceptContinuous = fitlm(stereoTbl, 'SubjectIntercept ~ StereoScore');
-lmSlopeContinuous = fitlm(stereoTbl, 'SubjectSlope ~ StereoScore');
-
-stereoComparisons = {lmInterceptContinuous, lmSlopeContinuous};
-stereoLabels = { ...
-    sprintf('Stereo score analysis: SubjectIntercept ~ %s', scoreVarLabel), ...
-    sprintf('Stereo score analysis: SubjectSlope ~ %s', scoreVarLabel)};
-end
-
 function local_write_empty_report(reportFile, tblName, sourceCsv, formulas)
 [reportDir, ~, ~] = fileparts(reportFile);
 if ~isempty(reportDir) && ~exist(reportDir, 'dir')
@@ -378,46 +249,6 @@ fprintf(fid, 'Attempted formulas:\n');
 for iFormula = 1:numel(formulas)
     fprintf(fid, '    %s\n', formulas{iFormula});
 end
-end
-
-function sourceCsv = local_source_file_label(tbl, tblName)
-sourceCsv = char(string(tblName));
-try
-    if isstruct(tbl.Properties.UserData) && isfield(tbl.Properties.UserData, 'SourceFile')
-        sourceCsv = char(string(tbl.Properties.UserData.SourceFile));
-    end
-catch
-end
-
-if ~endsWith(string(sourceCsv), ".csv", "IgnoreCase", true)
-    sourceCsv = sprintf('%s.csv (inferred from tblName; function input is a table)', sourceCsv);
-end
-end
-
-function rawElevation = local_recover_raw_elevation(tbl, modelTransform)
-currentElevation = double(tbl.Elevation);
-candidates = {'RawElevation', 'Observer_Elevation', 'Ground_Elevation'};
-for iCandidate = 1:numel(candidates)
-    varName = candidates{iCandidate};
-    if ~ismember(varName, tbl.Properties.VariableNames)
-        continue;
-    end
-    candidate = double(tbl.(varName));
-    transformedCandidate = local_apply_elevation_transform(candidate, modelTransform);
-    finiteRows = isfinite(currentElevation) & isfinite(transformedCandidate);
-    if any(finiteRows) && max(abs(currentElevation(finiteRows) - ...
-            transformedCandidate(finiteRows))) < 1e-8
-        rawElevation = candidate;
-        return;
-    end
-end
-
-if any(modelTransform == [2 4 6])
-    error('Quad_Disparity_by_inverseDistanceElevation_single:MissingRawElevation', ...
-        ['Signed elevation cannot be recovered from an absolute-elevation input. ' ...
-        'Retain Observer_Elevation, Ground_Elevation, or RawElevation in the table.']);
-end
-rawElevation = currentElevation;
 end
 
 function transformedElevation = local_apply_elevation_transform(elevation, modelTransform)
@@ -446,7 +277,7 @@ if ~ismember('StereoGroup', tbl.Properties.VariableNames)
     return;
 end
 
-tbl.StereoGroup = local_stereo_group_categorical(tbl.StereoGroup);
+tbl.StereoGroup = Quad_stereo_group_categorical(tbl.StereoGroup);
 validStereoGroup = ~isundefined(tbl.StereoGroup);
 if ~all(validStereoGroup)
     tbl = tbl(validStereoGroup, :);
@@ -459,174 +290,8 @@ if numel(groupNames) < 2
     return;
 end
 
-stereoGroupSummaryLines = local_group_summary_lines(tbl);
+stereoGroupSummaryLines = Quad_stereo_group_summary_lines(tbl);
 runStereoGroupInteractions = true;
-end
-
-function stereoGroup = local_stereo_group_categorical(rawGroup)
-if isnumeric(rawGroup) || islogical(rawGroup)
-    groupValues = double(rawGroup);
-    groupText = strings(size(groupValues));
-    groupText(~isfinite(groupValues)) = "";
-    if all(ismember(unique(groupValues(isfinite(groupValues))), [0 1 2 3]))
-        groupText(groupValues == 1) = "StereoTypical";
-        groupText(groupValues == 2) = "StereoDeficient";
-        groupText(groupValues == 3) = "StereoBlind";
-    else
-        validRows = isfinite(groupValues);
-        groupText(validRows) = "Group" + string(groupValues(validRows));
-    end
-    stereoGroup = categorical(groupText);
-elseif iscategorical(rawGroup)
-    stereoGroup = rawGroup;
-else
-    stereoGroup = categorical(strtrim(string(rawGroup)));
-end
-stereoGroup = local_standardize_numeric_group_labels(stereoGroup);
-stereoGroup = reordercats(stereoGroup, local_order_categories(categories(stereoGroup)));
-end
-
-function stereoGroup = local_standardize_numeric_group_labels(stereoGroup)
-groupText = string(stereoGroup);
-validText = groupText(~ismissing(groupText) & groupText ~= "");
-if ~isempty(validText) && all(ismember(validText, ["1", "2", "3"]))
-    groupText(groupText == "1") = "StereoTypical";
-    groupText(groupText == "2") = "StereoDeficient";
-    groupText(groupText == "3") = "StereoBlind";
-    stereoGroup = categorical(groupText);
-end
-end
-
-function orderedCategories = local_order_categories(categoriesIn)
-categoriesIn = string(categoriesIn(:));
-preferred = ["StereoTypical"; "Typical"; "StereoDeficient"; "Deficient"; ...
-    "StereoBlind"; "Blind"];
-orderedCategories = strings(0, 1);
-for iPreferred = 1:numel(preferred)
-    if any(categoriesIn == preferred(iPreferred))
-        orderedCategories(end + 1, 1) = preferred(iPreferred); %#ok<AGROW>
-    end
-end
-for iCategory = 1:numel(categoriesIn)
-    if ~ismember(categoriesIn(iCategory), orderedCategories)
-        orderedCategories(end + 1, 1) = categoriesIn(iCategory); %#ok<AGROW>
-    end
-end
-orderedCategories = cellstr(orderedCategories);
-end
-
-function groupSummaryLines = local_group_summary_lines(tbl)
-groupNames = string(categories(tbl.StereoGroup));
-groupSummaryLines = cell(1, numel(groupNames) + 1);
-groupSummaryLines{1} = 'StereoGroup counts:';
-for iGroup = 1:numel(groupNames)
-    rowMask = string(tbl.StereoGroup) == groupNames(iGroup);
-    groupSummaryLines{iGroup + 1} = sprintf('  %s: %d rows, %d participants', ...
-        groupNames(iGroup), sum(rowMask), numel(unique(tbl.ID(rowMask))));
-end
-end
-
-function transformLabel = local_transform_label(modelTransform)
-switch modelTransform
-    case 1
-        transformLabel = 'Elevation';
-    case 2
-        transformLabel = 'absElevation';
-    case 5
-        transformLabel = 'ElevationD90';
-    case 6
-        transformLabel = 'absElevationD90';
-    otherwise
-        transformLabel = sprintf('modelTransform %d', modelTransform);
-end
-end
-
-function local_plot_fixed_only(ax, tbl, subjectcolor, lme, modeChar, minParallax, maxParallax, modelTransform, nIDs, showYLabel, hiddenYAxisColor)
-if nargin < 9 || isempty(showYLabel)
-    showYLabel = true;
-end
-if nargin < 11 || isempty(hiddenYAxisColor)
-    hiddenYAxisColor = 'w';
-end
-hold(ax, 'on');
-[x, xlog, xlabelText, tickVals, titleFormula] = local_axis_setup(tbl, modeChar, modelTransform);
-y = tbl.log2mean_parallax;
-
-if isempty(lme)
-    scatter_by_measurement(ax, xlog, y, subjectcolor, tbl.Measurement);
-    local_finish_axes(ax, tickVals, xlabelText, minParallax, maxParallax, x, showYLabel, hiddenYAxisColor);
-    title(ax, {'Model unavailable','rank-deficient or singular'}, 'FontSize', 16, 'FontWeight', 'normal');
-    return;
-end
-
-xlinerange = linspace(min(xlog), max(xlog), 200);
-b0 = lme.Coefficients.Estimate(1);
-b1 = lme.Coefficients.Estimate(2);
-pval = lme.Coefficients.pValue(2);
-if isfinite(pval) && pval < 0.05
-    ciL0 = lme.Coefficients.Lower(1);
-    ciL1 = lme.Coefficients.Lower(2);
-    ciU0 = lme.Coefficients.Upper(1);
-    ciU1 = lme.Coefficients.Upper(2);
-
-    yFit = b0 + b1 * xlinerange;
-    xvector = [xlinerange fliplr(xlinerange)];
-    yvector = [ciL0 + ciL1 * xlinerange fliplr(ciU0 + ciU1 * xlinerange)];
-    fill(ax, xvector, yvector, 'k', 'EdgeColor', 'none', 'FaceAlpha', 0.25);
-    plot(ax, xlinerange, yFit, 'k-', 'LineWidth', 5);
-end
-scatter_by_measurement(ax, xlog, y, subjectcolor, tbl.Measurement);
-
-local_finish_axes(ax, tickVals, xlabelText, minParallax, maxParallax, x, showYLabel, hiddenYAxisColor);
-displayExponent = b1;
-if modeChar == 'D'
-    displayExponent = -b1;
-end
-titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number(displayExponent), local_format_pvalue(pval), nIDs);
-title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
-end
-
-function local_plot_random_slopes(ax, tbl, subjectcolor, lme, modeChar, minParallax, maxParallax, modelTransform, nIDs, fullUniqueID, mycolormap, sorted_idx, showYLabel, hiddenYAxisColor, plotFixedEffectsRS)
-if nargin < 13 || isempty(showYLabel)
-    showYLabel = true;
-end
-if nargin < 14 || isempty(hiddenYAxisColor)
-    hiddenYAxisColor = 'w';
-end
-if nargin < 15 || isempty(plotFixedEffectsRS)
-    plotFixedEffectsRS = false;
-end
-hold(ax, 'on');
-[x, xlog, xlabelText, tickVals, titleFormula] = local_axis_setup(tbl, modeChar, modelTransform);
-y = tbl.log2mean_parallax;
-
-if isempty(lme)
-    scatter_by_measurement(ax, xlog, y, subjectcolor, tbl.Measurement);
-    local_finish_axes(ax, tickVals, xlabelText, minParallax, maxParallax, x, showYLabel, hiddenYAxisColor);
-    title(ax, {'Model unavailable','rank-deficient or singular'}, 'FontSize', 16, 'FontWeight', 'normal');
-    return;
-end
-
-local_plot_subject_lines(ax, tbl, lme, modeChar, fullUniqueID, mycolormap, sorted_idx);
-
-xlinerange = linspace(min(xlog), max(xlog), 200);
-b0 = lme.Coefficients.Estimate(1);
-b1 = lme.Coefficients.Estimate(2);
-pval = lme.Coefficients.pValue(2);
-
-if plotFixedEffectsRS && isfinite(pval) && pval < 0.05
-    yFit = b0 + b1 * xlinerange;
-    plot(ax, xlinerange, yFit, 'k-', 'LineWidth', 5);
-end
-scatter_by_measurement(ax, xlog, y, subjectcolor, tbl.Measurement);
-
-local_finish_axes(ax, tickVals, xlabelText, minParallax, maxParallax, x, showYLabel, hiddenYAxisColor);
-displayExponent = b1;
-if modeChar == 'D'
-    displayExponent = -b1;
-end
-titleStr = sprintf(titleFormula, local_format_number(2.^b0), local_format_number(displayExponent), local_format_pvalue(pval), nIDs);
-title(ax, titleStr, 'FontSize', 15, 'FontWeight', 'normal', 'Units', 'normalized', 'Position', [0.5 1.01 0]);
 end
 
 function local_plot_linear_fixed_only(ax, tbl, subjectcolor, lme, modeChar, minParallax, maxParallax, nIDs, showYLabel, hiddenYAxisColor)
@@ -717,24 +382,6 @@ outputStem = regexprep(char(string(tblName)), ...
     '(?i)([_-]?version[_-]?\d+|[_-]?version)', '');
 outputStem = regexprep(outputStem, '[_-]{2,}', '_');
 outputStem = regexprep(outputStem, '^[_-]+|[_-]+$', '');
-end
-
-function local_fill_linear_fixed_ci(ax, xlinerange, lme)
-if size(lme.Coefficients, 1) < 2
-    return;
-end
-
-ciL0 = lme.Coefficients.Lower(1);
-ciL1 = lme.Coefficients.Lower(2);
-ciU0 = lme.Coefficients.Upper(1);
-ciU1 = lme.Coefficients.Upper(2);
-
-yA = ciL0 + ciL1 * xlinerange;
-yB = ciU0 + ciU1 * xlinerange;
-yLow = min(yA, yB);
-yHigh = max(yA, yB);
-fill(ax, [xlinerange fliplr(xlinerange)], [yLow fliplr(yHigh)], ...
-    'k', 'EdgeColor', 'none', 'FaceAlpha', 0.20);
 end
 
 function local_plot_linear_fixed_line(ax, xlinerange, lme)
@@ -843,54 +490,6 @@ end
 ylim(ax, Quad_expand_linear_limits([minParallax maxParallax]));
 box(ax, 'off');
 grid(ax, 'off');
-end
-
-function [limits, ticks] = local_inverse_distance_axis(x)
-x = double(x(:));
-x = x(isfinite(x) & x >= 0);
-if isempty(x) || max(x) <= 0
-    limits = [0 1];
-    ticks = 0:0.2:1;
-    return;
-end
-
-targetStep = max(x) / 4;
-scale = 10.^floor(log10(targetStep));
-normalizedStep = targetStep / scale;
-if normalizedStep <= 1
-    niceStep = 1 * scale;
-elseif normalizedStep <= 2
-    niceStep = 2 * scale;
-elseif normalizedStep <= 2.5
-    niceStep = 2.5 * scale;
-elseif normalizedStep <= 5
-    niceStep = 5 * scale;
-else
-    niceStep = 10 * scale;
-end
-
-upperLimit = ceil(max(x) / niceStep) * niceStep;
-limits = [0 upperLimit];
-ticks = 0:niceStep:upperLimit;
-end
-
-function lims = local_expand_linear_limits(x)
-x = double(x(:));
-x = x(isfinite(x));
-if isempty(x)
-    lims = [0 1];
-    return;
-end
-
-xmin = min(x);
-xmax = max(x);
-span = xmax - xmin;
-if span <= 0
-    pad = max(0.05 * max(abs(xmin), 1), 0.05);
-else
-    pad = max(0.05 * span, 0.05);
-end
-lims = [xmin - pad xmax + pad];
 end
 
 function titleStr = local_linear_title(lme, predictorSymbol, nIDs)
@@ -1088,42 +687,6 @@ catch ME
 end
 end
 
-function local_plot_stereo_relationship_figure(tbl, lmeDistanceRS, ...
-    ResultsDir, tblName, fullUniqueID, mycolormap, sorted_idx, colorConfig)
-stereoTbl = local_subject_distance_rs_table(tbl, lmeDistanceRS, fullUniqueID, mycolormap, sorted_idx);
-if isempty(stereoTbl)
-    return;
-end
-
-scoreVarLabel = stereoTbl.Properties.UserData.StereoScoreVarName;
-x = stereoTbl.StereoScore;
-xLabel = char(scoreVarLabel);
-figSuffix = ['_' char(scoreVarLabel) '.png'];
-fitFormulaIntercept = 'SubjectIntercept ~ StereoScore';
-fitFormulaSlope = 'SubjectSlope ~ StereoScore';
-
-lmIntercept = fitlm(stereoTbl, fitFormulaIntercept);
-lmSlope = fitlm(stereoTbl, fitFormulaSlope);
-
-figStereo = figure('Color', [1 1 1], 'Units', 'normalized', 'Position', [0 0 .8 .6], ...
-    'Name', [tblName figSuffix], 'Visible', 'off');
-tStereo = tiledlayout(1,2,'Padding','compact','TileSpacing','compact');
-tStereo.Position = [0.08 0.14 0.70 0.72];
-
-ax1 = nexttile;
-local_plot_stereo_relationship_panel(ax1, x, stereoTbl.SubjectIntercept, stereoTbl.SubjectColor, ...
-    xLabel, 'Subject intercept', lmIntercept);
-
-ax2 = nexttile;
-local_plot_stereo_relationship_panel(ax2, x, stereoTbl.SubjectSlope, stereoTbl.SubjectColor, ...
-    xLabel, 'Subject slope', lmSlope);
-
-Quad_add_participant_colorbar(figStereo, mycolormap, numel(stereoTbl.ID), ...
-    xLabel, colorConfig, ax2);
-exportgraphics(figStereo, fullfile(ResultsDir, [tblName figSuffix]), 'Resolution', 600);
-close(figStereo);
-end
-
 function local_plot_stereo_relationship_panel(ax, x, y, colors, xLabel, yLabel, lm)
 hold(ax, 'on');
 markerSize=50;
@@ -1149,158 +712,6 @@ title(ax, sprintf('%s \n p=%s, slope=%s', yLabel, ...
     'FontSize', 16, 'FontWeight', 'normal');
 end
 
-function local_add_subject_colorbar(figHandle, mycolormap, nIDs, ...
-    labelText, colorConfig, legendAxes)
-if nargin < 4 || isempty(labelText)
-    labelText = 'Participant color order';
-end
-if nargin < 5
-    colorConfig = [];
-end
-if nargin < 6 || isempty(legendAxes)
-    legendAxes = findobj(figHandle, 'Type', 'axes', '-not', 'Tag', 'Colorbar');
-    legendAxes = legendAxes(1);
-end
-
-if isstruct(colorConfig) && string(colorConfig.Mode) == "clinicalnotes"
-    legendHandle = Quad_add_clinical_notes_legend(legendAxes, colorConfig);
-    legendHandle.FontSize = 11;
-    return;
-end
-
-if isempty(mycolormap)
-    return;
-end
-
-labelLower = lower(string(labelText));
-isNormedStereoBar = contains(labelLower, 'normed stereo score') || ...
-    contains(labelLower, 'normedscore') || ...
-    contains(labelLower, 'normedstereoscore');
-if isNormedStereoBar
-    plotAxes = findall(figHandle, 'Type', 'axes');
-    plotAxes = plotAxes(~arrayfun(@(ax) isa(ax, 'matlab.graphics.illustration.ColorBar'), plotAxes));
-    if ~isempty(plotAxes)
-        apply_stereo_score_colormap(plotAxes);
-    end
-    cb = add_stereo_score_colorbar(figHandle, labelText, [0.885 0.22 0.012 0.52]);
-    cb.FontName = 'Avenir';
-    cb.FontSize = 18;
-    cb.Label.FontName = 'Avenir';
-    cb.Label.FontSize = 20;
-    tickLabels = string(cb.TickLabels);
-    tickLabels(strcmpi(tickLabels, "Unknown")) = "U";
-    cb.TickLabels = tickLabels;
-    cb.Label.Units = 'normalized';
-    cb.Label.Position = [-3.4 0.5 0];
-    return;
-else
-    nColorLevels = min(size(mycolormap, 1), max(1, nIDs));
-    displayCmap = mycolormap(1:nColorLevels, :);
-end
-
-cbAx = axes('Parent', figHandle, 'Position', [0.86 0.22 0.010 0.52]);
-set(cbAx, 'Visible', 'off', 'YDir', 'normal', 'CLim', [1 nColorLevels], ...
-    'Color', 'none', 'XColor', 'none', 'YColor', 'none');
-colormap(cbAx, displayCmap);
-
-cb = colorbar(cbAx, 'Position', [0.885 0.22 0.012 0.52]);
-cb.FontName = 'Avenir';
-cb.FontSize = 12;
-if isNormedStereoBar
-    stereoTickVals = 0:20:100;
-    cb.Ticks = 1 + (stereoTickVals ./ 100) * (nColorLevels - 1);
-    cb.TickLabels = string(stereoTickVals);
-elseif isstruct(colorConfig) && isfield(colorConfig, 'Mode') && ...
-        string(colorConfig.Mode) == "id" && ...
-        isfield(colorConfig, 'ColorbarTicks') && ...
-        isfield(colorConfig, 'ColorbarTickLabels') && ...
-        ~isempty(colorConfig.ColorbarTicks)
-    cb.Ticks = max(1, min(nColorLevels, colorConfig.ColorbarTicks(:)'));
-    cb.TickLabels = string(colorConfig.ColorbarTickLabels(:)');
-else
-    cb.Ticks = unique(max(1, min(nColorLevels, [1 nColorLevels])));
-    cb.TickLabels = string(cb.Ticks);
-end
-cb.Label.String = labelText;
-cb.Label.FontName = 'Avenir';
-cb.Label.FontSize = 14;
-end
-
-function stereoTbl = local_subject_distance_rs_table(tbl, lmeDistanceRS, fullUniqueID, mycolormap, sorted_idx)
-if nargin < 3
-    fullUniqueID = [];
-end
-if nargin < 4
-    mycolormap = [];
-end
-if nargin < 5
-    sorted_idx = [];
-end
-
-if isempty(lmeDistanceRS)
-    stereoTbl = [];
-    return;
-end
-
-stereoVar = local_find_first_var(tbl, {'ContinuousStereoScore', 'ContinousStereoScore', 'ContiousStereoScores', 'ContinuousScore', 'ContinousScore', 'NormedStereoScore', 'NormedScore'});
-if isempty(stereoVar)
-    stereoTbl = [];
-    return;
-end
-
-[reEfx, reNames] = randomEffects(lmeDistanceRS);
-levels = string(reNames.Level);
-names = string(reNames.Name);
-fixedIntercept = lmeDistanceRS.Coefficients.Estimate(1);
-fixedSlope = lmeDistanceRS.Coefficients.Estimate(2);
-
-subjectCats = categories(removecats(tbl.ID));
-nSubjects = numel(subjectCats);
-subjectID = strings(nSubjects, 1);
-subjectIntercept = nan(nSubjects, 1);
-subjectSlope = nan(nSubjects, 1);
-stereoScore = nan(nSubjects, 1);
-
-for i = 1:nSubjects
-    subj = string(subjectCats{i});
-    rowMask = string(tbl.ID) == subj;
-    subjectID(i) = subj;
-    stereoScore(i) = mean(double(tbl.(stereoVar)(rowMask)), 'omitnan');
-
-    idxIntercept = find(levels == subj & names == "(Intercept)", 1, 'first');
-    idxSlope = find(levels == subj & names == "log2inverseDistance", 1, 'first');
-
-    reIntercept = 0;
-    reSlope = 0;
-    if ~isempty(idxIntercept)
-        reIntercept = reEfx(idxIntercept);
-    end
-    if ~isempty(idxSlope)
-        reSlope = reEfx(idxSlope);
-    end
-
-    subjectIntercept(i) = fixedIntercept + reIntercept;
-    subjectSlope(i) = fixedSlope + reSlope;
-end
-
-validRows = ~isnan(stereoScore) & ~isnan(subjectIntercept) & ~isnan(subjectSlope);
-
-subjectID = subjectID(validRows);
-subjectIntercept = subjectIntercept(validRows);
-subjectSlope = subjectSlope(validRows);
-stereoScore = stereoScore(validRows);
-
-if isempty(mycolormap) || isempty(sorted_idx)
-    subjectColor = repmat([0 0 0], numel(subjectID), 1);
-else
-    subjectColor = local_colors_for_subject_ids(subjectID, fullUniqueID, mycolormap, sorted_idx);
-end
-stereoTbl = table(subjectID, subjectIntercept, subjectSlope, stereoScore, ...
-    subjectColor, ...
-    'VariableNames', {'ID', 'SubjectIntercept', 'SubjectSlope', 'StereoScore', 'SubjectColor'});
-stereoTbl.Properties.UserData.StereoScoreVarName = string(stereoVar);
-end
-
 function varName = local_find_first_var(tbl, candidates)
 varName = '';
 for i = 1:numel(candidates)
@@ -1308,24 +719,6 @@ for i = 1:numel(candidates)
         varName = candidates{i};
         return;
     end
-end
-end
-
-function subjectColor = local_colors_for_subject_ids(subjectID, fullUniqueID, mycolormap, sorted_idx)
-if isempty(fullUniqueID)
-    uniqueID = subjectID(:);
-else
-    uniqueID = string(fullUniqueID(:));
-end
-
-subjectColor = zeros(numel(subjectID), 3);
-for i = 1:numel(subjectID)
-    cindex = find(strcmp(uniqueID, subjectID(i)), 1, 'first');
-    if isempty(cindex)
-        cindex = i;
-    end
-    colorRow = local_lookup_color_row(sorted_idx, cindex, numel(uniqueID), size(mycolormap, 1));
-    subjectColor(i, :) = mycolormap(colorRow, :);
 end
 end
 

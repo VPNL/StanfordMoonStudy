@@ -12,15 +12,20 @@ xMax = max(tbl.Elevation);
 yMax = max(tbl.Ratio_Visual_Angle);
 xGrid = linspace(xMin, xMax, 300)';
 
-[logFit, logLower, logUpper] = local_fixed_effect_curve( ...
-    lmeLogRI, log2(1 + xGrid), true);
-[linearFit, linearLower, linearUpper] = local_fixed_effect_curve( ...
-    lmeLinearRI, xGrid, false);
-
-[logAdjustedR2, logRMSE] = local_original_scale_metrics( ...
+[logR2, logAdjustedR2, logRMSE, smearingFactor] = ...
+    local_original_scale_metrics( ...
     lmeLogRI, tbl.Ratio_Visual_Angle, true);
-[linearAdjustedR2, linearRMSE] = local_original_scale_metrics( ...
+[linearR2, linearAdjustedR2, linearRMSE] = local_original_scale_metrics( ...
     lmeLinearRI, tbl.Ratio_Visual_Angle, false);
+
+[logFit, logLower, logUpper] = local_fixed_effect_curve( ...
+    lmeLogRI, log2(1 + xGrid), true, smearingFactor);
+[linearFit, linearLower, linearUpper] = local_fixed_effect_curve( ...
+    lmeLinearRI, xGrid, false, 1);
+
+local_write_original_scale_report(resultsDir, baseName, task, ...
+    linearR2, linearAdjustedR2, linearRMSE, ...
+    logR2, logAdjustedR2, logRMSE, smearingFactor);
 
 figHandle = figure('Color', [1 1 1], 'Units', 'normalized', ...
     'Position', [0 0 .8 .6], ...
@@ -43,7 +48,8 @@ exportgraphics(figHandle, filename, 'Resolution', 600);
 end
 
 function [fitOriginal, lowerOriginal, upperOriginal] = ...
-    local_fixed_effect_curve(lme, xModel, backTransformLog2)
+    local_fixed_effect_curve(lme, xModel, backTransformLog2, ...
+    retransformationFactor)
 beta = fixedEffects(lme);
 design = [ones(numel(xModel),1), xModel];
 fitModel = design * beta;
@@ -56,9 +62,9 @@ lowerModel = fitModel - criticalValue * predictionSE;
 upperModel = fitModel + criticalValue * predictionSE;
 
 if backTransformLog2
-    fitOriginal = 2.^fitModel;
-    lowerOriginal = 2.^lowerModel;
-    upperOriginal = 2.^upperModel;
+    fitOriginal = retransformationFactor .* 2.^fitModel;
+    lowerOriginal = retransformationFactor .* 2.^lowerModel;
+    upperOriginal = retransformationFactor .* 2.^upperModel;
 else
     fitOriginal = fitModel;
     lowerOriginal = lowerModel;
@@ -66,10 +72,19 @@ else
 end
 end
 
-function [adjustedR2, rmse] = local_original_scale_metrics(lme, yActual, backTransformLog2)
-yPredicted = predict(lme);
+function [rSquared, adjustedR2, rmse, smearingFactor] = ...
+    local_original_scale_metrics(lme, yActual, backTransformLog2)
+modelPrediction = predict(lme);
+smearingFactor = 1;
 if backTransformLog2
-    yPredicted = 2.^yPredicted;
+    validSmearingRows = isfinite(yActual) & yActual > 0 & ...
+        isfinite(modelPrediction);
+    logResidual = log2(yActual(validSmearingRows)) - ...
+        modelPrediction(validSmearingRows);
+    smearingFactor = mean(2.^logResidual, 'omitnan');
+    yPredicted = smearingFactor .* 2.^modelPrediction;
+else
+    yPredicted = modelPrediction;
 end
 
 valid = isfinite(yActual) & isfinite(yPredicted);
@@ -84,6 +99,35 @@ else
     adjustedR2 = NaN;
 end
 rmse = sqrt(mean((yActual - yPredicted).^2));
+end
+
+function local_write_original_scale_report(resultsDir, baseName, task, ...
+    linearR2, linearAdjustedR2, linearRMSE, ...
+    logR2, logAdjustedR2, logRMSE, smearingFactor)
+reportFile = fullfile(resultsDir, sprintf( ...
+    'Supplemental_FigS1_LogLinComps_%s.txt', char(string(baseName))));
+[fid, message] = fopen(reportFile, 'w');
+if fid == -1
+    error('FullMoon:ReportOpenFailed', ...
+        'Could not open report file %s: %s', reportFile, message);
+end
+cleanupObj = onCleanup(@() fclose(fid)); %#ok<NASGU>
+
+fprintf(fid, ['Supplemental Figure S1: linear versus log-log RI models ' ...
+    'on the original scale\n']);
+fprintf(fid, 'Table: %s\n', char(string(baseName)));
+fprintf(fid, 'Task: %s\n', char(string(task)));
+fprintf(fid, ['Metrics use conditional RI-model predictions evaluated ' ...
+    'against raw PM values.\n']);
+fprintf(fid, ['Log-log predictions are back-transformed to PM units ' ...
+    'and corrected using Duan''s smearing estimate before calculating metrics.\n']);
+fprintf(fid, 'Log-log smearing factor: %.6f\n\n', smearingFactor);
+fprintf(fid, '%-12s %12s %14s %12s\n', ...
+    'Model', 'R2', 'Adjusted R2', 'RMSE');
+fprintf(fid, '%-12s %12.6f %14.6f %12.6f\n', ...
+    'Linear', linearR2, linearAdjustedR2, linearRMSE);
+fprintf(fid, '%-12s %12.6f %14.6f %12.6f\n', ...
+    'Log-log', logR2, logAdjustedR2, logRMSE);
 end
 
 function local_plot_panel(tbl, subjectColor, xGrid, yFit, yLower, yUpper, ...

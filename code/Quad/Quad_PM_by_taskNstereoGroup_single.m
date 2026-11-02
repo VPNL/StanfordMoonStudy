@@ -103,7 +103,7 @@ modelComparisons.Elevation.RS = compare(baseElevationRSLME, lme_logPM_by_logElev
 
 if saveLME
     savelmefile = fullfile(ResultsDir, [char(string(tblName)) '_single_byStereoGroup.txt']);
-    sourceCsv = local_source_file_label(tbl, tblName);
+    sourceCsv = Quad_source_file_label(tbl, tblName);
 
     reportOpts = struct();
     reportOpts.ReportTitle = sprintf('Quad PM Single-Factor StereoGroup Interaction LME Report: %s', char(string(tblName)));
@@ -190,7 +190,7 @@ switch ElevationTransform
             'Unsupported elevation transform %s.', string(ElevationTransform));
 end
 
-tbl.StereoGroup = local_stereo_group_categorical(tbl.StereoGroup);
+tbl.StereoGroup = Quad_stereo_group_categorical(tbl.StereoGroup);
 if ~iscategorical(tbl.ID)
     tbl.ID = categorical(tbl.ID);
 end
@@ -212,7 +212,7 @@ if numel(presentGroups) < 2
 end
 
 nsubjects = numel(categories(tbl.ID));
-groupSummaryLines = local_group_summary_lines(tbl);
+groupSummaryLines = Quad_stereo_group_summary_lines(tbl);
 uniqueID = string(categories(tbl.ID));
 [cmap, sorted_idx] = local_validate_color_inputs(cmap, sorted_idx, nsubjects);
 subjectColorByID = local_subject_colors_by_id(uniqueID, cmap, sorted_idx, colorConfig);
@@ -249,7 +249,7 @@ local_plot_pm_panel(rightAx, tbl, subjectcolor, lme_logPM_by_logElevation, ...
 local_hide_redundant_y_axes(axesList(2:3));
 local_add_ri_line_legend(axesList(1), tbl, groupLineColors);
 local_add_color_key(rightAx, cmap, nsubjects, colorConfig);
-local_export_png(figRI, fullfile(ResultsDir, [char(string(tblName)) '_single_byStereoGroup_RI.png']), 600);
+Quad_export_png(figRI, fullfile(ResultsDir, [char(string(tblName)) '_single_byStereoGroup_RI.png']), 600);
 close(figRI);
 
 figRS = figure('Color', [1 1 1], 'Units', 'normalized', ...
@@ -268,7 +268,7 @@ local_plot_pm_panel(rightAx, tbl, subjectcolor, lme_logPM_by_logElevation_RS, ..
     subjectLineOrder, [], true, minPMLim, maxPMLim, plotFixedEffectsRS, modelComparisons.Elevation.RS);
 local_hide_redundant_y_axes(axesList(2:3));
 local_add_color_key(rightAx, cmap, nsubjects, colorConfig);
-local_export_png(figRS, fullfile(ResultsDir, [char(string(tblName)) '_single_byStereoGroup_RS.png']), 600);
+Quad_export_png(figRS, fullfile(ResultsDir, [char(string(tblName)) '_single_byStereoGroup_RS.png']), 600);
 close(figRS);
 end
 
@@ -599,7 +599,8 @@ axisPosition = ax.Position;
 figHandle = ancestor(ax, 'figure');
 colorbarPosition = [axisPosition(1) + axisPosition(3) + 0.060, ...
     axisPosition(2), 0.015, axisPosition(4)];
-cb = add_stereo_score_colorbar(figHandle, 'Normed stereo score', colorbarPosition);
+cb = add_stereo_score_colorbar(figHandle, 'Normed stereo score', ...
+    colorbarPosition, 'U');
 cb.FontName = 'Avenir';
 cb.FontSize = 18;
 cb.Label.FontName = 'Avenir';
@@ -618,14 +619,6 @@ legendHandle.FontSize = 11;
 legendHandle.Title.String = 'Clinical condition';
 legendHandle.Title.FontName = 'Avenir';
 legendHandle.Title.FontSize = 11;
-end
-
-function local_export_png(figHandle, outFile, dpi)
-if nargin < 3 || isempty(dpi)
-    dpi = 600;
-end
-set(figHandle, 'PaperPositionMode', 'auto');
-print(figHandle, outFile, '-dpng', sprintf('-r%d', dpi));
 end
 
 function [xTickVals, xTickLabels] = local_oldstyle_ticks(xRaw, modeChar, ElevationTransform)
@@ -892,87 +885,4 @@ end
 
 nativeVals = unique(nativeVals, 'stable');
 tickPos = log2(nativeVals);
-end
-
-function stereoGroup = local_stereo_group_categorical(rawGroup)
-if isnumeric(rawGroup) || islogical(rawGroup)
-    groupValues = double(rawGroup);
-    uniqueValues = unique(groupValues(isfinite(groupValues)));
-    if all(ismember(uniqueValues, [0 1 2 3]))
-        groupText = strings(size(groupValues));
-        groupText(groupValues == 1) = "StereoTypical";
-        groupText(groupValues == 2) = "StereoDeficient";
-        groupText(groupValues == 3) = "StereoBlind";
-        stereoGroup = categorical(groupText, ...
-            ["StereoTypical", "StereoDeficient", "StereoBlind"], ...
-            ["StereoTypical", "StereoDeficient", "StereoBlind"]);
-    else
-        groupText = "Group" + string(groupValues);
-        groupText(~isfinite(groupValues)) = "";
-        stereoGroup = categorical(groupText);
-    end
-elseif iscategorical(rawGroup)
-    stereoGroup = rawGroup;
-    stereoGroup = local_standardize_numeric_group_labels(stereoGroup);
-    stereoGroup = reordercats(stereoGroup, local_order_categories(categories(stereoGroup)));
-else
-    stereoGroup = categorical(string(rawGroup));
-    stereoGroup = local_standardize_numeric_group_labels(stereoGroup);
-    stereoGroup = reordercats(stereoGroup, local_order_categories(categories(stereoGroup)));
-end
-end
-
-function stereoGroup = local_standardize_numeric_group_labels(stereoGroup)
-groupText = string(stereoGroup);
-validText = groupText(~ismissing(groupText) & groupText ~= "");
-if ~isempty(validText) && all(ismember(validText, ["1", "2", "3"]))
-    groupText(groupText == "1") = "StereoTypical";
-    groupText(groupText == "2") = "StereoDeficient";
-    groupText(groupText == "3") = "StereoBlind";
-    stereoGroup = categorical(groupText, ...
-        ["StereoTypical", "StereoDeficient", "StereoBlind"], ...
-        ["StereoTypical", "StereoDeficient", "StereoBlind"]);
-end
-end
-
-function orderedCategories = local_order_categories(categoriesIn)
-categoriesIn = string(categoriesIn(:));
-preferred = ["StereoTypical"; "Typical"; "StereoDeficient"; "Deficient"; ...
-    "StereoBlind"; "Blind"];
-orderedCategories = strings(0, 1);
-for iPreferred = 1:numel(preferred)
-    if any(categoriesIn == preferred(iPreferred))
-        orderedCategories(end + 1, 1) = preferred(iPreferred); %#ok<AGROW>
-    end
-end
-for iCategory = 1:numel(categoriesIn)
-    if ~ismember(categoriesIn(iCategory), orderedCategories)
-        orderedCategories(end + 1, 1) = categoriesIn(iCategory); %#ok<AGROW>
-    end
-end
-orderedCategories = cellstr(orderedCategories);
-end
-
-function groupSummaryLines = local_group_summary_lines(tbl)
-groupNames = string(categories(tbl.StereoGroup));
-groupSummaryLines = cell(1, numel(groupNames) + 1);
-groupSummaryLines{1} = 'StereoGroup counts:';
-for iGroup = 1:numel(groupNames)
-    rowMask = string(tbl.StereoGroup) == groupNames(iGroup);
-    groupSummaryLines{iGroup + 1} = sprintf('  %s: %d rows, %d participants', ...
-        groupNames(iGroup), sum(rowMask), numel(unique(tbl.ID(rowMask))));
-end
-end
-
-function sourceCsv = local_source_file_label(tbl, tblName)
-sourceCsv = char(string(tblName));
-try
-    if isstruct(tbl.Properties.UserData) && isfield(tbl.Properties.UserData, 'SourceFile')
-        sourceCsv = char(string(tbl.Properties.UserData.SourceFile));
-    end
-catch
-end
-if ~endsWith(string(sourceCsv), ".csv", "IgnoreCase", true)
-    sourceCsv = sprintf('%s.csv (inferred from tblName; function input is a table)', sourceCsv);
-end
 end

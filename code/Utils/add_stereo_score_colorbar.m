@@ -1,4 +1,4 @@
-function cb = add_stereo_score_colorbar(targetHandle, labelText, position)
+function cb = add_stereo_score_colorbar(targetHandle, labelText, position, unknownLabel)
 % ADD_STEREO_SCORE_COLORBAR
 % Add a shared StereoScores colorbar reflecting 0-100 plus Unknown.
 
@@ -7,6 +7,9 @@ if nargin < 2 || isempty(labelText)
 end
 if nargin < 3
     position = [];
+end
+if nargin < 4 || isempty(unknownLabel)
+    unknownLabel = 'Unknown';
 end
 
 if ~isgraphics(targetHandle)
@@ -32,6 +35,7 @@ else
 end
 
 cb.Ticks = ticks;
+tickLabels(strcmpi(tickLabels, "Unknown")) = string(unknownLabel);
 cb.TickLabels = tickLabels;
 cb.Label.String = labelText;
 cb.FontName = 'Avenir';

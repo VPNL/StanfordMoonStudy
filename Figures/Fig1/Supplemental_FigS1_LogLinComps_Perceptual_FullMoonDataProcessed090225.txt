@@ -1,0 +1,10 @@
+Supplemental Figure S1: linear versus log-log RI models on the original scale
+Table: Perceptual_FullMoonDataProcessed090225
+Task: Perceptual
+Metrics use conditional RI-model predictions evaluated against raw PM values.
+Log-log predictions are back-transformed to PM units and corrected using Duan's smearing estimate before calculating metrics.
+Log-log smearing factor: 1.023391
+
+Model                  R2    Adjusted R2         RMSE
+Linear           0.811063       0.622125     0.546159
+Log-log          0.787507       0.575013     0.574286
