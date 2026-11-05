@@ -1,4 +1,4 @@
-% SMS_SupplementalStatsTable10c_forFig4d_Quad_Matching_JustStereoBlindVs092326.m
+% SMS_SupplementalStatsTable10c_forFig4d_Quad_Matching_JustStereoBlindVsTypical_110526.m
 % Analyze the Perceptual matching task for all participants and separately
 % for StereoBlind and StereoTypical groups.
 set(groot, 'defaultFigureVisible', 'on')
@@ -11,7 +11,9 @@ expDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
 
 
 %% Run configuration
-quadFile = fullfile(expDir, 'merged_matching_0429.csv');
+
+csvFile='QuadProcessedMatchingandStereoData.csv';
+quadFile = fullfile(expDir, csvFile);
 
 stereoTypicalThreshold = 85;
 stereoBlindThreshold = 20;

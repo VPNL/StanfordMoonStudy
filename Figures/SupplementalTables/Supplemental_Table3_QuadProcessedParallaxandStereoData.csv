@@ -1,0 +1,13 @@
+Object,Visual Angle [degrees],"Ground Distance
+ [m]","Ground Elevation 
+[degrees]","Observer Distance
+ [m]","Observer Elevation
+ [degrees]",
+Lamp bulb 5disk1,0.383,12.55,2.35,12.56,-2.33,
+Lamp bulb 5disk2,0.383,12.55,3.88,12.55,-0.79,
+Lamp bulb 5disk3,0.383,12.55,8.16,12.57,3.53,
+Lamp bulb 5disk4,0.383,12.55,10.66,12.62,6.08,
+Lamp bulb 5disk5,0.383,12.55,13.38,12.70,8.88,
+Lamp bulb 7,0.390,59.65,3.83,59.72,2.85,
+Lamp bulb 7disk1,0.379,12.55,3.80,12.55,-0.87,
+Lamp bulb 7disk2,0.379,30.00,3.80,30.02,1.85,

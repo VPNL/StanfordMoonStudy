@@ -4,16 +4,16 @@ Deficiency",Matching Experiment ,Parallax Experiment
 1034,Female,20,98.47,,Y,
 5051,Female,,92.37,,Y,
 6001,Male,28,92.37,,Y,Y
-7000,Female,79,0.00,IOL monovision,Y,
-7001,Male,82,0.00,Drusen in macula,Y,
+7000,Female,79,0,IOL monovision,Y,
+7001,Male,82,0,Drusen in macula,Y,
 7002,Female,17,98.47,,Y,
 7003,Male,18,99.24,,Y,
-7004,Female,18,100.00,,Y,
-7005,Female,21,0.00,Right Upper Eyelid Ptosis,Y,
-7006,Male,19,0.00,Hyperopia,Y,
+7004,Female,18,100,,Y,
+7005,Female,21,0,Right Upper Eyelid Ptosis,Y,
+7006,Male,19,0,Hyperopia,Y,
 7007,Female,21,73.28,,Y,
-7008,Male,21,62.60,Myopia,Y,
-7010,Female,31,0.00,Strabismus ,Y,Y
+7008,Male,21,62.6,Myopia,Y,
+7010,Female,31,0,Strabismus ,Y,Y
 7011,Female,22,92.37,,Y,Y
 7012,Female,18,98.47,,Y,Y
 7013,Male,19,95.42,,Y,Y
@@ -40,21 +40,20 @@ Deficiency",Matching Experiment ,Parallax Experiment
 7037,Female,19,92.37,,,Y
 7038,Male,27,98.47,,,Y
 7039,Female,22,92.37,,,Y
-7040,Female,56,45.80,,,Y
+7040,Female,56,45.8,,,Y
 7041,Female,24,92.37,,,Y
 7043,Female,19,92.37,Strabismus ,Y,Y
 7044,Female,23,87.79,Amblyopia,Y,Y
-7045,Male,77,0.00,Amblyopia,Y,
-7046,Female,31,0.00,"Strabismus, Amblyopia",Y,
-7047,Female,63,0.00,Amblyopia,Y,Y
+7045,Male,77,0,Amblyopia,Y,
+7046,Female,31,0,"Strabismus, Amblyopia",Y,
+7047,Female,63,0,Amblyopia,Y,Y
 7048,Female,22,71.76,Strabismus ,Y,Y
 7049,Female,36,95.42,Astigmatism,Y,Y
 7050,Male,23,41.98,Amblyopia,Y,Y
 7051,Female,38,95.42,,Y,Y
-7052,Male,82,0.00,Amblyopia,Y,Y
-7053,Female,27,0.00,"Convergence Insufficiency, Exophoria, Irregular Astigmatism, Spasm of Accomidation",Y,Y
-7054,Male,19,0.00,Strabismus,Y,Y
+7052,Male,82,0,Amblyopia,Y,Y
+7053,Female,27,0,"Convergence Insufficiency, Exophoria, Irregular Astigmatism, Spasm of Accommodation",Y,Y
+7054,Male,19,0,Strabismus,Y,Y
 7055,Female,18,74.05,Strabismus,,
-31624,Female,22,0.00,Strabismus ,Y,
+31624,Female,22,0,Strabismus ,Y,
 34318,Female,,98.47,,,Y
-,,,,,,

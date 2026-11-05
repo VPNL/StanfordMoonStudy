@@ -1,8 +1,4 @@
-Date,"Diameter 
-[km]","Distance
- [km]","Visual angle
- [degrees]","N 
-Participants"
+Date,Diameter_km,Distance_km,Visual_angle_degrees,N_Participants
 1/12/25,3476,379144,0.5253,25
 1/13/25,3476,381133,0.5225,17
 5/13/25,3476,404420,0.4925,3

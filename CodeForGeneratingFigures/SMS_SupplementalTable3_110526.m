@@ -6,9 +6,9 @@ close all; clear all;
 
 SMS_setCodePath;
 expDir='/Users/kalanit/Projects/StanfordMoonStudy/';
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/OcularOffset/';
+dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/BinocularParallax/';
 
-quadFileName ='StanfordQuad_merged_disparity_0429_version3.csv'
+quadFileName ='QuadProcessedParallaxandStereoData.csv'
 quadFile = fullfile(dataDir, quadFileName);
 [~, quadBasename] = fileparts(quadFileName);
 
