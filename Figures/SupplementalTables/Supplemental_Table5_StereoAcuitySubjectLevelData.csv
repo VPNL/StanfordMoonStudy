@@ -1,59 +1,58 @@
-﻿ID,Gender,Age,Normed Stereoscore,"Visual 
-Deficiency",Matching Experiment ,Parallax Experiment
-1032,Male,,92.37,,Y,Y
-1034,Female,20,98.47,,Y,
-5051,Female,,92.37,,Y,
-6001,Male,28,92.37,,Y,Y
-7000,Female,79,0,IOL monovision,Y,
-7001,Male,82,0,Drusen in macula,Y,
-7002,Female,17,98.47,,Y,
-7003,Male,18,99.24,,Y,
-7004,Female,18,100,,Y,
-7005,Female,21,0,Right Upper Eyelid Ptosis,Y,
-7006,Male,19,0,Hyperopia,Y,
-7007,Female,21,73.28,,Y,
-7008,Male,21,62.6,Myopia,Y,
-7010,Female,31,0,Strabismus ,Y,Y
-7011,Female,22,92.37,,Y,Y
-7012,Female,18,98.47,,Y,Y
-7013,Male,19,95.42,,Y,Y
-7014,Female,25,92.37,,Y,Y
-7015,Female,19,87.79,,Y,Y
-7016,Male,18,87.79,,Y,Y
-7017,Female,21,87.79,,Y,Y
-7018,Female,21,95.42,,Y,Y
-7019,Female,18,95.42,,Y,Y
-7020,Male,21,92.37,,Y,
-7021,Male,20,81.68,,Y,Y
-7022,Female,21,92.37,,,Y
-7023,Female,19,99.24,,,Y
-7024,Female,20,95.42,,,Y
-7025,Female,18,92.37,,,Y
-7026,Nonbinary,22,95.42,,,Y
-7028,Male,28,96.95,,,Y
-7029,Female,29,92.37,,,Y
-7031,Female,37,72.52,,,Y
-7033,Male,28,92.37,,,Y
-7034,Male,36,92.37,,,Y
-7035,Female,34,92.37,,,Y
-7036,Female,20,92.37,,,Y
-7037,Female,19,92.37,,,Y
-7038,Male,27,98.47,,,Y
-7039,Female,22,92.37,,,Y
-7040,Female,56,45.8,,,Y
-7041,Female,24,92.37,,,Y
-7043,Female,19,92.37,Strabismus ,Y,Y
-7044,Female,23,87.79,Amblyopia,Y,Y
-7045,Male,77,0,Amblyopia,Y,
-7046,Female,31,0,"Strabismus, Amblyopia",Y,
-7047,Female,63,0,Amblyopia,Y,Y
-7048,Female,22,71.76,Strabismus ,Y,Y
-7049,Female,36,95.42,Astigmatism,Y,Y
-7050,Male,23,41.98,Amblyopia,Y,Y
-7051,Female,38,95.42,,Y,Y
-7052,Male,82,0,Amblyopia,Y,Y
+ID,Gender,Age,Normed Stereoscore,Visual Deficiency,Matching Experiment,Parallax Experiment
+1032,Male,16,92.37,"",Y,Y
+1034,Female,19,98.47,"",Y,
+5051,Female,,92.37,"",Y,
+6001,Male,28,92.37,"",Y,Y
+7000,Female,79,0,"monovision cataract surgery",Y,
+7001,Male,82,15.27,"Drusen in Macula",Y,
+7002,Female,17,98.47,"",Y,
+7003,Male,18,99.24,"",Y,
+7004,Female,18,100,"",Y,
+7005,Female,21,0,"right eyelid ptosis (one functional eye)",Y,
+7006,Male,19,0,"far sightedness",Y,
+7007,Female,21,73.28,"",Y,
+7008,Male,21,62.6,"Nearsighted",Y,
+7010,Female,31,0,"strabismus",Y,Y
+7011,Female,22,92.37,"",Y,Y
+7012,Female,18,98.47,"",Y,Y
+7013,Male,19,95.42,"",Y,Y
+7014,Female,25,92.37,"",Y,Y
+7015,Female,19,87.79,"",Y,Y
+7016,Male,18,87.79,"",Y,Y
+7017,Female,21,87.79,"",Y,Y
+7018,Female,21,95.42,"",Y,Y
+7019,Female,18,95.42,"",Y,Y
+7020,Male,21,92.37,"",Y,
+7021,Male,20,81.68,"",Y,Y
+7022,Female,21,92.37,"",,Y
+7023,Female,19,99.24,"",,Y
+7024,Female,20,95.42,"",,Y
+7025,Female,18,92.37,"",,Y
+7026,Gender non confirming,22,95.42,"",,Y
+7028,Male,28,96.95,"",,Y
+7029,Female,29,92.37,"",,Y
+7031,Female,37,72.52,"",,Y
+7033,Male,28,92.37,"",,Y
+7034,Male,36,92.37,"",,Y
+7035,Female,34,92.37,"",,Y
+7036,Female,20,92.37,"",,Y
+7037,Female,19,92.37,"",,Y
+7038,Male,27,98.47,"",,Y
+7039,Female,22,92.37,"",,Y
+7040,Female,56,45.8,"",,Y
+7041,Female,24,92.37,"",,Y
+7043,Female,19,92.37,"Strabismus",Y,Y
+7044,Female,23,87.79,"Amblyopia (lazy eye)",Y,Y
+7045,Male,77,0,"Amblyopia (lazy eye), One functional eye",Y,
+7046,Female,31,0,"Strabismus, Amblyopia (lazy eye)",Y,
+7047,Female,63,0,"Amblyopia (lazy eye)",Y,Y
+7048,Female,22,71.76,"Strabismus",Y,Y
+7049,Female,36,95.42,"Astigmatism",Y,Y
+7050,Male,23,41.98,"Amblyopia",Y,Y
+7051,Female,38,95.42,"",Y,Y
+7052,Male,82,0,"Amblyopia (lazy eye)",Y,Y
 7053,Female,27,0,"Convergence Insufficiency, Exophoria, Irregular Astigmatism, Spasm of Accommodation",Y,Y
-7054,Male,19,0,Strabismus,Y,Y
-7055,Female,18,74.05,Strabismus,,
-31624,Female,22,0,Strabismus ,Y,
-34318,Female,,98.47,,,Y
+7054,Male,19,0,"Strabismus",Y,Y
+7055,Female,18,74.05,"Strabismus",Y,Y
+31624,Female,21,0,"strabismus",Y,
+34318,Female,,98.47,"",,Y
