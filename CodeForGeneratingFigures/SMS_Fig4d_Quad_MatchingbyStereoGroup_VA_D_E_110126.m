@@ -5,7 +5,7 @@
 clx
 SMS_setCodePath;
 
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+expDir = fullfile(paths.Data, 'QuadStudy');
 
 addpath(genpath(codeDir));
 
@@ -26,7 +26,7 @@ switch lower(colorMode)
             'colorMode must be "stereoscore" or "clinicalnotes".');
 end
 
-resultsDir = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/', 'Fig4d', colorResultsFolder);
+resultsDir = fullfile(paths.Figures, 'Fig4d', colorResultsFolder);
 
 if ~exist(resultsDir, 'dir')
     mkdir(resultsDir);

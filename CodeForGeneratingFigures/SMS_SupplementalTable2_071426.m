@@ -1,11 +1,12 @@
 % SMS_SupplementalTable2_071426
 % make ground truth table for Stanford Quad Study
+SMS_setCodePath;
 
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+dataDir = fullfile(paths.Data, 'QuadStudy');
 QuadDataFile='Perceptual_StanfordQuadStudyDataProcessed0420.csv';
 QuadCsv =fullfile(dataDir,QuadDataFile);
 
-ResultsDir='/Users/kalanit/Projects/StanfordMoonStudy/Figures/SupplementalTables/';
+ResultsDir = fullfile(paths.Figures, 'SupplementalTables');
 if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end

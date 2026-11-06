@@ -3,14 +3,14 @@
 close all; clear all;
 SMS_setCodePath;
 % set dirs
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/';
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+expDir = paths.Project;
+dataDir = fullfile(paths.Data, 'QuadStudy');
 QuadFile='Perceptual_StanfordQuadStudyDataProcessed0420.csv';
 QuadBasename = [erase(QuadFile,'.csv')]
 
 % set dirs & files
 ResultsDir=fullfile(expDir, 'Figures','Fig2c');
-if ~exist('ResultsDir','dir')
+if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end
 visualizeDir = fullfile(ResultsDir,'VisualizePM');

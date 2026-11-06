@@ -3,9 +3,9 @@ set(groot, 'defaultFigureVisible', 'on')
 close all; clear all;
 SMS_setCodePath;
 
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/MoonStudy/';
+dataDir = fullfile(paths.Data, 'MoonStudy');
 datafile='Perceptual_FullMoonDataProcessed090225.csv';
-ResultsDir='/Users/kalanit/Projects/StanfordMoonStudy/Figures/Fig1';
+ResultsDir = fullfile(paths.Figures, 'Fig1');
 
 basename = erase(datafile,'.csv');
 saveLME=1;

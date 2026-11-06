@@ -4,7 +4,7 @@
 
 close all; clear all;
 SMS_setCodePath;
-expDir = '/Users/kalanit/Projects/StanfordMoonStudy/Data/BinocularParallax/';
+expDir = fullfile(paths.Data, 'BinocularParallax');
 
 
 %% Run configuration
@@ -30,7 +30,7 @@ switch colorMode
             'colorMode must be "stereoscore", "clinicalnotes", or "id".');
 end
 
-resultsDir = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/Fig4f');
+resultsDir = fullfile(paths.Figures, 'Fig4f');
 if ~exist(resultsDir, 'dir')
     mkdir(resultsDir);
 end

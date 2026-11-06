@@ -1,18 +1,8 @@
-% SMS_setCodePath;
-% Set paths relative to this public StanfordMoonStudy repository.
-FigCodeDir = fileparts(mfilename('fullpath'));
-repoDir = fileparts(FigCodeDir);
+% SMS_setCodePath
+% Add repository code, or SMS_CODE_DIR when explicitly configured.
+paths = SMS_project_paths();
+codeDir = paths.Code;
+FigCodeDir = paths.CodeForGeneratingFigures;
 
-repoCodeDir = fullfile(repoDir, 'code');
-devCodeDir = '/Users/kalanit/Projects/PerceptualMagnification/Paper/ExperimentalData/code';
-
-if exist(repoCodeDir, 'dir')
-    codeDir = repoCodeDir;
-elseif exist(devCodeDir, 'dir')
-    codeDir = devCodeDir;
-else
-    error('Could not find StanfordMoonStudy code directory.');
-end
-
-addpath(genpath(codeDir))
-addpath(genpath(FigCodeDir))
+addpath(genpath(codeDir));
+addpath(genpath(FigCodeDir));

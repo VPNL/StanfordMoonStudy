@@ -3,10 +3,10 @@
 
 SMS_setCodePath;
 
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/BinocularParallax/';
+dataDir = fullfile(paths.Data, 'BinocularParallax');
 MoonDataFile='Parallax_FullMoon_090225.csv';
 MoonCsv =fullfile(dataDir,MoonDataFile);
-ResultsDir='/Users/kalanit/Projects/StanfordMoonStudy/Figures/SupplementalTables/';
+ResultsDir = fullfile(paths.Figures, 'SupplementalTables');
 if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end

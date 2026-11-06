@@ -1,9 +1,11 @@
 % SMS_SupplementalTable1_071426
 % make ground truth table for Stanford Moon Study
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/MoonStudy/';
+SMS_setCodePath;
+
+dataDir = fullfile(paths.Data, 'MoonStudy');
 MoonDataFile='Perceptual_FullMoonDataProcessed090225.csv';
 MoonCsv =fullfile(dataDir,MoonDataFile);
-ResultsDir='/Users/kalanit/Projects/StanfordMoonStudy/Figures/SupplementalTables/';
+ResultsDir = fullfile(paths.Figures, 'SupplementalTables');
 if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end

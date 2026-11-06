@@ -3,15 +3,15 @@
 close all; clear all;
 SMS_setCodePath;
 % set dirs
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/';
+expDir = paths.Project;
 
-combinedDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/Combined/';
-if ~exist('combinedDir','dir')
+combinedDir = fullfile(paths.Data, 'Combined');
+if ~exist(combinedDir,'dir')
    mkdir(combinedDir)
 end
 
 ResultsDir=fullfile(expDir,'Figures','Fig3ad');
-if ~exist('ResultsDir','dir')
+if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end
 
@@ -44,7 +44,7 @@ elevationTransform=2;
 %%  generate combined and make all distances to meters
 %  the moon data is in km and the quad data is in cm a
 
-MoonExpDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/MoonStudy/';
+MoonExpDir = fullfile(paths.Data, 'MoonStudy');
 MoonFile='Perceptual_FullMoonDataProcessed090225.csv';
 all_moon_data=readtable(fullfile(MoonExpDir,MoonFile));
 MoonBasename = [erase(MoonFile,'.csv')] ;
@@ -66,7 +66,7 @@ end
 % Quad study
 % set dirs
 
-QuadExpDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+QuadExpDir = fullfile(paths.Data, 'QuadStudy');
 QuadFile='Perceptual_StanfordQuadStudyDataProcessed0420.csv';
 QuadBasename = [erase(QuadFile,'.csv')]
 

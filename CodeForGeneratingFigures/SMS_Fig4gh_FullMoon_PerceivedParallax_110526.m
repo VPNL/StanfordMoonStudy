@@ -4,8 +4,8 @@ set(groot, 'defaultFigureVisible', 'on')
 close all; clear all;
 SMS_setCodePath;
 
-expDir='/Users/kalanit/Projects/StanfordMoonStudy';
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/BinocularParallax';
+expDir = paths.Project;
+dataDir = fullfile(paths.Data, 'BinocularParallax');
 datafile='Parallax_FullMoon_090225.csv';
 
 dataPath = fullfile(dataDir, datafile);

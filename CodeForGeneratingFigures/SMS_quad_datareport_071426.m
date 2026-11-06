@@ -3,8 +3,8 @@
 close all; clear all;
 SMS_setCodePath;
 
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
-ResultsDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+dataDir = fullfile(paths.Data, 'QuadStudy');
+ResultsDir = fullfile(paths.Data, 'QuadStudy');
 
 % Processed data for Quad study
 dataFile='Perceptual_StanfordQuadStudyDataProcessed0420.csv'

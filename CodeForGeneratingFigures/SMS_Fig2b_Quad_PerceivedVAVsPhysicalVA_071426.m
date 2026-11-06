@@ -5,13 +5,13 @@ SMS_setCodePath;
 % Processed data for Quad study
 
 % set dirs
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/';
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+expDir = paths.Project;
+dataDir = fullfile(paths.Data, 'QuadStudy');
 QuadFile='Perceptual_StanfordQuadStudyDataProcessed0420.csv';
 QuadBasename = [erase(QuadFile,'.csv')]
 
 ResultsDir=fullfile(expDir,'Figures','Fig2b');
-if ~exist('ResultsDir','dir')
+if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end
 

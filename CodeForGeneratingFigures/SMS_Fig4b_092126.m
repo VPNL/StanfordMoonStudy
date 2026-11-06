@@ -3,10 +3,10 @@ set(groot, 'defaultFigureVisible', 'on')
 close all; clear all;
 SMS_setCodePath;
 
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/MoonStudy/';
+dataDir = fullfile(paths.Data, 'MoonStudy');
 datafile='FullMoonDataLong090225.csv';
-ResultsDir='/Users/kalanit/Projects/StanfordMoonStudy/Figures/Fig4b';
-if ~exist('ResultsDir','dir')
+ResultsDir = fullfile(paths.Figures, 'Fig4b');
+if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end
 

@@ -4,12 +4,12 @@ close all; clear all;
 
 SMS_setCodePath;
 % set dirs & files
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/';
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+expDir = paths.Project;
+dataDir = fullfile(paths.Data, 'QuadStudy');
 
 
 ResultsDir=fullfile(expDir, 'Figures','SupFig4_forFig2c_logPMvs_logS_D_VA');
-if ~exist('ResultsDir','dir')
+if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end
 

@@ -6,8 +6,8 @@ set(groot, 'defaultFigureVisible', 'on');
 %% Paths & parameters
 
 % set dirs
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/';
-combinedDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/Combined/';
+expDir = paths.Project;
+combinedDir = fullfile(paths.Data, 'Combined');
 
 ResultsDir=fullfile(expDir,'Figures','Fig3b');
 if ~exist(ResultsDir,'dir')
@@ -34,7 +34,7 @@ end
 
 %% load the data
 
-MoonExpDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/MoonStudy/';
+MoonExpDir = fullfile(paths.Data, 'MoonStudy');
 MoonFile='Perceptual_FullMoonDataProcessed090225.csv';
 
 all_moon_data=readtable(fullfile(MoonExpDir,MoonFile));
@@ -58,7 +58,7 @@ end
 
 % quad study
 % set dirs
-QuadExpDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+QuadExpDir = fullfile(paths.Data, 'QuadStudy');
 QuadFile='Perceptual_StanfordQuadStudyDataProcessed0420.csv';
 QuadBasename = [erase(QuadFile,'.csv')]
 

@@ -5,8 +5,7 @@ set(groot, 'defaultFigureVisible', 'on')
 close all; clear all;
 SMS_setCodePath;
 
-codeDir = '/Users/kalanit/Projects/PerceptualMagnification/Paper/ExperimentalData/code/code_Paper2Figures/';
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+expDir = fullfile(paths.Data, 'QuadStudy');
 
 
 
@@ -47,7 +46,7 @@ switch lower(colorMode)
             'colorMode must be "stereoscore" or "clinicalnotes".');
 end
 
-resultsRoot = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/', 'SupplementalFigS6_forFig4d', colorResultsFolder);
+resultsRoot = fullfile(paths.Figures, 'SupplementalFigS6_forFig4d', colorResultsFolder);
 
 %% Load Perceptual-task data
 allQuadDataBase = readtable(quadFile);

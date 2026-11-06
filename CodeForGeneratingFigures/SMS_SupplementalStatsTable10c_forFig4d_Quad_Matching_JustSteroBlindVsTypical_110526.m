@@ -5,7 +5,7 @@ set(groot, 'defaultFigureVisible', 'on')
 close all; clear all;
 SMS_setCodePath;
 
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+expDir = fullfile(paths.Data, 'QuadStudy');
 
 
 
@@ -33,7 +33,7 @@ switch lower(colorMode)
         error('Paper2Matching:InvalidColorMode', ...
             'colorMode must be "stereoscore" or "clinicalnotes".');
 end
-resultsRoot = fullfile('/Users/kalanit/Projects/StanfordMoonStudy/Figures/', 'SupplementalStatsTable10c_forFig4d', colorResultsFolder);
+resultsRoot = fullfile(paths.Figures, 'SupplementalStatsTable10c_forFig4d', colorResultsFolder);
 
 
 %% Load Perceptual-task data

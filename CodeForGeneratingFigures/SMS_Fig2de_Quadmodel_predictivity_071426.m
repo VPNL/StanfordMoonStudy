@@ -2,8 +2,8 @@
 close all; clear all;
 SMS_setCodePath;
 % set dirs
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/';
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/';
+expDir = paths.Project;
+dataDir = fullfile(paths.Data, 'QuadStudy');
 QuadFile='Perceptual_StanfordQuadStudyDataProcessed0420.csv';
 QuadBasename = [erase(QuadFile,'.csv')]
 

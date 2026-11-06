@@ -5,14 +5,14 @@ close all; clear all;
 % set paths
 
 SMS_setCodePath;
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/';
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/BinocularParallax/';
+expDir = paths.Project;
+dataDir = fullfile(paths.Data, 'BinocularParallax');
 
 quadFileName ='QuadProcessedParallaxandStereoData.csv'
 quadFile = fullfile(dataDir, quadFileName);
 [~, quadBasename] = fileparts(quadFileName);
 
-ResultsDir='/Users/kalanit/Projects/StanfordMoonStudy/Figures/SupplementalTables/';
+ResultsDir = fullfile(paths.Figures, 'SupplementalTables');
 if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end

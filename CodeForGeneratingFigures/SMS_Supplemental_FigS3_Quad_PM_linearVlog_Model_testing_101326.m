@@ -6,8 +6,8 @@ close all; clear all;
 SMS_setCodePath;
 
 %setdirs
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/';
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/QuadStudy/'
+expDir = paths.Project;
+dataDir = fullfile(paths.Data, 'QuadStudy');
 QuadFile='Perceptual_StanfordQuadStudyDataProcessed0420.csv';
 ObserverFlag=1;
 QuadBasename = [erase(QuadFile,'.csv')]
@@ -17,7 +17,7 @@ saveLME=1; % 1 save files; 0 don't save
 saveFlag=1;
 
 ResultsDir=fullfile(expDir,'Figures','Supplemental_FigS3_Quad_LinearVsLog_ModelTesting');
-if ~exist('ResultsDir','dir')
+if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end
 

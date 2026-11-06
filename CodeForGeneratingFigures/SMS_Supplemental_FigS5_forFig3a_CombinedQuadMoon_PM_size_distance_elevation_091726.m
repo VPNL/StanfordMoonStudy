@@ -5,16 +5,16 @@ close all; clear all;
 % add code path
 SMS_setCodePath;
 
-expDir='/Users/kalanit/Projects/StanfordMoonStudy/';
-dataDir='/Users/kalanit/Projects/StanfordMoonStudy/Data/';
+expDir = paths.Project;
+dataDir = paths.Data;
 
 combinedDir=fullfile(dataDir,'Combined');
-if ~exist('combinedDir','dir')
+if ~exist(combinedDir,'dir')
    mkdir(combinedDir)
 end
 
 ResultsDir=fullfile(expDir,'Figures','Supplemental_FigS6_for3a_S_D_E');
-if ~exist('ResultsDir','dir')
+if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end
 
