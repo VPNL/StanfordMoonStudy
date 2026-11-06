@@ -1,12 +1,18 @@
 This repository contains the data and code that generates the figures in:
 
-Why does the Moon look larger on the horizon? The curious case of perceptual magnification 
+A general phenomenon of perceptual magnification predicts the Moon illusion
 
-Authors: Kalanit Grill-Spector, Juliet Horenziak, Peter Xu, Keithan Ducre
+Authors: Kalanit Grill-Spector1-3*, Keithan Ducre1, Juliet Horenziak1, Peter Xu1,3
+
+1 Department of Psychology, Stanford University, Stanford, CA 94305
+2 Wu Tsai Neurosciences Institute, Stanford University, Stanford, CA 94305
+3 Department of Computer Science, Stanford University, Stanford, CA 94305
+* Corresponding author
+
 
 CodeForGeneratingFigures: matlab code that generates the figures, stat tables, and supplemental figures of the manuscript. 
 
-Data: data tables in csv format of the raw and processed data of the Moon study, the Quad study, and the combined data.
+Data: data tables in csv format of the Moon study, the Quad study, combined data, and parallax studies.
 
 Figures: output of code in CodeForGeneratingFigures.
 
