@@ -20,6 +20,6 @@ Rcode: R code that takes the raw data tables and generates the processed data ta
 
 code: matlab functions to analyze the data.
 
-edit SMS_setCodePath.m in CodeForGeneratingFigures to include this directory and subdirectories in matlab path
+change directory to  CodeForGeneratingFigures and the function SMS_project_paths.m will generate the paths for running the code
 
 
