@@ -17,7 +17,7 @@ discrepancyFile = fullfile(resultsDir, ...
 
 if isfile(presentFile)
     generatedFile = fullfile(resultsDir, ...
-        'Supplemental_Table5_StereoAcuitySubjectLevelData_regenerated.csv');
+        'Supplemental_Table5_StereoAcuitySubjectLevelData.csv');
     referenceFile = presentFile;
 else
     generatedFile = presentFile;
