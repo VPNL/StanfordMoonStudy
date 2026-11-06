@@ -1,0 +1,8 @@
+modelName,FormulaStr,Intercept_mean,Intercept_std,VAe_mean,VAe_std,De_mean,De_std,Ee_mean,Ee_std
+logPM_by_logAngle,log2ratio_visual_angle ~ 1 + log2real_visual_angle + (1 | ID),1.98679013840868,0.0268502578096,-0.167180049312424,0.00634641764886573,NaN,NaN,NaN,NaN
+logPM_by_logDistance,log2ratio_visual_angle ~ 1 + log2distance + (1 | ID),0.707350977062414,0.0304864603007319,NaN,NaN,0.27740209013018,0.0122270344922702,NaN,NaN
+logPM_by_logElevation,log2ratio_visual_angle ~ 1 + log2elevation + (1 | ID),2.807479525844,0.0786710685840194,NaN,NaN,NaN,NaN,-0.248886791406732,0.0157297314076013
+logPM_by_logAngleNDistance,log2ratio_visual_angle ~ 1 + log2real_visual_angle + log2distance + (1 | ID),0.820296555181028,0.0390089756303244,-0.11887452186953,0.00725868783454934,0.238685443906701,0.0131507007213639,NaN,NaN
+logPM_by_logAngleNElevation,log2ratio_visual_angle ~ 1 + log2real_visual_angle + log2elevation + (1 | ID),2.59877167617208,0.0767426015333587,-0.136526245170397,0.00774779777272836,NaN,NaN,-0.190522435506371,0.0169803158474975
+logPM_by_logDistanceNElevation,log2ratio_visual_angle ~ 1 + log2distance + log2elevation + (1 | ID),0.579615685555327,0.0411507404070551,NaN,NaN,0.310022594194866,0.0155018318202825,0.0565283350393607,0.0158808403115366
+logPM_by_logAngleNDistanceNElevation,log2ratio_visual_angle ~ 1 + log2real_visual_angle + log2distance + log2elevation + (1 | ID),0.599936722012461,0.0385636990670088,-0.1232581750815,0.00730122054511147,0.289145110139074,0.014620273975332,0.0898745349079623,0.0143820657950685

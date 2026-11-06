@@ -14,6 +14,18 @@ if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end
 
+DiagnosticsDir = fullfile(ResultsDir, 'CrossValidationDiagnostics');
+CoefficientDir = fullfile(DiagnosticsDir, 'Coefficients');
+ModelComparisonDir = fullfile(DiagnosticsDir, 'ModelComparisons');
+latentMoonDResultsDir = fullfile(DiagnosticsDir, 'LatentMoonDistance');
+CrossValidationDataDir = fullfile(ResultsDir, 'CrossValidationData');
+outputDirs = {CoefficientDir, ModelComparisonDir, CrossValidationDataDir};
+for d = 1:numel(outputDirs)
+    if ~exist(outputDirs{d}, 'dir')
+        mkdir(outputDirs{d})
+    end
+end
+
 saveLME= 1;
 elevationTransform = 2 ;% 2 = absElevation
 ObserverFlag=1;
@@ -27,7 +39,6 @@ latentDmoonOptions = struct( ...
     'MaxIter', 25, ...
     'MaxFunEvals', 80, ...
     'Display', 'off');
-latentMoonDResultsDir = fullfile(ResultsDir, 'latentMoonD');
 if runLatentDmoonModel && ~exist(latentMoonDResultsDir, 'dir')
    mkdir(latentMoonDResultsDir)
 end
@@ -87,7 +98,7 @@ ThreeFactorLMEStore = struct();
 [all_quad_data, quadSingletonTbl] = Quad_remove_singleton_conditions(all_quad_data, paramsToPlot);
 sfx = char(transformInfo.sfx);
 if ~isempty(quadSingletonTbl)
-    singletonFile = fullfile(ResultsDir, sprintf('%s_removed_singleton_conditions_%s.csv', QuadBasename, sfx));
+    singletonFile = fullfile(CrossValidationDataDir, sprintf('%s_removed_singleton_conditions_%s.csv', QuadBasename, sfx));
     writetable(quadSingletonTbl, singletonFile);
 end
 
@@ -221,24 +232,24 @@ end
 
 training_Tblname = sprintf('%s_training_%diterations_lme_summary_combined_training_%s_%s', ...
     task, nIterations, combinedBasename, sfx);
-writetable(R.all_training_Tbl, fullfile(ResultsDir, [training_Tblname '.csv']));
+writetable(R.all_training_Tbl, fullfile(CrossValidationDataDir, [training_Tblname '.csv']));
 
 testing_Tblname = sprintf('%s_testing_%diterations_lme_summary_combined_training_%s_%s', ...
     task, nIterations, combinedBasename, sfx);
-writetable(R.all_testing_Tbl, fullfile(ResultsDir, [testing_Tblname '.csv']));
+writetable(R.all_testing_Tbl, fullfile(CrossValidationDataDir, [testing_Tblname '.csv']));
 
 Tblname = sprintf('%s_%diterations_lme_summary_combined_training_%s_%s', ...
     task, nIterations, combinedBasename, sfx);
 
-outFigName = fullfile(ResultsDir, [Tblname '.png']);
+outFigName = fullfile(CoefficientDir, [Tblname '.png']);
 coefVars = {'Intercept','VAe' 'De','Ee'};
 plotCoefVars = {'Intercept', 'VAe', 'De','Ee'};
 [outTbl, fh] = PM_plot_meanLMEcoeffs(R.all_summarylmeTbl, Tblname, outFigName);
-writetable(outTbl, fullfile(ResultsDir, ['mean_' Tblname '.csv']));
+writetable(outTbl, fullfile(CrossValidationDataDir, ['mean_' Tblname '.csv']));
 
 coefVars = {'Intercept','VAe' 'De','Ee'};
 plotCoefVars = {'VAe', 'De','Ee'};
-outFigNameNoI = fullfile(ResultsDir, [Tblname '_noIntercepts.png']);
+outFigNameNoI = fullfile(CoefficientDir, [Tblname '_noIntercepts.png']);
 [~, fh] = PM_plot_meanLMEcoeffs(R.all_summarylmeTbl, Tblname, outFigNameNoI, coefVars, plotCoefVars);
 
 
@@ -248,7 +259,7 @@ transformErrorTbl = summarize_model_prediction_error( ...
     task, elevationTransform, string(transformInfo.sfx));
 transformErrorTbl.Model = repmat("LME_3factor", height(transformErrorTbl), 1);
 transformErrorTbl = movevars(transformErrorTbl, 'Model', 'After', 'TransformLabel');
-writetable(transformErrorTbl, fullfile(ResultsDir, sprintf('%s_%diterations_prediction_error_%s.csv', lower(task), nIterations, sfx)));
+writetable(transformErrorTbl, fullfile(CrossValidationDataDir, sprintf('%s_%diterations_prediction_error_%s.csv', lower(task), nIterations, sfx)));
 allErrorSummaryTbl = [allErrorSummaryTbl; transformErrorTbl];
 
 threeFactorFigName = sprintf('%s_%dminNID_3factor', task, minNID);
@@ -266,7 +277,7 @@ fprintf('3-factor by-parameter plot: %s\n', threeFactorPlotFile);
 figName  = sprintf('%s_%dminNID', task, minNID);
 for p = 1:numel(paramsToPlot)
     Param = paramsToPlot{p};
-    saveFilename = fullfile(ResultsDir, sprintf('%s_%diterations_%s_combined_%s.png', ...
+    saveFilename = fullfile(ModelComparisonDir, sprintf('%s_%diterations_%s_combined_%s.png', ...
         figName, nIterations, Param, combinedBasename));
     [SummaryItrParam, ~, ~, ~, fh, fh_violin, ~, ~, fh_pctbar] = ...
         plot_MeanPredictedvsReportedPMbyParamwithMpERR_3models(R.all_testing_Tbl, Param, minNID, saveFilename, figName, 'sd','Combined');
@@ -316,14 +327,11 @@ end
 
 
 
-saveFilename = fullfile(ResultsDir, sprintf('%diterations_combined_%s_%s.mat', ...
-             nIterations, combinedBasename, sfx));
-
-allErrorSummaryCsv = fullfile(ResultsDir, sprintf('%diterations_prediction_error_by_transform_combined_%s.csv', nIterations, combinedBasename));
+allErrorSummaryCsv = fullfile(CrossValidationDataDir, sprintf('%diterations_prediction_error_by_transform_combined_%s.csv', nIterations, combinedBasename));
 writetable(allErrorSummaryTbl, allErrorSummaryCsv);
 
 
-saveFilename = fullfile(ResultsDir, sprintf('%diterations_threeFactorLMEs_allTransforms_combined_%s.mat', nIterations, combinedBasename));
+saveFilename = fullfile(CrossValidationDataDir, sprintf('%diterations_threeFactorLMEs_allTransforms_combined_%s.mat', nIterations, combinedBasename));
 save(saveFilename);
 
 close all;

@@ -15,9 +15,16 @@ if ~exist(ResultsDir,'dir')
    mkdir(ResultsDir)
 end
 
-SupResultsDir=fullfile(ResultsDir,'SupplementalFig')
-if ~exist(SupResultsDir,'dir')
-   mkdir(SupResultsDir)
+DiagnosticsDir = fullfile(ResultsDir, 'CrossValidationDiagnostics');
+CoefficientDir = fullfile(DiagnosticsDir, 'Coefficients');
+ModelComparisonDir = fullfile(DiagnosticsDir, 'ModelComparisons');
+BinnedErrorDir = fullfile(DiagnosticsDir, 'BinnedError');
+CrossValidationDataDir = fullfile(ResultsDir, 'CrossValidationData');
+outputDirs = {CoefficientDir, ModelComparisonDir, BinnedErrorDir, CrossValidationDataDir};
+for d = 1:numel(outputDirs)
+    if ~exist(outputDirs{d}, 'dir')
+        mkdir(outputDirs{d})
+    end
 end
 
 ObserverFlag=1; % all distances and elevations relative to observer
@@ -50,7 +57,7 @@ end
 [all_data_perceptual, transformInfo] = apply_quad_elevation_transform(all_quad_data, ElevationTransform); % Apply the elevation transform
 [all_data_perceptual, quadSingletonTbl] = Quad_remove_singleton_conditions(all_data_perceptual, paramsToPlot);
 if ~isempty(quadSingletonTbl)
-    singletonFile = fullfile(ResultsDir, sprintf('%s_removed_singleton_conditions_%s.csv', QuadBasename, sfx));
+    singletonFile = fullfile(CrossValidationDataDir, sprintf('%s_removed_singleton_conditions_%s.csv', QuadBasename, sfx));
     writetable(quadSingletonTbl, singletonFile);
 end
 
@@ -120,17 +127,17 @@ testing_Tblname  = sprintf('perceptual_testing_%diterations_lme_summary_%s_%s', 
 coeff_Tblname    = sprintf('Perceptual_%diterations_lme_summary_%s_%s',          nIterations, QuadBasename, sfx);
 noInterceptFig   = [coeff_Tblname '_noIntercepts.png'];
 
-writetable(S.(task).all_training_Tbl, fullfile(ResultsDir,[training_Tblname '.csv']));
-writetable(S.(task).all_testing_Tbl,  fullfile(ResultsDir,[testing_Tblname  '.csv']));
+writetable(S.(task).all_training_Tbl, fullfile(CrossValidationDataDir,[training_Tblname '.csv']));
+writetable(S.(task).all_testing_Tbl,  fullfile(CrossValidationDataDir,[testing_Tblname  '.csv']));
 
-outFigName = fullfile(ResultsDir, [coeff_Tblname '.png']);
+outFigName = fullfile(CoefficientDir, [coeff_Tblname '.png']);
 coefVars = {'Intercept','VAe' 'De','Ee'};
 plotCoefVars = {'Intercept', 'VAe', 'De','Ee'}; % plots all estimated coefficients: intercept+ exponents across iterations
 [meanCoeffTbl, fh] = PM_plot_meanLMEcoeffs(S.(task).all_summarylmeTbl, coeff_Tblname, outFigName,coefVars, plotCoefVars );
-writetable(meanCoeffTbl, fullfile(ResultsDir, ['mean_' coeff_Tblname '.csv']));
+writetable(meanCoeffTbl, fullfile(CrossValidationDataDir, ['mean_' coeff_Tblname '.csv']));
 
 
-outFigName = fullfile(ResultsDir, noInterceptFig); %  plots all estimated exponents across iterations
+outFigName = fullfile(CoefficientDir, noInterceptFig); % plots all estimated exponents across iterations
 plotCoefVars = {'VAe', 'De','Ee'};
 [~, fh] = PM_plot_meanLMEcoeffs(S.(task).all_summarylmeTbl, coeff_Tblname, outFigName, coefVars, plotCoefVars);
 if ~isempty(fh); close(fh); end
@@ -139,7 +146,7 @@ transformErrorTbl = summarize_model_prediction_error( ...
     S.(task).all_testing_Tbl, ...
     'predicted_PM_logPM_by_logAngleNDistanceNElevation', ...
     task, ElevationTransform, string(transformInfo.sfx));
-writetable(transformErrorTbl, fullfile(ResultsDir, sprintf('%s_%diterations_prediction_error_%s.csv', lower(task), nIterations, sfx)));
+writetable(transformErrorTbl, fullfile(CrossValidationDataDir, sprintf('%s_%diterations_prediction_error_%s.csv', lower(task), nIterations, sfx)));
 
 
 %%
@@ -154,6 +161,7 @@ mainFigFile = fullfile(ResultsDir, [saveBase '.png']);
 [SummaryItrParam, ~, ~, ~, fh, fh_violin, ~, ~, fh_pctbar] = ...
     plot_MeanPredictedvsReportedPMbyParamwithMpERR_minNIDbinned(S.(task).all_testing_Tbl, Param, minNID, mainFigFile, figName, 'sd','Quad');
 checkbinning(SummaryItrParam,Param,minNID);
+movefile(mainFigFile, fullfile(BinnedErrorDir, [saveBase '.png']));
 
 
 saveBase = sprintf('%s_VA_D_E_%s', figName, QuadBasename);
@@ -171,7 +179,7 @@ Param = {'Real_Visual_Angle','Distance','Elevation'};
 for p=1:numel(paramsToPlot)
     Param = paramsToPlot{p};
     saveBase = sprintf('%s_%s_%s', figName, Param, QuadBasename);
-    save3MFilename = fullfile(SupResultsDir,[saveBase '3Models.png']);
+    save3MFilename = fullfile(ModelComparisonDir,[saveBase '3Models.png']);
     [SummaryItrParam, ~, ~, ~, fh, fh_violin, ~, ~, fh_pctbar] = ...
     plot_MeanPredictedvsReportedPMbyParamwithMpERR_3models( ...
         S.(task).all_testing_Tbl, Param, minNID, save3MFilename, [figName '3Models'], 'sd', 'Quad');
@@ -181,7 +189,7 @@ ThreeFactorLMEStore.(transformField).TransformID = ElevationTransform;
 ThreeFactorLMEStore.(transformField).TransformLabel = string(transformInfo.sfx);
 ThreeFactorLMEStore.(transformField).Perceptual = S.Perceptual.threeFactorLMEs;
 
-modelStoreFile = fullfile(ResultsDir, sprintf('%diterations_lme_coeffs_%s_%s.mat', nIterations, QuadBasename, sfx));
+modelStoreFile = fullfile(CrossValidationDataDir, sprintf('%diterations_lme_coeffs_%s_%s.mat', nIterations, QuadBasename, sfx));
 save(modelStoreFile, 'S', 'transformInfo', 'ElevationTransform');
 
 %%
